@@ -1,0 +1,4 @@
+rootProject.name = 'Hyggdrasil'
+include 'API'
+include 'ResourcesAPI'
+

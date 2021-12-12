@@ -1,0 +1,57 @@
+apply plugin: 'maven-publish'
+
+version = '1.0.0'
+archivesBaseName = 'Hyggdrasil-API'
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+    classifier 'sources'
+    from sourceSets.main.allSource
+}
+
+task javadocJar(type: Jar, dependsOn: classes) {
+    classifier 'javadoc'
+    from javadoc
+}
+
+tasks.withType(Javadoc) {
+    options.encoding = 'UTF-8'
+}
+
+artifacts {
+    archives sourcesJar, javadocJar
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            from components.java
+            artifact tasks.sourcesJar
+            artifact tasks.javadocJar
+
+            pom {
+                groupId = project.group
+                artifactId = 'hyggdrasil-api'
+                version = project.version
+                name = 'HyggdrasilAPI'
+                description = 'Official API of Hyggdrasil'
+                url = 'https://github.com/Hyriode/Hyggdrasil'
+            }
+        }
+    }
+
+    repositories {
+        maven {
+            credentials {
+                username System.getenv('USERNAME')
+                password System.getenv('TOKEN')
+            }
+            name = "Hyggdrasil_maven"
+            url = "https://maven.pkg.github.com/Hyriode/Hyggdrasil"
+        }
+    }
+}
+
+dependencies {
+    api 'redis.clients:jedis:3.7.0'
+    api 'com.google.code.gson:gson:2.8.9'
+}
