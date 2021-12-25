@@ -9,8 +9,6 @@ import java.util.logging.Logger;
 
 public class HyggLoggingOutputStream extends ByteArrayOutputStream {
 
-    private static final String separator = System.getProperty("line.separator");
-
     private final Logger logger;
     private final Level level;
 
@@ -20,12 +18,13 @@ public class HyggLoggingOutputStream extends ByteArrayOutputStream {
     }
 
     @Override
-    public void flush() throws IOException
-    {
+    public void flush() throws IOException {
         final String contents = this.toString(Charsets.UTF_8.name());
+
         super.reset();
-        if (!contents.isEmpty() && !contents.equals(separator)) {
-            this.logger.logp(level, "", "", contents);
+
+        if (!contents.isEmpty() && !contents.equals(System.getProperty("line.separator"))) {
+            this.logger.logp(level, "", "", contents.substring(0, contents.length() - 1));
         }
     }
 

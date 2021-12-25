@@ -1,7 +1,5 @@
 package fr.hyriode.hyggdrasil.api.proxy;
 
-import fr.hyriode.hyggdrasil.api.server.HyggServerState;
-
 /**
  * Project: Hyggdrasil
  * Created by AstFaster

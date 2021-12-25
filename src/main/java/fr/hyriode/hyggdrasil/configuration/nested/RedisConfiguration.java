@@ -1,5 +1,7 @@
 package fr.hyriode.hyggdrasil.configuration.nested;
 
+import fr.hyriode.hyggdrasil.util.References;
+
 public record RedisConfiguration(String hostName, int port, String password) {
 
     public String getHostName() {
@@ -15,7 +17,7 @@ public record RedisConfiguration(String hostName, int port, String password) {
     }
 
     public static RedisConfiguration load() {
-        return new RedisConfiguration(System.getenv("REDIS_HOST"), Integer.parseInt(System.getenv("REDIS_PORT")), System.getenv("REDIS_PASS"));
+        return new RedisConfiguration(References.STACK_NAME + "_" + System.getenv("REDIS_HOST"), Integer.parseInt(System.getenv("REDIS_PORT")), System.getenv("REDIS_PASS"));
     }
 
 }

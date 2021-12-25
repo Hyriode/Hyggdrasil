@@ -1,8 +1,12 @@
 package fr.hyriode.hyggdrasil.api;
 
+import com.google.gson.Gson;
+import fr.hyriode.hyggdrasil.api.protocol.packet.HyggPacketProcessor;
+import fr.hyriode.hyggdrasil.api.protocol.pubsub.HyggPubSub;
 import fr.hyriode.hyggdrasil.api.util.builder.BuildException;
 import fr.hyriode.hyggdrasil.api.util.builder.BuilderOption;
 import fr.hyriode.hyggdrasil.api.util.builder.IBuilder;
+import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 
 import java.util.logging.Level;
@@ -15,10 +19,19 @@ import java.util.logging.Logger;
  */
 public class HyggdrasilAPI {
 
+    /** APIs name constant */
+    public static final String NAME = "HyggdrasilAPI";
+    /** {@link Gson} instance */
+    public static final Gson GSON = new Gson();
+
     /** Static instance of the logger */
     private static Logger logger;
     /** {@link JedisPool} object */
     private final JedisPool jedisPool;
+    /** Hyggdrasil PubSub instance */
+    private final HyggPubSub pubSub;
+    /** The packet processor used to send/receive packets */
+    private final HyggPacketProcessor packetProcessor;
 
     /**
      * Constructor of {@link HyggdrasilAPI}
@@ -29,6 +42,33 @@ public class HyggdrasilAPI {
     public HyggdrasilAPI(Logger logger, JedisPool jedisPool) {
         HyggdrasilAPI.logger = logger;
         this.jedisPool = jedisPool;
+        this.pubSub = new HyggPubSub(this);
+        this.packetProcessor = new HyggPacketProcessor(this);
+    }
+
+    /**
+     * Start {@link HyggdrasilAPI}
+     */
+    public void start() {
+        log("Starting " + NAME + "...");
+
+        this.pubSub.start();
+    }
+
+    /**
+     * Stop {@link HyggdrasilAPI}
+     */
+    public void stop(String reason) {
+        log("Stopping " + NAME + (reason != null ? " (reason: " + reason + ")" : "") + "...");
+
+        this.pubSub.stop();
+    }
+
+    /**
+     * Stop {@link HyggdrasilAPI}
+     */
+    public void stop() {
+        this.stop(null);
     }
 
     /**
@@ -57,6 +97,34 @@ public class HyggdrasilAPI {
      */
     public JedisPool getJedisPool() {
         return this.jedisPool;
+    }
+
+    /**
+     * Get a Redis resource from the pool
+     *
+     * @return {@link Jedis} instance
+     */
+    public Jedis getJedis() {
+        return this.jedisPool.getResource();
+    }
+
+    /**
+     * Get Hyggdrasil PubSub instance
+     *
+     * @return {@link HyggPubSub} instance
+     */
+    public HyggPubSub getPubSub() {
+        return this.pubSub;
+    }
+
+    /**
+     * Get Hyggdrasil packet processor<br>
+     * This class is used to send/receive packets
+     *
+     * @return {@link HyggPacketProcessor} instance
+     */
+    public HyggPacketProcessor getPacketProcessor() {
+        return this.packetProcessor;
     }
 
     /**

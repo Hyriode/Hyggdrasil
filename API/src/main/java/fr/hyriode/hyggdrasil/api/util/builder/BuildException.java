@@ -7,16 +7,13 @@ package fr.hyriode.hyggdrasil.api.util.builder;
  */
 public class BuildException extends RuntimeException {
 
+    /**
+     * Constructor of {@link BuildException}
+     *
+     * @param message Message to send when the exception is thrown
+     */
     public BuildException(String message) {
         super(message);
-    }
-
-    public BuildException(String message, Throwable cause) {
-        super(message, cause);
-    }
-
-    public BuildException(Throwable cause) {
-        super(cause);
     }
 
 }

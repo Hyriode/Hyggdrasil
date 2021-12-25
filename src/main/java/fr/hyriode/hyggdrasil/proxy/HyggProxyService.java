@@ -13,7 +13,7 @@ import fr.hyriode.hyggdrasil.util.References;
  */
 public class HyggProxyService extends DockerService {
 
-    private static final DockerImage BUNGEECORD_IMAGE = new DockerImage("itzg/bungeecord", "java11");
+    private static final DockerImage BUNGEECORD_IMAGE = new DockerImage("itzg/bungeecord", "latest");
 
     private static final int MIN_PORT = 45565;
     private static final int MAX_PORT = 65535;
@@ -28,6 +28,7 @@ public class HyggProxyService extends DockerService {
         this.addLabel(References.STACK_NAME_LABEL, References.STACK_NAME);
         this.addEnv("TYPE", "BUNGEECORD");
         this.addEnv("ENABLE_RCON", "FALSE");
+        this.addEnv("PLUGINS", "https://hyriode.fr/HydraBungee-1.0.0-all.jar");
 
         proxy.setPort(this.publishedPort);
     }

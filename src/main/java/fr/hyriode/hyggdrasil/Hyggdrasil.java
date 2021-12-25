@@ -1,8 +1,12 @@
 package fr.hyriode.hyggdrasil;
 
+import fr.hyriode.hyggdrasil.api.HyggdrasilAPI;
+import fr.hyriode.hyggdrasil.api.protocol.HyggChannel;
+import fr.hyriode.hyggdrasil.api.protocol.response.HyggResponse;
 import fr.hyriode.hyggdrasil.configuration.HyggConfiguration;
 import fr.hyriode.hyggdrasil.docker.Docker;
 import fr.hyriode.hyggdrasil.proxy.HyggProxyManager;
+import fr.hyriode.hyggdrasil.redis.HyggRedis;
 import fr.hyriode.hyggdrasil.util.References;
 import fr.hyriode.hyggdrasil.util.logger.HyggLogger;
 
@@ -17,11 +21,14 @@ import java.util.logging.Level;
  */
 public class Hyggdrasil {
 
-    /** Logger */
-    private static HyggLogger logger;
-
     /** Configuration */
     private HyggConfiguration configuration;
+
+    /** Redis */
+    private HyggRedis redis;
+
+    /** API */
+    private HyggdrasilAPI api;
 
     /** Docker */
     private Docker docker;
@@ -32,12 +39,22 @@ public class Hyggdrasil {
     /** State */
     private boolean running;
 
+    /** Logger */
+    private static HyggLogger logger;
+
     public void start() {
         HyggLogger.printHeaderMessage();
 
         this.setupLogger();
 
         this.configuration = HyggConfiguration.load();
+        this.redis = new HyggRedis(this.configuration.getRedisConfiguration());
+        this.redis.connect();
+        this.api = new HyggdrasilAPI.Builder()
+                .withJedisPool(this.redis.getJedisPool())
+                .withLogger(logger)
+                .build();
+        this.api.start();
         this.docker = new Docker();
         this.proxyManager = new HyggProxyManager(this);
 
@@ -84,6 +101,14 @@ public class Hyggdrasil {
 
     public HyggConfiguration getConfiguration() {
         return this.configuration;
+    }
+
+    public HyggdrasilAPI getAPI() {
+        return this.api;
+    }
+
+    public HyggRedis getRedis() {
+        return this.redis;
     }
 
     public Docker getDocker() {
