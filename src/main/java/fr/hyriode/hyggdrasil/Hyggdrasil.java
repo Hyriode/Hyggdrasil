@@ -81,6 +81,9 @@ public class Hyggdrasil {
         if (this.running) {
             System.out.println("Stopping " + References.NAME + "...");
 
+            this.api.stop(References.NAME + " shutdown called");
+            this.redis.disconnect();
+
             this.running = false;
 
             System.out.println(References.NAME + " is now down. See you soon!");

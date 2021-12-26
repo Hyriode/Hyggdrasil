@@ -28,7 +28,6 @@ public class HyggProxyService extends DockerService {
         this.addLabel(References.STACK_NAME_LABEL, References.STACK_NAME);
         this.addEnv("TYPE", "BUNGEECORD");
         this.addEnv("ENABLE_RCON", "FALSE");
-        this.addEnv("PLUGINS", "https://hyriode.fr/HydraBungee-1.0.0-all.jar");
 
         proxy.setPort(this.publishedPort);
     }

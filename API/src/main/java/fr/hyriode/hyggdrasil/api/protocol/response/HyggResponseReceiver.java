@@ -17,6 +17,8 @@ public class HyggResponseReceiver implements IHyggPacketReceiver {
     private final HyggdrasilAPI hyggdrasilAPI;
     /** The original request */
     private final HyggPacketRequest request;
+    /** Number of responses received */
+    private int responses;
 
     /**
      * Constructor of {@link HyggResponseReceiver}
@@ -37,10 +39,14 @@ public class HyggResponseReceiver implements IHyggPacketReceiver {
             if (responsePacket.getRespondedPacketUniqueId().equals(this.request.getPacket().getUniqueId())) {
                 final HyggResponseCallback callback = this.request.getResponseCallback();
 
+                this.responses++;
+
+                if (this.responses >= this.request.getMaxResponses()) {
+                    this.unregister(channel);
+                }
+
                 if (callback != null) {
                     callback.call(responsePacket.getResponse());
-
-                    this.unregister(channel);
                 }
             }
         }
@@ -52,7 +58,7 @@ public class HyggResponseReceiver implements IHyggPacketReceiver {
      *
      * @param channel The original channel
      */
-    private void unregister(String channel) {
+    public void unregister(String channel) {
         this.hyggdrasilAPI.getPacketProcessor().unregisterReceiver(channel, this);
     }
     

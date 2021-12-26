@@ -5,6 +5,8 @@ import fr.hyriode.hyggdrasil.api.protocol.HyggChannel;
 import fr.hyriode.hyggdrasil.api.protocol.response.HyggResponseCallback;
 import fr.hyriode.hyggdrasil.api.protocol.response.HyggResponseReceiver;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * Project: Hyggdrasil
  * Created by AstFaster
@@ -20,6 +22,10 @@ public class HyggPacketRequest {
     private Runnable sendingCallback;
     /** The callback to fire when a response to the packet is received */
     private HyggResponseCallback responseCallback;
+    /** The number of responses to handle */
+    private int maxResponses = 1;
+    /** Maximum time to wait for all responses (in millis) */
+    private long responseTime = 30;
 
     /** {@link HyggdrasilAPI} instance */
     private final HyggdrasilAPI hyggdrasilAPI;
@@ -114,6 +120,47 @@ public class HyggPacketRequest {
     }
 
     /**
+     * Set the maximum of responses
+     *
+     * @param maxResponses New maximum of responses
+     * @return {@link HyggPacketRequest
+     * }
+     */
+    public HyggPacketRequest withMaxResponses(int maxResponses) {
+        this.maxResponses = maxResponses;
+        return this;
+    }
+
+    /**
+     * Get the maximum of responses
+     *
+     * @return The maximum of responses
+     */
+    public int getMaxResponses() {
+        return this.maxResponses;
+    }
+
+    /**
+     * Set the time to wait for all responses
+     *
+     * @param responseTime New response time
+     * @return {@link HyggPacketRequest}
+     */
+    public HyggPacketRequest withResponseTime(long responseTime, TimeUnit unit) {
+        this.responseTime = unit.toMillis(responseTime);
+        return this;
+    }
+
+    /**
+     * Get the maximum of time to wait for all responses
+     *
+     * @return The response time
+     */
+    public long getResponseTime() {
+        return this.responseTime;
+    }
+
+    /**
      * Execute the request. In our case it will send the packet and manage responses
      */
     public void exec() {
@@ -121,7 +168,11 @@ public class HyggPacketRequest {
 
         if (this.packet != null) {
             if (this.responseCallback != null) {
-                packetProcessor.registerReceiver(this.channel, new HyggResponseReceiver(this.hyggdrasilAPI, this));
+                final HyggResponseReceiver responseReceiver = new HyggResponseReceiver(this.hyggdrasilAPI, this);
+
+                packetProcessor.registerReceiver(this.channel, responseReceiver);
+
+                this.hyggdrasilAPI.getScheduler().schedule(() -> responseReceiver.unregister(this.channel.toString()), this.responseTime, TimeUnit.MILLISECONDS);
             }
 
             this.hyggdrasilAPI.getPubSub().send(this.channel.toString(), packetProcessor.encode(this.packet), this.sendingCallback);

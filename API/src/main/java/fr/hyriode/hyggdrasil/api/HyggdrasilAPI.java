@@ -3,6 +3,7 @@ package fr.hyriode.hyggdrasil.api;
 import com.google.gson.Gson;
 import fr.hyriode.hyggdrasil.api.protocol.packet.HyggPacketProcessor;
 import fr.hyriode.hyggdrasil.api.protocol.pubsub.HyggPubSub;
+import fr.hyriode.hyggdrasil.api.scheduler.HyggScheduler;
 import fr.hyriode.hyggdrasil.api.util.builder.BuildException;
 import fr.hyriode.hyggdrasil.api.util.builder.BuilderOption;
 import fr.hyriode.hyggdrasil.api.util.builder.IBuilder;
@@ -28,7 +29,9 @@ public class HyggdrasilAPI {
     private static Logger logger;
     /** {@link JedisPool} object */
     private final JedisPool jedisPool;
-    /** Hyggdrasil PubSub instance */
+    /** The Hyggdrasil scheduler instance */
+    private final HyggScheduler scheduler;
+    /** The Hyggdrasil PubSub instance */
     private final HyggPubSub pubSub;
     /** The packet processor used to send/receive packets */
     private final HyggPacketProcessor packetProcessor;
@@ -42,6 +45,7 @@ public class HyggdrasilAPI {
     public HyggdrasilAPI(Logger logger, JedisPool jedisPool) {
         HyggdrasilAPI.logger = logger;
         this.jedisPool = jedisPool;
+        this.scheduler = new HyggScheduler();
         this.pubSub = new HyggPubSub(this);
         this.packetProcessor = new HyggPacketProcessor(this);
     }
@@ -62,6 +66,7 @@ public class HyggdrasilAPI {
         log("Stopping " + NAME + (reason != null ? " (reason: " + reason + ")" : "") + "...");
 
         this.pubSub.stop();
+        this.scheduler.stop();
     }
 
     /**
@@ -106,6 +111,15 @@ public class HyggdrasilAPI {
      */
     public Jedis getJedis() {
         return this.jedisPool.getResource();
+    }
+
+    /**
+     * Get Hyggdrasil scheduler instance
+     *
+     * @return {@link HyggScheduler} instance
+     */
+    public HyggScheduler getScheduler() {
+        return this.scheduler;
     }
 
     /**
