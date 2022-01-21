@@ -22,3 +22,4 @@ services:
       REDIS_PASS: p@ssw0rd
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+      - ./data/:/usr/app/data

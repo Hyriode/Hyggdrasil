@@ -1,3 +1,7 @@
+plugins {
+    id "com.github.johnrengelman.shadow"
+}
+
 apply plugin: 'maven-publish'
 
 version = '1.0.0'
@@ -60,6 +64,10 @@ publishing {
             url = "https://maven.pkg.github.com/Hyriode/Hyggdrasil"
         }
     }
+}
+
+shadowJar {
+    configurations = [project.configurations.runtimeClasspath]
 }
 
 dependencies {

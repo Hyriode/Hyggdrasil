@@ -1,15 +1,17 @@
 package fr.hyriode.hyggdrasil.api;
 
 import com.google.gson.Gson;
+import fr.hyriode.hyggdrasil.api.protocol.env.HyggEnvironment;
 import fr.hyriode.hyggdrasil.api.protocol.packet.HyggPacketProcessor;
 import fr.hyriode.hyggdrasil.api.protocol.pubsub.HyggPubSub;
 import fr.hyriode.hyggdrasil.api.scheduler.HyggScheduler;
 import fr.hyriode.hyggdrasil.api.util.builder.BuildException;
-import fr.hyriode.hyggdrasil.api.util.builder.BuilderOption;
+import fr.hyriode.hyggdrasil.api.util.builder.BuilderEntry;
 import fr.hyriode.hyggdrasil.api.util.builder.IBuilder;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -22,6 +24,8 @@ public class HyggdrasilAPI {
 
     /** APIs name constant */
     public static final String NAME = "HyggdrasilAPI";
+    /** APIs prefix constant. This is used for channels or to print information */
+    public static final String PREFIX = "Hygg";
     /** {@link Gson} instance */
     public static final Gson GSON = new Gson();
 
@@ -29,6 +33,10 @@ public class HyggdrasilAPI {
     private static Logger logger;
     /** {@link JedisPool} object */
     private final JedisPool jedisPool;
+    /** The running application environment */
+    private HyggEnvironment environment;
+    /** The supplier of the running application environment */
+    private final Supplier<HyggEnvironment> environmentSupplier;
     /** The Hyggdrasil scheduler instance */
     private final HyggScheduler scheduler;
     /** The Hyggdrasil PubSub instance */
@@ -38,13 +46,14 @@ public class HyggdrasilAPI {
 
     /**
      * Constructor of {@link HyggdrasilAPI}
-     *
-     * @param logger API's logger
-     * @param jedisPool API's {@link JedisPool}
+     *  @param logger APIs logger
+     * @param jedisPool {@link JedisPool} used for all Redis actions
+     * @param environmentSupplier The supplier of the running application environment
      */
-    public HyggdrasilAPI(Logger logger, JedisPool jedisPool) {
+    public HyggdrasilAPI(Logger logger, JedisPool jedisPool, Supplier<HyggEnvironment> environmentSupplier) {
         HyggdrasilAPI.logger = logger;
         this.jedisPool = jedisPool;
+        this.environmentSupplier = environmentSupplier;
         this.scheduler = new HyggScheduler();
         this.pubSub = new HyggPubSub(this);
         this.packetProcessor = new HyggPacketProcessor(this);
@@ -57,6 +66,7 @@ public class HyggdrasilAPI {
         log("Starting " + NAME + "...");
 
         this.pubSub.start();
+        this.environment = this.environmentSupplier.get();
     }
 
     /**
@@ -114,6 +124,15 @@ public class HyggdrasilAPI {
     }
 
     /**
+     * Get the running application environment
+     *
+     * @return {@link HyggEnvironment} object
+     */
+    public HyggEnvironment getEnvironment() {
+        return this.environment;
+    }
+
+    /**
      * Get Hyggdrasil scheduler instance
      *
      * @return {@link HyggScheduler} instance
@@ -146,10 +165,12 @@ public class HyggdrasilAPI {
      */
     public static class Builder implements IBuilder<HyggdrasilAPI> {
 
-        /** Logger option */
-        private final BuilderOption<Logger> loggerOption = new BuilderOption<>("Logger", () -> Logger.getLogger(HyggdrasilAPI.class.getName())).optional();
-        /** Jedis pool option */
-        private final BuilderOption<JedisPool> jedisPoolOption = new BuilderOption<JedisPool>("Jedis Pool").required();
+        /** Logger builder option */
+        private final BuilderEntry<Logger> loggerEntry = new BuilderEntry<>("Logger", () -> Logger.getLogger(HyggdrasilAPI.class.getName())).optional();
+        /** Jedis pool builder option */
+        private final BuilderEntry<JedisPool> jedisPoolEntry = new BuilderEntry<JedisPool>("Jedis Pool").required();
+        /** {@link HyggEnvironment} builder option */
+        private final BuilderEntry<HyggEnvironment> environmentEntry = new BuilderEntry<>("Application environment", HyggEnvironment::loadFromEnvironmentVariables).required();
 
         /**
          * Set logger to provide to {@link HyggdrasilAPI}
@@ -158,7 +179,7 @@ public class HyggdrasilAPI {
          * @return {@link Builder}
          */
         public Builder withLogger(Logger logger) {
-            this.loggerOption.set(logger);
+            this.loggerEntry.set(() -> logger);
             return this;
         }
 
@@ -169,7 +190,19 @@ public class HyggdrasilAPI {
          * @return {@link Builder}
          */
         public Builder withJedisPool(JedisPool jedisPool) {
-            this.jedisPoolOption.set(jedisPool);
+            this.jedisPoolEntry.set(() -> jedisPool);
+            return this;
+        }
+
+        /**
+         * Set the application environment to provide to {@link HyggdrasilAPI}.<br>
+         * If this method is not called, the builder with automatically load them from environment variables.
+         *
+         * @param environment {@link HyggEnvironment} object
+         * @return {@link Builder}
+         */
+        public Builder withEnvironment(HyggEnvironment environment) {
+            this.environmentEntry.set(() -> environment);
             return this;
         }
 
@@ -181,7 +214,7 @@ public class HyggdrasilAPI {
          */
         @Override
         public HyggdrasilAPI build() throws BuildException {
-            return new HyggdrasilAPI(this.loggerOption.get(), this.jedisPoolOption.get());
+            return new HyggdrasilAPI(this.loggerEntry.get(), this.jedisPoolEntry.get(), this.environmentEntry.getAsSupplier());
         }
 
     }

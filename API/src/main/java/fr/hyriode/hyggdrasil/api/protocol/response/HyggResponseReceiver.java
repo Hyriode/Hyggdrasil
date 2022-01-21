@@ -1,6 +1,7 @@
 package fr.hyriode.hyggdrasil.api.protocol.response;
 
 import fr.hyriode.hyggdrasil.api.HyggdrasilAPI;
+import fr.hyriode.hyggdrasil.api.protocol.HyggChannel;
 import fr.hyriode.hyggdrasil.api.protocol.packet.HyggPacket;
 import fr.hyriode.hyggdrasil.api.protocol.packet.HyggPacketRequest;
 import fr.hyriode.hyggdrasil.api.protocol.packet.model.HyggResponsePacket;
@@ -18,7 +19,7 @@ public class HyggResponseReceiver implements IHyggPacketReceiver {
     /** The original request */
     private final HyggPacketRequest request;
     /** Number of responses received */
-    private int responses;
+    private int responses = 0;
 
     /**
      * Constructor of {@link HyggResponseReceiver}
@@ -42,7 +43,7 @@ public class HyggResponseReceiver implements IHyggPacketReceiver {
                 this.responses++;
 
                 if (this.responses >= this.request.getMaxResponses()) {
-                    this.unregister(channel);
+                    this.unregister(this.request.getChannel());
                 }
 
                 if (callback != null) {
@@ -58,7 +59,7 @@ public class HyggResponseReceiver implements IHyggPacketReceiver {
      *
      * @param channel The original channel
      */
-    public void unregister(String channel) {
+    public void unregister(HyggChannel channel) {
         this.hyggdrasilAPI.getPacketProcessor().unregisterReceiver(channel, this);
     }
     

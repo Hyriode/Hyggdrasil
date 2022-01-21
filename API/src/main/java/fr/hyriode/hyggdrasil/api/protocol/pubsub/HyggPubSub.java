@@ -1,10 +1,12 @@
 package fr.hyriode.hyggdrasil.api.protocol.pubsub;
 
 import fr.hyriode.hyggdrasil.api.HyggdrasilAPI;
+import fr.hyriode.hyggdrasil.api.protocol.HyggChannel;
 import fr.hyriode.hyggdrasil.api.protocol.receiver.IHyggReceiver;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPubSub;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -41,7 +43,7 @@ public class HyggPubSub extends JedisPubSub {
      */
     public HyggPubSub(HyggdrasilAPI hyggdrasilAPI) {
         this.hyggdrasilAPI = hyggdrasilAPI;
-        this.receivers = new ConcurrentHashMap<>();
+        this.receivers = new HashMap<>();
         this.sender = new Sender();
     }
 
@@ -59,11 +61,12 @@ public class HyggPubSub extends JedisPubSub {
         this.subscriberThread = new Thread(() -> {
             while (this.running) {
                 try (final Jedis jedis = this.hyggdrasilAPI.getJedis()) {
-                    final String[] channels = this.receivers.keySet().toArray(new String[0]);
-
-                    if (channels.length > 0) {
-                        jedis.subscribe(this, channels);
+                    if (jedis != null) {
+                        jedis.psubscribe(this, HyggdrasilAPI.PREFIX + "*");
                     }
+
+                    HyggdrasilAPI.log(Level.SEVERE, "Redis is no longer responding to the PubSub subscriber!");
+                    this.stop();
                 }
             }
         }, "PubSub Subscriber");
@@ -83,8 +86,8 @@ public class HyggPubSub extends JedisPubSub {
             this.unsubscribe();
         }
 
-        this.senderThread.interrupt();
         this.subscriberThread.interrupt();
+        this.senderThread.interrupt();
     }
 
     /**
@@ -94,8 +97,8 @@ public class HyggPubSub extends JedisPubSub {
      * @param message Message to send
      * @param callback Callback to fire after sending message
      */
-    public void send(String channel, String message, Runnable callback) {
-        this.sender.messages.add(new HyggPubSubMessage(channel, message, callback));
+    public void send(HyggChannel channel, String message, Runnable callback) {
+        this.sender.messages.add(new HyggPubSubMessage(channel.toString(), message, callback));
     }
 
     /**
@@ -104,7 +107,7 @@ public class HyggPubSub extends JedisPubSub {
      * @param channel Channel that will be used to send message
      * @param message Message to send
      */
-    public void send(String channel, String message) {
+    public void send(HyggChannel channel, String message) {
         this.send(channel, message, null);
     }
 
@@ -114,16 +117,13 @@ public class HyggPubSub extends JedisPubSub {
      * @param channel The given channel
      * @param receiver The receiver to subscribe
      */
-    public void subscribe(String channel, IHyggReceiver receiver) {
-        final Set<IHyggReceiver> receivers = this.receivers.get(channel) != null ? this.receivers.get(channel) : ConcurrentHashMap.newKeySet();
+    public void subscribe(HyggChannel channel, IHyggReceiver receiver) {
+        final String channelStr = channel.toString();
+        final Set<IHyggReceiver> receivers = this.receivers.get(channelStr) != null ? this.receivers.get(channelStr) : ConcurrentHashMap.newKeySet();
 
         receivers.add(receiver);
 
-        this.receivers.put(channel, receivers);
-
-        if (this.isSubscribed()) {
-            this.unsubscribe();
-        }
+        this.receivers.put(channelStr, receivers);
     }
 
     /**
@@ -132,15 +132,14 @@ public class HyggPubSub extends JedisPubSub {
      * @param channel The given channel
      * @param receiver the receiver to unsubscribe
      */
-    public void unsubscribe(String channel, IHyggReceiver receiver) {
-        final Set<IHyggReceiver> receivers = this.receivers.get(channel) != null ? this.receivers.get(channel) : ConcurrentHashMap.newKeySet();
+    public void unsubscribe(HyggChannel channel, IHyggReceiver receiver) {
+        final String channelStr = channel.toString();
+        final Set<IHyggReceiver> receivers = this.receivers.get(channelStr);
 
-        receivers.remove(receiver);
+        if (receivers != null && receivers.contains(receiver)) {
+            receivers.remove(receiver);
 
-        this.receivers.put(channel, receivers);
-
-        if (this.isSubscribed()) {
-            this.unsubscribe();
+            this.receivers.put(channelStr, receivers);
         }
     }
 

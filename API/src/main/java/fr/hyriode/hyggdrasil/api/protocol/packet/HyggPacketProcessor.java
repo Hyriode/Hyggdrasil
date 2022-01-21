@@ -19,6 +19,8 @@ import java.util.Map;
  */
 public class HyggPacketProcessor {
 
+    private static final char MESSAGE_SEPARATOR = '.';
+
     /** {@link IHyggReceiver} of each {@link IHyggPacketReceiver} */
     private final Map<IHyggPacketReceiver, IHyggReceiver> packetReceivers;
 
@@ -75,7 +77,7 @@ public class HyggPacketProcessor {
             };
 
             this.packetReceivers.put(packetReceiver, receiver);
-            this.hyggdrasilAPI.getPubSub().subscribe(channel.toString(), receiver);
+            this.hyggdrasilAPI.getPubSub().subscribe(channel, receiver);
         }
     }
 
@@ -85,7 +87,7 @@ public class HyggPacketProcessor {
      * @param channel Concerned channel
      * @param packetReceiver {@link IHyggPacketReceiver} to unregister
      */
-    public void unregisterReceiver(String channel, IHyggPacketReceiver packetReceiver) {
+    public void unregisterReceiver(HyggChannel channel, IHyggPacketReceiver packetReceiver) {
         this.hyggdrasilAPI.getPubSub().unsubscribe(channel, this.packetReceivers.remove(packetReceiver));
     }
 

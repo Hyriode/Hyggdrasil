@@ -1,5 +1,6 @@
 package fr.hyriode.hyggdrasil.redis;
 
+import fr.hyriode.hyggdrasil.api.protocol.env.HyggRedisCredentials;
 import fr.hyriode.hyggdrasil.configuration.nested.RedisConfiguration;
 import fr.hyriode.hyggdrasil.util.References;
 import redis.clients.jedis.Jedis;
@@ -19,26 +20,26 @@ public class HyggRedis {
 
     private boolean connected;
 
-    private final String redisHost;
-    private final int redisPort;
-    private final String redisPass;
+    private final HyggRedisCredentials credentials;
 
     public HyggRedis(RedisConfiguration configuration) {
-        this.redisHost = configuration.getHostName();
-        this.redisPort = configuration.getPort();
-        this.redisPass = configuration.getPassword();
+        this.credentials = new HyggRedisCredentials(configuration.getHostname(), configuration.getPort(), configuration.getPassword());
     }
 
     public boolean connect() {
+        final String hostname = this.credentials.getHostname();
+        final short port = this.credentials.getPort();
+        final String password = this.credentials.getPassword();
+        final int timeout = 2000;
         final JedisPoolConfig config = new JedisPoolConfig();
 
         config.setJmxEnabled(false);
         config.setMaxTotal(-1);
 
-        if (this.redisPass != null && !this.redisPass.isEmpty()) {
-            this.jedisPool = new JedisPool(config, this.redisHost, this.redisPort, 0, this.redisPass);
+        if (password != null && !password.isEmpty()) {
+            this.jedisPool = new JedisPool(config, hostname, port, timeout, password);
         } else {
-            this.jedisPool = new JedisPool(config, this.redisHost, this.redisPort, 0);
+            this.jedisPool = new JedisPool(config, hostname, port, timeout);
         }
 
         try {
@@ -101,6 +102,10 @@ public class HyggRedis {
         this.connected = false;
 
         this.jedisPool.close();
+    }
+
+    public HyggRedisCredentials getCredentials() {
+        return this.credentials;
     }
 
     public JedisPool getJedisPool() {

@@ -1,5 +1,7 @@
 package fr.hyriode.hyggdrasil.api.protocol;
 
+import fr.hyriode.hyggdrasil.api.HyggdrasilAPI;
+
 /**
  * Project: Hyggdrasil
  * Created by AstFaster
@@ -14,7 +16,7 @@ public enum HyggChannel {
     private final String name;
 
     HyggChannel(String name) {
-        this.name = "Hygg" + name.substring(0, 1).toUpperCase() + name.substring(1);
+        this.name = HyggdrasilAPI.PREFIX + name.substring(0, 1).toUpperCase() + name.substring(1);
     }
 
     public String getName() {

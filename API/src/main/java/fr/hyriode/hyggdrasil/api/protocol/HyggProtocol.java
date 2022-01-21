@@ -2,6 +2,7 @@ package fr.hyriode.hyggdrasil.api.protocol;
 
 import fr.hyriode.hyggdrasil.api.protocol.packet.HyggPacket;
 import fr.hyriode.hyggdrasil.api.protocol.packet.model.HyggResponsePacket;
+import fr.hyriode.hyggdrasil.api.protocol.packet.model.proxy.HyggProxyServerPacket;
 
 /**
  * Project: Hyggdrasil
@@ -10,7 +11,11 @@ import fr.hyriode.hyggdrasil.api.protocol.packet.model.HyggResponsePacket;
  */
 public enum HyggProtocol {
 
+    /** Other */
     RESPONSE_PACKET(0, HyggResponsePacket.class),
+
+    /** Proxy */
+    PROXY_ADD_SERVER_PACKET(30, HyggProxyServerPacket.class),
 
     ;
 

@@ -25,7 +25,7 @@ public class HyggPacketRequest {
     /** The number of responses to handle */
     private int maxResponses = 1;
     /** Maximum time to wait for all responses (in millis) */
-    private long responseTime = 30;
+    private long responseTime = 5000;
 
     /** {@link HyggdrasilAPI} instance */
     private final HyggdrasilAPI hyggdrasilAPI;
@@ -161,7 +161,7 @@ public class HyggPacketRequest {
     }
 
     /**
-     * Execute the request. In our case it will send the packet and manage responses
+     * Execute the request. In this case it will send the packet and manage responses
      */
     public void exec() {
         final HyggPacketProcessor packetProcessor = this.hyggdrasilAPI.getPacketProcessor();
@@ -172,10 +172,10 @@ public class HyggPacketRequest {
 
                 packetProcessor.registerReceiver(this.channel, responseReceiver);
 
-                this.hyggdrasilAPI.getScheduler().schedule(() -> responseReceiver.unregister(this.channel.toString()), this.responseTime, TimeUnit.MILLISECONDS);
+                this.hyggdrasilAPI.getScheduler().schedule(() -> responseReceiver.unregister(this.channel), this.responseTime, TimeUnit.MILLISECONDS);
             }
 
-            this.hyggdrasilAPI.getPubSub().send(this.channel.toString(), packetProcessor.encode(this.packet), this.sendingCallback);
+            this.hyggdrasilAPI.getPubSub().send(this.channel, packetProcessor.encode(this.packet), this.sendingCallback);
         } else {
             throw new HyggPacketException(null, HyggPacketException.Type.Send.INVALID_PACKET);
         }
