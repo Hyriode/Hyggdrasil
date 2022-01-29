@@ -1,17 +1,24 @@
 package fr.hyriode.hyggdrasil;
 
 import fr.hyriode.hyggdrasil.api.HyggdrasilAPI;
-import fr.hyriode.hyggdrasil.api.protocol.env.HyggApplication;
-import fr.hyriode.hyggdrasil.api.protocol.env.HyggEnvironment;
-import fr.hyriode.hyggdrasil.api.protocol.env.HyggKeys;
+import fr.hyriode.hyggdrasil.api.protocol.HyggChannel;
+import fr.hyriode.hyggdrasil.api.protocol.environment.HyggApplication;
+import fr.hyriode.hyggdrasil.api.protocol.environment.HyggEnvironment;
+import fr.hyriode.hyggdrasil.api.protocol.environment.HyggKeys;
+import fr.hyriode.hyggdrasil.api.protocol.packet.HyggPacketProcessor;
 import fr.hyriode.hyggdrasil.api.protocol.signature.HyggSignatureAlgorithm;
 import fr.hyriode.hyggdrasil.configuration.HyggConfiguration;
 import fr.hyriode.hyggdrasil.docker.Docker;
 import fr.hyriode.hyggdrasil.proxy.HyggProxyManager;
+import fr.hyriode.hyggdrasil.receiver.HyggProxiesReceiver;
+import fr.hyriode.hyggdrasil.receiver.HyggQueryReceiver;
+import fr.hyriode.hyggdrasil.receiver.HyggServersReceiver;
 import fr.hyriode.hyggdrasil.redis.HyggRedis;
 import fr.hyriode.hyggdrasil.server.HyggServerManager;
+import fr.hyriode.hyggdrasil.util.IOUtil;
 import fr.hyriode.hyggdrasil.util.References;
 import fr.hyriode.hyggdrasil.util.logger.HyggLogger;
+import fr.hyriode.hyggdrasil.common.HyggHeartbeatsCheck;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -20,6 +27,7 @@ import java.security.interfaces.RSAPrivateCrtKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.RSAPublicKeySpec;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
@@ -58,7 +66,7 @@ public class Hyggdrasil {
         }
 
         this.keys = this.loadKeys();
-        this.environment = new HyggEnvironment(new HyggApplication(HyggApplication.Type.HYDRA, "hydra"), this.redis.getCredentials(), this.keys);
+        this.environment = new HyggEnvironment(new HyggApplication(HyggApplication.Type.HYGGDRASIL, "hyggdrasil"), this.redis.getCredentials(), this.keys);
         this.api = new HyggdrasilAPI.Builder()
                 .withJedisPool(this.redis.getJedisPool())
                 .withEnvironment(this.environment)
@@ -70,34 +78,24 @@ public class Hyggdrasil {
         this.serverManager = new HyggServerManager(this);
         this.running = true;
 
-        Runtime.getRuntime().addShutdownHook(new Thread(this::shutdown));
+        new HyggHeartbeatsCheck(this);
+
+        this.registerReceivers();
 
         this.proxyManager.startProxy();
+        this.serverManager.stopServer("lobby");
 
-        this.api.getScheduler().schedule(() -> {
-            System.out.println("Starting servers...");
-
-            final String[] types = new String[] {"lobby", "bw", "rtf", "nexus", "therunner"};
-            for (int i = 0; i < 5; i++) {
-                this.serverManager.startServer(types[i]);
-            }
-        }, 15, TimeUnit.SECONDS);
+        Runtime.getRuntime().addShutdownHook(new Thread(this::shutdown));
     }
 
     private void setupLogger() {
-        try {
-            if (!Files.exists(References.LOG_FOLDER)) {
-                Files.createDirectory(References.LOG_FOLDER);
-            }
+        IOUtil.createDirectory(References.LOG_FOLDER);
 
-            logger = new HyggLogger(References.NAME, References.LOG_FILE.toString());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        logger = new HyggLogger(References.NAME, References.LOG_FILE.toString());
     }
 
     private HyggKeys loadKeys() {
-        final HyggSignatureAlgorithm algorithm = HyggSignatureAlgorithm.RS256;
+        final HyggSignatureAlgorithm algorithm = HyggdrasilAPI.ALGORITHM;
 
         PrivateKey privateKey = null;
         PublicKey publicKey = null;
@@ -116,7 +114,7 @@ public class Hyggdrasil {
 
                 System.out.println("Public key generated from the private one.");
             } catch (NoSuchAlgorithmException | InvalidKeySpecException | IOException e) {
-                System.err.println("An error occurred while reading private key file! Deleting file...");
+                Hyggdrasil.log(Level.SEVERE, "An error occurred while reading private key file! Deleting file...");
 
                 try {
                     Files.delete(References.PRIVATE_KEY_FILE);
@@ -141,15 +139,23 @@ public class Hyggdrasil {
 
                 Files.write(References.PRIVATE_KEY_FILE, privateKey.getEncoded());
             } catch (NoSuchAlgorithmException e) {
-                System.err.println("An error occurred while generating new key pair!");
+                Hyggdrasil.log(Level.SEVERE, "An error occurred while generating new key pair!");
                 e.printStackTrace();
             } catch (IOException e) {
-                System.err.println("An error occurred while writing private key in file!");
+                Hyggdrasil.log(Level.SEVERE, "An error occurred while writing private key in file!");
                 e.printStackTrace();
             }
         }
 
         return new HyggKeys(publicKey, privateKey);
+    }
+
+    private void registerReceivers() {
+        final HyggPacketProcessor processor = this.api.getPacketProcessor();
+
+        processor.registerReceiver(HyggChannel.SERVERS, new HyggServersReceiver(this));
+        processor.registerReceiver(HyggChannel.PROXIES, new HyggProxiesReceiver(this));
+        processor.registerReceiver(HyggChannel.QUERY, new HyggQueryReceiver(this));
     }
 
     public void shutdown() {
@@ -163,6 +169,10 @@ public class Hyggdrasil {
 
             System.out.println(References.NAME + " is now down. See you soon!");
         }
+    }
+
+    public List<String> createEnvsForClient(HyggApplication application) {
+        return new HyggEnvironment(application, this.environment.getRedisCredentials(), new HyggKeys(this.environment.getKeys().getPublic(), null)).createEnvironmentVariables();
     }
 
     public static void log(Level level, String message) {

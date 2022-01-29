@@ -1,4 +1,4 @@
-package fr.hyriode.hyggdrasil.api.protocol.pubsub;
+package fr.hyriode.hyggdrasil.api.pubsub;
 
 import fr.hyriode.hyggdrasil.api.HyggdrasilAPI;
 import fr.hyriode.hyggdrasil.api.protocol.HyggChannel;
@@ -7,6 +7,7 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPubSub;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -146,11 +147,12 @@ public class HyggPubSub extends JedisPubSub {
     /**
      * Called when a message is received on PubSub
      *
+     * @param pattern Pattern where the message is received
      * @param channel Channel where the message is received
      * @param message The received message
      */
     @Override
-    public void onMessage(String channel, String message) {
+    public void onPMessage(String pattern, String channel, String message) {
         final Set<IHyggReceiver> receivers = this.receivers.get(channel);
 
         if (receivers != null) {

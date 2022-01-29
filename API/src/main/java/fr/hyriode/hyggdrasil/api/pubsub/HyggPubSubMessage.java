@@ -1,4 +1,4 @@
-package fr.hyriode.hyggdrasil.api.protocol.pubsub;
+package fr.hyriode.hyggdrasil.api.pubsub;
 
 /**
  * Project: Hyggdrasil

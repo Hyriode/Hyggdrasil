@@ -23,6 +23,7 @@ public class DockerService {
     protected List<String> envs;
 
     protected final Map<String, String> labels;
+    protected List<Mount> mounts;
 
     protected int publishedPort;
     protected int targetPort;
@@ -33,6 +34,7 @@ public class DockerService {
         this.network = network;
         this.envs = new ArrayList<>();
         this.labels = new HashMap<>();
+        this.mounts = new ArrayList<>();
     }
 
 
@@ -86,6 +88,22 @@ public class DockerService {
         return this.labels;
     }
 
+    public DockerService addMount(String source, String target) {
+        return this.addMount(source, target, MountType.BIND);
+    }
+
+    public DockerService addMount(String source, String target, MountType type) {
+        this.mounts.add(new Mount()
+                .withSource(source)
+                .withTarget(target)
+                .withType(type));
+        return this;
+    }
+
+    public List<Mount> getMounts() {
+        return this.mounts;
+    }
+
     public DockerService withHostname(String hostname) {
         this.hostname = hostname;
         return this;
@@ -117,7 +135,9 @@ public class DockerService {
         final ContainerSpec containerSpec = new ContainerSpec()
                 .withImage(this.image.getName() + DockerImage.DOCKER_IMAGE_TAG_SEPARATOR + this.image.getTag())
                 .withHostname(this.hostname)
+                .withMounts(this.mounts)
                 .withEnv(this.envs);
+
 
         final EndpointSpec endpointSpec = new EndpointSpec()
                 .withMode(EndpointResolutionMode.VIP)

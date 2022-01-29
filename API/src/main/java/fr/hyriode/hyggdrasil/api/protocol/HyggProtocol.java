@@ -1,8 +1,13 @@
 package fr.hyriode.hyggdrasil.api.protocol;
 
 import fr.hyriode.hyggdrasil.api.protocol.packet.HyggPacket;
+import fr.hyriode.hyggdrasil.api.protocol.packet.model.HyggHeartbeatPacket;
 import fr.hyriode.hyggdrasil.api.protocol.packet.model.HyggResponsePacket;
-import fr.hyriode.hyggdrasil.api.protocol.packet.model.proxy.HyggProxyServerPacket;
+import fr.hyriode.hyggdrasil.api.protocol.packet.model.proxy.HyggProxyServerActionPacket;
+import fr.hyriode.hyggdrasil.api.protocol.packet.model.proxy.HyggStartProxyPacket;
+import fr.hyriode.hyggdrasil.api.protocol.packet.model.proxy.HyggStopProxyPacket;
+import fr.hyriode.hyggdrasil.api.protocol.packet.model.server.HyggStopServerPacket;
+import fr.hyriode.hyggdrasil.api.protocol.packet.model.server.HyggStartServerPacket;
 
 /**
  * Project: Hyggdrasil
@@ -11,16 +16,20 @@ import fr.hyriode.hyggdrasil.api.protocol.packet.model.proxy.HyggProxyServerPack
  */
 public enum HyggProtocol {
 
-    /** Other */
+    /** Common packets section */
     RESPONSE_PACKET(0, HyggResponsePacket.class),
+    HEARTBEAT_PACKET(1, HyggHeartbeatPacket.class),
 
-    /** Proxy */
-    PROXY_ADD_SERVER_PACKET(30, HyggProxyServerPacket.class),
+    /** Proxy packets section */
+    PROXY_START_PACKET(30, HyggStartProxyPacket.class),
+    PROXY_STOP_PACKET(31, HyggStopProxyPacket.class),
+    PROXY_SERVER_ACTION_PACKET(32, HyggProxyServerActionPacket.class),
+
+    /** Server packets section */
+    SERVER_START_PACKET(50, HyggStartServerPacket.class),
+    SERVER_STOP_PACKET(51, HyggStopServerPacket.class),
 
     ;
-
-    /** The character sued to split the packet id and the packet content */
-    public static final String CONTENT_SPLIT_CHAR = "&";
 
     /** Packet's id */
     private final int packetId;

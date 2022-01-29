@@ -1,4 +1,9 @@
-package fr.hyriode.hyggdrasil.api.protocol.env;
+package fr.hyriode.hyggdrasil.api.protocol.environment;
+
+import fr.hyriode.hyggdrasil.api.HyggdrasilAPI;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Project: Hyggdrasil
@@ -55,14 +60,29 @@ public class HyggEnvironment {
 
     /**
      * Load application information from environment variables if they are set.<br>
-     * In most cases, Hydra will automatically provide them if the application was started by it.
+     * In most cases, Hyggdrasil will automatically provide them if the application was started by it.
      *
      * @return {@link HyggRedisCredentials} object
      */
     public static HyggEnvironment loadFromEnvironmentVariables() {
-        System.out.println("Loading application environment variables...");
+        HyggdrasilAPI.log("Loading application environment variables...");
 
         return new HyggEnvironment(HyggApplication.loadFromEnvironmentVariables(), HyggRedisCredentials.loadFromEnvironmentVariables(), HyggKeys.loadFromEnvironmentVariables());
+    }
+
+    /**
+     * Create environment variables list from environment object
+     *
+     * @return A list of string
+     */
+    public List<String> createEnvironmentVariables() {
+        final List<String> variables = new ArrayList<>();
+
+        variables.addAll(this.application.createEnvironmentVariables());
+        variables.addAll(this.redisCredentials.createEnvironmentVariables());
+        variables.addAll(this.keys.createEnvironmentVariables());
+
+        return variables;
     }
 
 }

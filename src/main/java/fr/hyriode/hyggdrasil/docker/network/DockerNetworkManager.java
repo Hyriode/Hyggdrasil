@@ -3,9 +3,11 @@ package fr.hyriode.hyggdrasil.docker.network;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateNetworkResponse;
 import com.github.dockerjava.api.model.Network;
+import fr.hyriode.hyggdrasil.Hyggdrasil;
 import fr.hyriode.hyggdrasil.docker.Docker;
 
 import java.util.List;
+import java.util.logging.Level;
 
 /**
  * Project: Hyggdrasil
@@ -25,7 +27,7 @@ public class DockerNetworkManager {
 
         for (Network n : networks) {
             if (n.getName().equals(network.getName())) {
-                System.err.println("'" + network.getName() + "' network already exists ! Couldn't create it !");
+                Hyggdrasil.log(Level.SEVERE, "'" + network.getName() + "' network already exists ! Couldn't create it !");
                 return;
             }
         }

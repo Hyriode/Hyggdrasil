@@ -1,7 +1,9 @@
-package fr.hyriode.hyggdrasil.api.protocol.env;
+package fr.hyriode.hyggdrasil.api.protocol.environment;
 
 import fr.hyriode.hyggdrasil.api.HyggdrasilAPI;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Function;
 
 /**
@@ -73,18 +75,33 @@ public class HyggRedisCredentials {
 
     /**
      * Load Redis credentials from environment variables if they are set.<br>
-     * In most cases, Hydra will automatically provide them if the application was started by it.
+     * In most cases, Hyggdrasil will automatically provide them if the application was started by it.
      *
      * @return {@link HyggRedisCredentials} object
      */
     static HyggRedisCredentials loadFromEnvironmentVariables() {
-        System.out.println("Loading Redis credentials from environment variables...");
+        HyggdrasilAPI.log("Loading Redis credentials from environment variables...");
 
         final String hostname = System.getenv(HOSTNAME_ENV);
-        final short port = Short.parseShort(PORT_ENV);
+        final short port = Short.parseShort(System.getenv(PORT_ENV));
         final String password = System.getenv(PASSWORD_ENV);
 
         return new HyggRedisCredentials(hostname, port, password);
+    }
+
+    /**
+     * Create environment variables list from credentials
+     *
+     * @return A list of string
+     */
+    List<String> createEnvironmentVariables() {
+        final List<String> variables = new ArrayList<>();
+
+        variables.add(HOSTNAME_ENV + "=" + this.hostname);
+        variables.add(PORT_ENV + "=" + this.port);
+        variables.add(PASSWORD_ENV + "=" + this.password);
+
+        return variables;
     }
 
 }

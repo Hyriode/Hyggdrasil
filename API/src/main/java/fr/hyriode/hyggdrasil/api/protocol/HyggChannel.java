@@ -1,6 +1,7 @@
 package fr.hyriode.hyggdrasil.api.protocol;
 
 import fr.hyriode.hyggdrasil.api.HyggdrasilAPI;
+import fr.hyriode.hyggdrasil.api.protocol.environment.HyggApplication;
 
 /**
  * Project: Hyggdrasil
@@ -9,16 +10,47 @@ import fr.hyriode.hyggdrasil.api.HyggdrasilAPI;
  */
 public enum HyggChannel {
 
+    /** The channel used to send queries to Hyggdrasil */
     QUERY("query"),
+    /** The channel used by servers to send information to Hyggdrasil */
     SERVERS("servers"),
+    /** The channel used by proxies to send information to Hyggdrasil */
     PROXIES("proxies");
 
+    /** The name of the channel */
     private final String name;
 
+    /**
+     * Constructor of {@link HyggChannel}
+     *
+     * @param name The name of the channel
+     */
     HyggChannel(String name) {
         this.name = HyggdrasilAPI.PREFIX + name.substring(0, 1).toUpperCase() + name.substring(1);
     }
 
+    /**
+     * Get the appropriate channel for an application
+     *
+     * @param application The concerned application
+     * @return A {@link HyggChannel}
+     */
+    public static HyggChannel getForApplication(HyggApplication application) {
+        switch (application.getType()) {
+            case SERVER:
+                return SERVERS;
+            case PROXY:
+                return PROXIES;
+            default:
+                return null;
+        }
+    }
+
+    /**
+     * Get the name of the channel
+     *
+     * @return A name
+     */
     public String getName() {
         return this.name;
     }

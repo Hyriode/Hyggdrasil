@@ -1,11 +1,14 @@
 package fr.hyriode.hyggdrasil.redis;
 
-import fr.hyriode.hyggdrasil.api.protocol.env.HyggRedisCredentials;
+import fr.hyriode.hyggdrasil.Hyggdrasil;
+import fr.hyriode.hyggdrasil.api.protocol.environment.HyggRedisCredentials;
 import fr.hyriode.hyggdrasil.configuration.nested.RedisConfiguration;
 import fr.hyriode.hyggdrasil.util.References;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
+
+import java.util.logging.Level;
 
 /**
  * Project: Hyggdrasil
@@ -53,7 +56,7 @@ public class HyggRedis {
 
             return true;
         } catch (Exception e) {
-            System.err.println("Couldn't connect to Redis database !");
+            Hyggdrasil.log(Level.SEVERE, "Couldn't connect to Redis database !");
             return false;
         }
     }
@@ -83,8 +86,8 @@ public class HyggRedis {
         try {
             this.getJedis().close();
         } catch (Exception e) {
-            System.err.println("Encountered exception in Redis reconnection task. Error:" + e.getMessage());
-            System.err.println("Error in Redis database connection ! Trying to reconnect...");
+            Hyggdrasil.log(Level.SEVERE, "Encountered exception in Redis reconnection task. Error:" + e.getMessage());
+            Hyggdrasil.log(Level.SEVERE, "Error in Redis database connection ! Trying to reconnect...");
 
             this.connected = false;
 

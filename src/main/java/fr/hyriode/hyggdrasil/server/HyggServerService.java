@@ -25,6 +25,10 @@ public class HyggServerService extends DockerService {
         this.addEnv("ONLINE_MODE", "FALSE");
         this.addEnv("ENABLE_RCON", "FALSE");
         this.addEnv("EULA", "TRUE");
+
+        final String serverFolder = References.DATA_HOST_FOLDER + "/servers/" + server.getName();
+
+        this.addMount(serverFolder + "", "/data");
     }
 
 }

@@ -1,7 +1,6 @@
-package fr.hyriode.hyggdrasil.api.protocol.env;
+package fr.hyriode.hyggdrasil.api.protocol.environment;
 
 import fr.hyriode.hyggdrasil.api.HyggdrasilAPI;
-import fr.hyriode.hyggdrasil.api.protocol.signature.HyggSignatureAlgorithm;
 
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
@@ -9,8 +8,11 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
+import java.util.ArrayList;
 import java.util.Base64;
+import java.util.List;
 import java.util.function.Function;
+import java.util.logging.Level;
 
 /**
  * Project: Hyggdrasil
@@ -60,21 +62,34 @@ public class HyggKeys {
 
     /**
      * Load keys from environment variables if they are set.<br>
-     * In most cases, Hydra will automatically provide them if the application was started by it.
+     * In most cases, Hyggdrasil will automatically provide them if the application was started by it.
      *
      * @return {@link HyggApplication} object
      */
     static HyggKeys loadFromEnvironmentVariables() {
-        System.out.println("Loading keys from environment variables...");
-        System.out.println("Reading public key...");
+        HyggdrasilAPI.log("Loading keys from environment variables...");
+        HyggdrasilAPI.log("Reading public key...");
 
         try {
-            return new HyggKeys( KeyFactory.getInstance(HyggSignatureAlgorithm.RS256.getFamilyName()).generatePublic(new X509EncodedKeySpec(Base64.getDecoder().decode(System.getenv(PUBLIC_KEY_ENV)))), null);
+            return new HyggKeys(KeyFactory.getInstance(HyggdrasilAPI.ALGORITHM.getFamilyName()).generatePublic(new X509EncodedKeySpec(Base64.getDecoder().decode(System.getenv(PUBLIC_KEY_ENV)))), null);
         } catch (InvalidKeySpecException | NoSuchAlgorithmException e) {
-            System.err.println("Failed to read public key!");
+            HyggdrasilAPI.log(Level.SEVERE, "Failed to read public key!");
             e.printStackTrace();
             return null;
         }
+    }
+
+    /**
+     * Create environment variables list from keys
+     *
+     * @return A list of string
+     */
+    List<String> createEnvironmentVariables() {
+        final List<String> variables = new ArrayList<>();
+
+        variables.add(PUBLIC_KEY_ENV + "=" + Base64.getEncoder().encodeToString(this.publicKey.getEncoded()));
+
+        return variables;
     }
 
 }

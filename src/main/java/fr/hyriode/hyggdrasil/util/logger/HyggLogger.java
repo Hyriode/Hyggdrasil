@@ -37,7 +37,7 @@ public class HyggLogger extends Logger {
             this.addHandler(consoleHandler);
 
         } catch (IOException e) {
-            System.err.println("Couldn't register logger !");
+            System.err.println("Couldn't register logger!");
             System.exit(-1);
         }
 

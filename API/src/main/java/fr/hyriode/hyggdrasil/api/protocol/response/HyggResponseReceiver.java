@@ -3,7 +3,8 @@ package fr.hyriode.hyggdrasil.api.protocol.response;
 import fr.hyriode.hyggdrasil.api.HyggdrasilAPI;
 import fr.hyriode.hyggdrasil.api.protocol.HyggChannel;
 import fr.hyriode.hyggdrasil.api.protocol.packet.HyggPacket;
-import fr.hyriode.hyggdrasil.api.protocol.packet.HyggPacketRequest;
+import fr.hyriode.hyggdrasil.api.protocol.packet.request.HyggPacketHeader;
+import fr.hyriode.hyggdrasil.api.protocol.packet.request.HyggPacketRequest;
 import fr.hyriode.hyggdrasil.api.protocol.packet.model.HyggResponsePacket;
 import fr.hyriode.hyggdrasil.api.protocol.receiver.IHyggPacketReceiver;
 
@@ -33,7 +34,7 @@ public class HyggResponseReceiver implements IHyggPacketReceiver {
     }
 
     @Override
-    public HyggResponse receive(String channel, HyggPacket packet) {
+    public HyggResponse receive(String channel, HyggPacket packet, HyggPacketHeader packetHeader) {
         if (packet instanceof HyggResponsePacket) {
             final HyggResponsePacket responsePacket = (HyggResponsePacket) packet;
 

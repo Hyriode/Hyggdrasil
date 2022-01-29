@@ -4,11 +4,13 @@ import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.BuildImageResultCallback;
 import com.github.dockerjava.api.command.PullImageResultCallback;
 import com.github.dockerjava.api.model.Image;
+import fr.hyriode.hyggdrasil.Hyggdrasil;
 import fr.hyriode.hyggdrasil.docker.Docker;
 
 import java.io.Closeable;
 import java.io.File;
 import java.util.List;
+import java.util.logging.Level;
 
 public class DockerImageManager {
 
@@ -36,7 +38,7 @@ public class DockerImageManager {
 
             this.dockerClient.pullImageCmd(image.getName()).withTag(image.getTag()).exec(callback).awaitCompletion();
         } catch (InterruptedException e) {
-            System.err.println("Couldn't pulled '" + image.getName() + "' image with '" + image.getTag() + "' tag !");
+            Hyggdrasil.log(Level.SEVERE, "Couldn't pulled '" + image.getName() + "' image with '" + image.getTag() + "' tag !");
         }
     }
 
@@ -51,7 +53,7 @@ public class DockerImageManager {
 
             this.dockerClient.buildImageCmd(dockerFile).exec(callback).awaitCompletion();
         } catch (InterruptedException e) {
-            System.err.println("Couldn't build an image from '" + dockerFile.getName() + " docker file !");
+            Hyggdrasil.log(Level.SEVERE, "Couldn't build an image from '" + dockerFile.getName() + " docker file !");
         }
     }
 

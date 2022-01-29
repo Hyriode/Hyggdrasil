@@ -1,5 +1,7 @@
 package fr.hyriode.hyggdrasil.api.protocol.packet;
 
+import fr.hyriode.hyggdrasil.api.HyggException;
+
 import java.util.function.Function;
 
 /**
@@ -7,7 +9,7 @@ import java.util.function.Function;
  * Created by AstFaster
  * on 25/12/2021 at 10:48
  */
-public class HyggPacketException extends RuntimeException {
+public class HyggPacketException extends HyggException {
 
     /**
      * Constructor of {@link }
@@ -42,26 +44,16 @@ public class HyggPacketException extends RuntimeException {
         /**
          * The class with all the types that can be used when a packet is received
          */
-        public enum Received implements IType<Integer> {
+        public static class Received {
 
-            INVALID_CLASS(id -> "Cannot find the class of the received packet from its id. ID: " + id + ".");
-
-            /** A function that return a message from a {@link HyggPacket} */
-            private final Function<Integer, String> errorMessage;
-
-            /**
-             * Constructor of {@link Received} type
-             *
-             * @param errorMessage The function
-             */
-            Received(Function<Integer, String> errorMessage) {
-                this.errorMessage = errorMessage;
-            }
-
-            @Override
-            public String getErrorMessage(Integer id) {
-                return this.errorMessage.apply(id);
-            }
+            /** The class of the packet cannot be found from its id */
+            public static final IType<Integer> INVALID_CLASS = id -> "Cannot find the class of the received packet from its id. ID: " + id + ".";
+            /** The header of the received packet is invalid */
+            public static final IType<String> INVALID_HEADER = header -> "Received an invalid header for a message! Header received: " + header + ".";
+            /** The received message is not in the good format: xxxx.yyyy.zzzz or xxxx.yyyy.zzzz */
+            public static final IType<String> INVALID_FORMAT = message -> "Received an invalid message! Message: " + message + ".";
+            /** The received message has an invalid signature */
+            public static final IType<String> INVALID_SIGNATURE = signature -> "Received a message with an invalid signature! Signature: " + signature + ".";
 
         }
 

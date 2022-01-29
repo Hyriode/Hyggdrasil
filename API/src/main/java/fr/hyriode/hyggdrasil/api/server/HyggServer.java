@@ -24,6 +24,8 @@ public class HyggServer {
 
     /** Server's started time (timestamp) */
     protected final long startedTime;
+    /** The last time that the server send a heartbeat */
+    protected long lastHeartbeat = -1;
 
     /**
      * Constructor of {@link HyggServer}
@@ -108,6 +110,25 @@ public class HyggServer {
      */
     public long getStartedTime() {
         return this.startedTime;
+    }
+
+    /**
+     * Set the last heartbeat of the server
+     */
+    public void heartbeat() {
+        if (this.state == HyggServerState.CREATING) {
+            this.state = HyggServerState.STARTING;
+        }
+        this.lastHeartbeat = System.currentTimeMillis();
+    }
+
+    /**
+     * Get the last heartbeat of the server
+     *
+     * @return A timestamp
+     */
+    public long getLastHeartbeat() {
+        return this.lastHeartbeat;
     }
 
 }

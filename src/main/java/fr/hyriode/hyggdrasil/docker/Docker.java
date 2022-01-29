@@ -36,7 +36,6 @@ public class Docker {
         this.swarm = new DockerSwarm(this);
 
         System.out.println(References.NAME + " is now connected to Docker (url: " + url + ").");
-
     }
 
     public DockerClientConfig getConfig() {

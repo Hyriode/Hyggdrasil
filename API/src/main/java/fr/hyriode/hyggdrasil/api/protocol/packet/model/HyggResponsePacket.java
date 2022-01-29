@@ -12,18 +12,36 @@ import java.util.UUID;
  */
 public class HyggResponsePacket extends HyggPacket {
 
+    /** The unique id of the responded packet */
     private final UUID respondedPacketUniqueId;
+    /** The response to send */
     private final HyggResponse response;
 
+    /**
+     * Constructor of {@link HyggResponsePacket}
+     *
+     * @param respondedPacketUniqueId A packet {@link UUID}
+     * @param response The response as an object
+     */
     public HyggResponsePacket(UUID respondedPacketUniqueId, HyggResponse response) {
         this.respondedPacketUniqueId = respondedPacketUniqueId;
         this.response = response;
     }
 
+    /**
+     * Get the unique id of the packet to respond
+     *
+     * @return An {@link UUID}
+     */
     public UUID getRespondedPacketUniqueId() {
         return this.respondedPacketUniqueId;
     }
 
+    /**
+     * Get the response to send
+     *
+     * @return A {@link HyggResponse} object
+     */
     public HyggResponse getResponse() {
         return this.response;
     }

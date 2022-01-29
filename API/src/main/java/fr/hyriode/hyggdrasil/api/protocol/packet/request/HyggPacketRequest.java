@@ -1,7 +1,10 @@
-package fr.hyriode.hyggdrasil.api.protocol.packet;
+package fr.hyriode.hyggdrasil.api.protocol.packet.request;
 
 import fr.hyriode.hyggdrasil.api.HyggdrasilAPI;
 import fr.hyriode.hyggdrasil.api.protocol.HyggChannel;
+import fr.hyriode.hyggdrasil.api.protocol.packet.HyggPacket;
+import fr.hyriode.hyggdrasil.api.protocol.packet.HyggPacketException;
+import fr.hyriode.hyggdrasil.api.protocol.packet.HyggPacketProcessor;
 import fr.hyriode.hyggdrasil.api.protocol.response.HyggResponseCallback;
 import fr.hyriode.hyggdrasil.api.protocol.response.HyggResponseReceiver;
 
@@ -22,6 +25,8 @@ public class HyggPacketRequest {
     private Runnable sendingCallback;
     /** The callback to fire when a response to the packet is received */
     private HyggResponseCallback responseCallback;
+    /** The callback to fire when no responses were received */
+    private Runnable responseTimeEndCallback;
     /** The number of responses to handle */
     private int maxResponses = 1;
     /** Maximum time to wait for all responses (in millis) */
@@ -120,11 +125,31 @@ public class HyggPacketRequest {
     }
 
     /**
+     * Set the request's response time end callback.<br>
+     * This callback will be fired
+     *
+     * @param responseTimeEndCallback The callback
+     * @return {@link HyggPacketRequest}
+     */
+    public HyggPacketRequest withResponseTimeEndCallback(Runnable responseTimeEndCallback) {
+        this.responseTimeEndCallback = responseTimeEndCallback;
+        return this;
+    }
+
+    /**
+     * Get request's response time end callback
+     *
+     * @return A {@link Runnable}
+     */
+    public Runnable getResponseTimeEndCallback() {
+        return this.responseTimeEndCallback;
+    }
+
+    /**
      * Set the maximum of responses
      *
      * @param maxResponses New maximum of responses
-     * @return {@link HyggPacketRequest
-     * }
+     * @return {@link HyggPacketRequest}
      */
     public HyggPacketRequest withMaxResponses(int maxResponses) {
         this.maxResponses = maxResponses;
@@ -164,6 +189,7 @@ public class HyggPacketRequest {
      * Execute the request. In this case it will send the packet and manage responses
      */
     public void exec() {
+        final int initialMaxResponses = this.maxResponses;
         final HyggPacketProcessor packetProcessor = this.hyggdrasilAPI.getPacketProcessor();
 
         if (this.packet != null) {
@@ -172,7 +198,13 @@ public class HyggPacketRequest {
 
                 packetProcessor.registerReceiver(this.channel, responseReceiver);
 
-                this.hyggdrasilAPI.getScheduler().schedule(() -> responseReceiver.unregister(this.channel), this.responseTime, TimeUnit.MILLISECONDS);
+                this.hyggdrasilAPI.getScheduler().schedule(() -> {
+                    responseReceiver.unregister(this.channel);
+
+                    if (this.maxResponses == initialMaxResponses) {
+                        this.responseTimeEndCallback.run();
+                    }
+                }, this.responseTime, TimeUnit.MILLISECONDS);
             }
 
             this.hyggdrasilAPI.getPubSub().send(this.channel, packetProcessor.encode(this.packet), this.sendingCallback);

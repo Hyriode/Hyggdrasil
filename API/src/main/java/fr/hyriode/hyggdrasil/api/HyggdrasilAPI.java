@@ -1,9 +1,12 @@
 package fr.hyriode.hyggdrasil.api;
 
 import com.google.gson.Gson;
-import fr.hyriode.hyggdrasil.api.protocol.env.HyggEnvironment;
+import fr.hyriode.hyggdrasil.api.protocol.environment.HyggApplication;
+import fr.hyriode.hyggdrasil.api.protocol.environment.HyggEnvironment;
+import fr.hyriode.hyggdrasil.api.protocol.heartbeat.HyggHeartbeatTask;
 import fr.hyriode.hyggdrasil.api.protocol.packet.HyggPacketProcessor;
-import fr.hyriode.hyggdrasil.api.protocol.pubsub.HyggPubSub;
+import fr.hyriode.hyggdrasil.api.protocol.signature.HyggSignatureAlgorithm;
+import fr.hyriode.hyggdrasil.api.pubsub.HyggPubSub;
 import fr.hyriode.hyggdrasil.api.scheduler.HyggScheduler;
 import fr.hyriode.hyggdrasil.api.util.builder.BuildException;
 import fr.hyriode.hyggdrasil.api.util.builder.BuilderEntry;
@@ -22,10 +25,19 @@ import java.util.logging.Logger;
  */
 public class HyggdrasilAPI {
 
+
+    /** Application's name constant */
+    public static final String NAME = "Hyggdrasil";
     /** APIs name constant */
-    public static final String NAME = "HyggdrasilAPI";
+    public static final String API_NAME = NAME + "API";
     /** APIs prefix constant. This is used for channels or to print information */
     public static final String PREFIX = "Hygg";
+    /** The algorithm used to sign/verify messages or create keys */
+    public static final HyggSignatureAlgorithm ALGORITHM = HyggSignatureAlgorithm.RS256;
+    /** The maximum of time to wait before timing out an application */
+    public static final int TIMED_OUT_TIME = 3 * 10000;
+    /** The time before sending a heartbeat */
+    public static final int HEARTBEAT_TIME = 10000;
     /** {@link Gson} instance */
     public static final Gson GSON = new Gson();
 
@@ -33,10 +45,12 @@ public class HyggdrasilAPI {
     private static Logger logger;
     /** {@link JedisPool} object */
     private final JedisPool jedisPool;
-    /** The running application environment */
-    private HyggEnvironment environment;
     /** The supplier of the running application environment */
     private final Supplier<HyggEnvironment> environmentSupplier;
+    /** The running application environment */
+    private HyggEnvironment environment;
+    /** The task that handles heartbeats with Hyggdrasil */
+    private HyggHeartbeatTask heartbeatTask;
     /** The Hyggdrasil scheduler instance */
     private final HyggScheduler scheduler;
     /** The Hyggdrasil PubSub instance */
@@ -46,7 +60,7 @@ public class HyggdrasilAPI {
 
     /**
      * Constructor of {@link HyggdrasilAPI}
-     *  @param logger APIs logger
+     * @param logger APIs logger
      * @param jedisPool {@link JedisPool} used for all Redis actions
      * @param environmentSupplier The supplier of the running application environment
      */
@@ -63,17 +77,21 @@ public class HyggdrasilAPI {
      * Start {@link HyggdrasilAPI}
      */
     public void start() {
-        log("Starting " + NAME + "...");
+        log("Starting " + API_NAME + "...");
 
         this.pubSub.start();
         this.environment = this.environmentSupplier.get();
+
+        if (this.environment.getApplication().getType() != HyggApplication.Type.HYGGDRASIL) {
+            this.heartbeatTask = new HyggHeartbeatTask(this);
+        }
     }
 
     /**
      * Stop {@link HyggdrasilAPI}
      */
     public void stop(String reason) {
-        log("Stopping " + NAME + (reason != null ? " (reason: " + reason + ")" : "") + "...");
+        log("Stopping " + API_NAME + (reason != null ? " (reason: " + reason + ")" : "") + "...");
 
         this.pubSub.stop();
         this.scheduler.stop();
@@ -93,7 +111,15 @@ public class HyggdrasilAPI {
      * @param message Message to print
      */
     public static void log(Level level, String message) {
-        logger.log(level, message);
+        if (logger != null) {
+            logger.log(level, message);
+        } else {
+            if (level == Level.SEVERE) {
+                System.err.println(message);
+            } else {
+                System.out.println(message);
+            }
+        }
     }
 
     /**
@@ -133,6 +159,18 @@ public class HyggdrasilAPI {
     }
 
     /**
+     * Get the heartbeat task instance
+     *
+     * @return The {@link HyggHeartbeatTask} instance
+     */
+    public HyggHeartbeatTask getHeartbeatTask() {
+        if (this.heartbeatTask != null) {
+            return this.heartbeatTask;
+        }
+        throw new HyggException("Cannot get the heartbeat task instance if you are not a client that can handle the heartbeat protocol!");
+    }
+
+    /**
      * Get Hyggdrasil scheduler instance
      *
      * @return {@link HyggScheduler} instance
@@ -158,6 +196,15 @@ public class HyggdrasilAPI {
      */
     public HyggPacketProcessor getPacketProcessor() {
         return this.packetProcessor;
+    }
+
+    /**
+     * Check if the API is only accepting packets signed by Hyggdrasil
+     *
+     * @return <code>true</code> if yes
+     */
+    public boolean onlyAcceptingHyggdrasilPackets() {
+        return this.environment.getKeys().getPrivate() == null;
     }
 
     /**

@@ -1,5 +1,7 @@
 package fr.hyriode.hyggdrasil.api.protocol.packet;
 
+import fr.hyriode.hyggdrasil.api.HyggdrasilAPI;
+
 import java.util.UUID;
 
 /**
@@ -26,6 +28,15 @@ public abstract class HyggPacket {
      */
     public UUID getUniqueId() {
         return this.uniqueId;
+    }
+
+    /**
+     * This method transforms this Java object in a Json format
+     *
+     * @return A json of the packet
+     */
+    public String asJson() {
+        return HyggdrasilAPI.GSON.toJson(this);
     }
 
 }

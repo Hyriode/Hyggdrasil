@@ -1,7 +1,9 @@
-package fr.hyriode.hyggdrasil.api.protocol.env;
+package fr.hyriode.hyggdrasil.api.protocol.environment;
 
 import fr.hyriode.hyggdrasil.api.HyggdrasilAPI;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Function;
 
 /**
@@ -16,22 +18,22 @@ public class HyggApplication {
     /** The type environment variable key */
     public static final String TYPE_ENV = ENV.apply("type");
     /** The identifier environment variable key */
-    public static final String ID_ENV = ENV.apply("id");
+    public static final String NAME_ENV = ENV.apply("name");
 
     /** The application {@link Type} */
     private final Type type;
-    /** The identifier of the application. Ex: server-14sv8df */
-    private final String id;
+    /** The name of the application. Ex: server-14sv8df */
+    private final String name;
 
     /**
      * Constructor of {@link HyggApplication}
      *
      * @param type The type of the application
-     * @param id The identifier of the application
+     * @param name The name of the application
      */
-    public HyggApplication(Type type, String id) {
+    public HyggApplication(Type type, String name) {
         this.type = type;
-        this.id = id;
+        this.name = name;
     }
 
     /**
@@ -44,28 +46,42 @@ public class HyggApplication {
     }
 
     /**
-     * Get the application identifier.<br>
+     * Get the application name.<br>
      * Example: proxy-vfd12w
      *
-     * @return An identifier
+     * @return A name
      */
-    public String getId() {
-        return this.id;
+    public String getName() {
+        return this.name;
     }
 
     /**
      * Load application information from environment variables if they are set.<br>
-     * In most cases, Hydra will automatically provide them if the application was started by it.
+     * In most cases, Hyggdrasil will automatically provide them if the application was started by it.
      *
      * @return {@link HyggApplication} object
      */
     static HyggApplication loadFromEnvironmentVariables() {
-        System.out.println("Loading application information from environment variables...");
+        HyggdrasilAPI.log("Loading application information from environment variables...");
 
         final Type type = Type.valueOf(System.getenv(TYPE_ENV));
-        final String id = System.getenv(ID_ENV);
+        final String id = System.getenv(NAME_ENV);
 
         return new HyggApplication(type, id);
+    }
+
+    /**
+     * Create environment variables list from the application object
+     *
+     * @return A list of string
+     */
+    List<String> createEnvironmentVariables() {
+        final List<String> variables = new ArrayList<>();
+
+        variables.add(TYPE_ENV + "=" + this.type);
+        variables.add(NAME_ENV + "=" + this.name);
+
+        return variables;
     }
 
     /**
@@ -73,14 +89,12 @@ public class HyggApplication {
      */
     public enum Type {
 
-        /** The running application is Hydra */
-        HYDRA,
+        /** The running application is Hyggdrasil */
+        HYGGDRASIL,
         /** The running application is a Minecraft server */
         SERVER,
         /** The running application is a Minecraft proxy: a BungeeCord, a Waterfall etc */
         PROXY,
-        /** The running application is not official or not declared */
-        OTHER
 
     }
 
