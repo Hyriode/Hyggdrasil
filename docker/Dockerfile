@@ -20,9 +20,8 @@ WORKDIR /usr/app/
 
 # Get all environments variables
 ENV MEMORY="1G" \
-    STACK_NAME="" \
-    REDIS_HOST="127.0.0.1" REDIS_PORT=6379 REDIS_PASS="" \
-    NETWORK_NAME=""
+    STACK_NAME="" NETWORK_NAME="" \
+    REDIS_HOST="127.0.0.1" REDIS_PORT=6379 REDIS_PASS=""
 
 # Copy previous builded Jar
 COPY --from=build /usr/app/build/libs/Hyggdrasil-all.jar /usr/app/Hyggdrasil.jar

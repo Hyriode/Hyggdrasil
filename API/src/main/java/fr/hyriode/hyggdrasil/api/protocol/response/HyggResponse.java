@@ -1,26 +1,28 @@
 package fr.hyriode.hyggdrasil.api.protocol.response;
 
+import fr.hyriode.hyggdrasil.api.protocol.response.content.HyggResponseContent;
+
 /**
  * Project: Hyggdrasil
  * Created by AstFaster
  * on 25/12/2021 at 12:48
  */
-public class HyggResponse {
+public class HyggResponse implements IHyggResponse {
 
     /** Response's type */
     private Type type;
-    /** Response's message */
-    private String message;
+    /** Response's custom content */
+    private HyggResponseContent content;
 
     /**
      * Constructor of {@link HyggResponse}
      *
      * @param type Response's type
-     * @param message Response's message
+     * @param content Response's content
      */
-    public HyggResponse(Type type, String message) {
+    public HyggResponse(Type type, HyggResponseContent content) {
         this.type = type;
-        this.message = message;
+        this.content = content;
     }
 
     /**
@@ -35,7 +37,7 @@ public class HyggResponse {
     /**
      * Get the response's type
      *
-     * @return {@link Type}
+     * @return A {@link Type}
      */
     public Type getType() {
         return this.type;
@@ -53,26 +55,26 @@ public class HyggResponse {
     }
 
     /**
-     * Get the response's message
+     * Get the response's custom content
      *
-     * @return The message
+     * @return A {@link HyggResponseContent}
      */
-    public String getMessage() {
-        return this.message;
+    public HyggResponseContent getContent() {
+        return this.content;
     }
 
     /**
-     * Set the response's message
+     * Set the custom response's content
      *
-     * @param message New response's message
+     * @param content A {@link HyggResponseContent}
      * @return {@link HyggResponse}
      */
-    public HyggResponse withMessage(String message) {
-        this.message = message;
+    public HyggResponse withContent(HyggResponseContent content) {
+        this.content = content;
         return this;
     }
 
-    public enum Type {
+    public enum Type implements IHyggResponse {
 
         /** No response to send back */
         NONE,

@@ -1,4 +1,4 @@
-package fr.hyriode.hyggdrasil.api.protocol.packet.request;
+package fr.hyriode.hyggdrasil.api.protocol.request;
 
 import fr.hyriode.hyggdrasil.api.HyggdrasilAPI;
 import fr.hyriode.hyggdrasil.api.protocol.environment.HyggApplication;
@@ -8,22 +8,25 @@ import fr.hyriode.hyggdrasil.api.protocol.environment.HyggApplication;
  * Created by AstFaster
  * on 21/01/2022 at 22:27
  */
-public class HyggPacketHeader {
+public class HyggRequestHeader {
 
     /** The sender of the packet */
     private final HyggApplication sender;
     /** The identifier of the packet. All packets in are in {@link fr.hyriode.hyggdrasil.api.protocol.HyggProtocol} */
     private final int packetId;
+    /** The time when the request was issued */
+    private final long issuedAt;
 
     /**
-     * Constructor of {@link HyggPacketHeader}
-     *
-     * @param sender The sender
+     * Constructor of {@link HyggRequestHeader}
+     *  @param sender The sender
      * @param packetId The packet's id
+     * @param issuedAt The request's issued at time
      */
-    public HyggPacketHeader(HyggApplication sender, int packetId) {
+    public HyggRequestHeader(HyggApplication sender, int packetId, long issuedAt) {
         this.sender = sender;
         this.packetId = packetId;
+        this.issuedAt = issuedAt;
     }
 
     /**
@@ -43,6 +46,16 @@ public class HyggPacketHeader {
      */
     public int getPacketId() {
         return this.packetId;
+    }
+
+    /**
+     * Get the time when the request was issued.<br>
+     * The time is a timestamp in milliseconds
+     *
+     * @return A timestamp
+     */
+    public long getIssuedAt() {
+        return this.issuedAt;
     }
 
     /**

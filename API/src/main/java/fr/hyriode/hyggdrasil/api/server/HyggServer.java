@@ -31,13 +31,42 @@ public class HyggServer {
      * Constructor of {@link HyggServer}
      *
      * @param type Server's type (for example: lobby, nexus, etc.)
+     * @param options Server's options (pvp, nether, etc.)
      */
-    public HyggServer(String type) {
+    public HyggServer(String type, HyggServerOptions options) {
         this.name = type + "-" + UUID.randomUUID().toString().substring(0, 5);
         this.type = type;
         this.state = HyggServerState.CREATING;
-        this.options = new HyggServerOptions();
+        this.options = options;
         this.startedTime = System.currentTimeMillis();
+    }
+
+    /**
+     * Full constructor of {@link HyggServer}
+     *
+     * @param name The name of the server
+     * @param state The current state of the server
+     * @param players The current amount of players on the server
+     * @param startedTime The time when the server started
+     * @param options Server's options (pvp, nether, etc.)
+     */
+    public HyggServer(String name, HyggServerState state, int players, long startedTime, HyggServerOptions options) {
+        this.name = name;
+        this.type = getTypeFromName(name);
+        this.state = state;
+        this.options = options;
+        this.players = players;
+        this.startedTime = startedTime;
+    }
+
+    /**
+     * Get the server type from its name
+     *
+     * @param serverName The name of the server
+     * @return The type of the provided server
+     */
+    public static String getTypeFromName(String serverName) {
+        return serverName.split("-")[0];
     }
 
     /**
@@ -114,12 +143,18 @@ public class HyggServer {
 
     /**
      * Set the last heartbeat of the server
+     *
+     * @return <code>true</code> if it's the first heartbeat of the server
      */
-    public void heartbeat() {
+    public boolean heartbeat() {
+        final long oldHeartbeat = this.lastHeartbeat;
+
         if (this.state == HyggServerState.CREATING) {
             this.state = HyggServerState.STARTING;
         }
         this.lastHeartbeat = System.currentTimeMillis();
+
+        return oldHeartbeat == -1;
     }
 
     /**
@@ -129,6 +164,11 @@ public class HyggServer {
      */
     public long getLastHeartbeat() {
         return this.lastHeartbeat;
+    }
+
+    @Override
+    public String toString() {
+        return this.name;
     }
 
 }

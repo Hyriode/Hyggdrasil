@@ -1,6 +1,6 @@
 package fr.hyriode.hyggdrasil.api.protocol.packet;
 
-import fr.hyriode.hyggdrasil.api.protocol.packet.request.HyggPacketHeader;
+import fr.hyriode.hyggdrasil.api.protocol.request.HyggRequestHeader;
 
 /**
  * Project: Hyggdrasil
@@ -10,7 +10,7 @@ import fr.hyriode.hyggdrasil.api.protocol.packet.request.HyggPacketHeader;
 public class HyggPacketDecodingResult {
 
     /** The header decoded from the message */
-    private final HyggPacketHeader packetHeader;
+    private final HyggRequestHeader packetHeader;
     /** The packet/content of the message */
     private final HyggPacket packet;
     /** <code>true</code> if the message had a valid signature. It can be <code>false</code> if the message doesn't have a signature */
@@ -23,7 +23,7 @@ public class HyggPacketDecodingResult {
      * @param packet The decoded packet
      * @param validSignature Is the signature valid
      */
-    public HyggPacketDecodingResult(HyggPacketHeader packetHeader, HyggPacket packet, boolean validSignature) {
+    public HyggPacketDecodingResult(HyggRequestHeader packetHeader, HyggPacket packet, boolean validSignature) {
         this.packetHeader = packetHeader;
         this.packet = packet;
         this.validSignature = validSignature;
@@ -33,9 +33,9 @@ public class HyggPacketDecodingResult {
      * Get the header of the packet.<br>
      * The header can be used to get the id of the packet, the sender of the packet, etc.
      *
-     * @return A {@link HyggPacketHeader} object
+     * @return A {@link HyggRequestHeader} object
      */
-    public HyggPacketHeader getPacketHeader() {
+    public HyggRequestHeader getPacketHeader() {
         return this.packetHeader;
     }
 

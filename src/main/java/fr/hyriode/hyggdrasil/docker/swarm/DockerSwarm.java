@@ -2,12 +2,12 @@ package fr.hyriode.hyggdrasil.docker.swarm;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.model.Service;
-import com.github.dockerjava.api.model.SwarmInfo;
 import com.github.dockerjava.api.model.SwarmNode;
-import com.github.dockerjava.api.model.SwarmNodeManagerStatus;
 import fr.hyriode.hyggdrasil.docker.Docker;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Project: Hyggdrasil

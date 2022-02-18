@@ -12,6 +12,8 @@ public enum HyggChannel {
 
     /** The channel used to send queries to Hyggdrasil */
     QUERY("query"),
+    /** The channel used to send/receive events */
+    EVENTS("events"),
     /** The channel used by servers to send information to Hyggdrasil */
     SERVERS("servers"),
     /** The channel used by proxies to send information to Hyggdrasil */

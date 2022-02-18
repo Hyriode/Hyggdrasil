@@ -8,7 +8,6 @@ import fr.hyriode.hyggdrasil.docker.swarm.DockerService;
 import fr.hyriode.hyggdrasil.util.PortUtil;
 import fr.hyriode.hyggdrasil.util.References;
 
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,38 +18,22 @@ import java.util.List;
  */
 public class HyggProxyService extends DockerService {
 
-    private static final DockerImage BUNGEECORD_IMAGE = new DockerImage("itzg/bungeecord", "latest");
-
     private static final int MIN_PORT = 45565;
     private static final int MAX_PORT = 65535;
 
-    private final Hyggdrasil hyggdrasil;
-    private final HyggProxy proxy;
-
     public HyggProxyService(Hyggdrasil hyggdrasil, HyggProxy proxy) {
-        super(proxy.getName(), BUNGEECORD_IMAGE, References.HYRIODE_NETWORK);
-        this.hyggdrasil = hyggdrasil;
-        this.proxy = proxy;
-
+        super(proxy.getName(), HyggProxyManager.PROXY_IMAGE, References.HYRIODE_NETWORK);
         this.hostname = proxy.getName();
         this.targetPort = 25577;
         this.publishedPort = PortUtil.nextAvailablePort(MIN_PORT, MAX_PORT);
-        this.envs = this.createEnvs();
+
+        this.envs.addAll(hyggdrasil.createEnvsForClient(new HyggApplication(HyggApplication.Type.PROXY, proxy.getName(), System.currentTimeMillis())));
 
         this.addLabel(References.STACK_NAME_LABEL, References.STACK_NAME);
 
         this.addMount(References.DATA_HOST_FOLDER + "/proxies/plugins", "/plugins");
 
         proxy.setPort(this.publishedPort);
-    }
-
-    private List<String> createEnvs() {
-        final List<String> envs = new ArrayList<>(this.hyggdrasil.createEnvsForClient(new HyggApplication(HyggApplication.Type.PROXY, this.proxy.getName())));
-
-        envs.add("TYPE=WATERFALL");
-        envs.add("ENABLE_RCON=FALSE");
-
-        return envs;
     }
 
 }

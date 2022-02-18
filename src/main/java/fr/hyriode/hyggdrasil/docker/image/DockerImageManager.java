@@ -3,14 +3,22 @@ package fr.hyriode.hyggdrasil.docker.image;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.BuildImageResultCallback;
 import com.github.dockerjava.api.command.PullImageResultCallback;
+import com.github.dockerjava.api.model.BuildResponseItem;
 import com.github.dockerjava.api.model.Image;
+import com.github.dockerjava.core.command.BuildImageCmdImpl;
+import com.github.dockerjava.core.exec.BuildImageCmdExec;
+import com.github.dockerjava.core.exec.CreateImageCmdExec;
 import fr.hyriode.hyggdrasil.Hyggdrasil;
 import fr.hyriode.hyggdrasil.docker.Docker;
 
 import java.io.Closeable;
 import java.io.File;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.logging.Level;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class DockerImageManager {
 
@@ -42,19 +50,16 @@ public class DockerImageManager {
         }
     }
 
-    public void buildImage(File dockerFile) {
-        try {
-            final BuildImageResultCallback callback = new BuildImageResultCallback() {
-                @Override
-                public void onComplete() {
-                    System.out.println("Successfully build an image from '" + dockerFile.getName() + "' docker file.");
-                }
-            };
+    public void buildImage(File dockerFile, String tag) {
+        final BuildImageResultCallback callback = new BuildImageResultCallback() {
+            @Override
+            public void onComplete() {
+                System.out.println("Image '" + tag + "' built successfully.");
+                super.onComplete();
+            }
+        };
 
-            this.dockerClient.buildImageCmd(dockerFile).exec(callback).awaitCompletion();
-        } catch (InterruptedException e) {
-            Hyggdrasil.log(Level.SEVERE, "Couldn't build an image from '" + dockerFile.getName() + " docker file !");
-        }
+        this.dockerClient.buildImageCmd(dockerFile).withTags(Stream.of(tag).collect(Collectors.toSet())).exec(callback).awaitImageId();
     }
 
     public void removeImage(String imageId) {

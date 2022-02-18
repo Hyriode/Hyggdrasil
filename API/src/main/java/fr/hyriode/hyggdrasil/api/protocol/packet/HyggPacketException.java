@@ -16,6 +16,7 @@ public class HyggPacketException extends HyggException {
      *
      * @param object The object needed
      * @param type The type of the exception
+     * @param <T> A type
      */
     public <T> HyggPacketException(T object, IType<T> type) {
         super(type.getErrorMessage(object));

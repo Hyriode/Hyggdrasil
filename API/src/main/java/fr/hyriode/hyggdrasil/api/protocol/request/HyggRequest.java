@@ -1,4 +1,4 @@
-package fr.hyriode.hyggdrasil.api.protocol.packet.request;
+package fr.hyriode.hyggdrasil.api.protocol.request;
 
 import fr.hyriode.hyggdrasil.api.HyggdrasilAPI;
 import fr.hyriode.hyggdrasil.api.protocol.HyggChannel;
@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit;
  * Created by AstFaster
  * on 25/12/2021 at 11:05
  */
-public class HyggPacketRequest {
+public class HyggRequest {
 
     /** Packet to send */
     private HyggPacket packet;
@@ -36,11 +36,11 @@ public class HyggPacketRequest {
     private final HyggdrasilAPI hyggdrasilAPI;
 
     /**
-     * Constructor of {@link HyggPacketRequest}
+     * Constructor of {@link HyggRequest}
      *
      * @param hyggdrasilAPI {@link HyggdrasilAPI} instance
      */
-    public HyggPacketRequest(HyggdrasilAPI hyggdrasilAPI) {
+    public HyggRequest(HyggdrasilAPI hyggdrasilAPI) {
         this.hyggdrasilAPI = hyggdrasilAPI;
     }
 
@@ -48,9 +48,9 @@ public class HyggPacketRequest {
      * Set the request's packet
      *
      * @param packet New {@link HyggPacket}
-     * @return {@link HyggPacketRequest}
+     * @return {@link HyggRequest}
      */
-    public HyggPacketRequest withPacket(HyggPacket packet) {
+    public HyggRequest withPacket(HyggPacket packet) {
         this.packet = packet;
         return this;
     }
@@ -68,9 +68,9 @@ public class HyggPacketRequest {
      * Set the request's channel
      *
      * @param channel New {@link HyggChannel}
-     * @return {@link HyggPacketRequest}
+     * @return {@link HyggRequest}
      */
-    public HyggPacketRequest withChannel(HyggChannel channel) {
+    public HyggRequest withChannel(HyggChannel channel) {
         this.channel = channel;
         return this;
     }
@@ -88,9 +88,9 @@ public class HyggPacketRequest {
      * Set the request's sending callback
      *
      * @param sendingCallback New callback
-     * @return {@link HyggPacketRequest}
+     * @return {@link HyggRequest}
      */
-    public HyggPacketRequest withSendingCallback(Runnable sendingCallback) {
+    public HyggRequest withSendingCallback(Runnable sendingCallback) {
         this.sendingCallback = sendingCallback;
         return this;
     }
@@ -108,9 +108,9 @@ public class HyggPacketRequest {
      * Set the request's response callback
      *
      * @param responseCallback New {@link HyggResponseCallback}
-     * @return {@link HyggPacketRequest}
+     * @return {@link HyggRequest}
      */
-    public HyggPacketRequest withResponseCallback(HyggResponseCallback responseCallback) {
+    public HyggRequest withResponseCallback(HyggResponseCallback responseCallback) {
         this.responseCallback = responseCallback;
         return this;
     }
@@ -129,9 +129,9 @@ public class HyggPacketRequest {
      * This callback will be fired
      *
      * @param responseTimeEndCallback The callback
-     * @return {@link HyggPacketRequest}
+     * @return {@link HyggRequest}
      */
-    public HyggPacketRequest withResponseTimeEndCallback(Runnable responseTimeEndCallback) {
+    public HyggRequest withResponseTimeEndCallback(Runnable responseTimeEndCallback) {
         this.responseTimeEndCallback = responseTimeEndCallback;
         return this;
     }
@@ -149,9 +149,9 @@ public class HyggPacketRequest {
      * Set the maximum of responses
      *
      * @param maxResponses New maximum of responses
-     * @return {@link HyggPacketRequest}
+     * @return {@link HyggRequest}
      */
-    public HyggPacketRequest withMaxResponses(int maxResponses) {
+    public HyggRequest withMaxResponses(int maxResponses) {
         this.maxResponses = maxResponses;
         return this;
     }
@@ -169,9 +169,10 @@ public class HyggPacketRequest {
      * Set the time to wait for all responses
      *
      * @param responseTime New response time
-     * @return {@link HyggPacketRequest}
+     * @param unit The unit of time to wait
+     * @return {@link HyggRequest}
      */
-    public HyggPacketRequest withResponseTime(long responseTime, TimeUnit unit) {
+    public HyggRequest withResponseTime(long responseTime, TimeUnit unit) {
         this.responseTime = unit.toMillis(responseTime);
         return this;
     }

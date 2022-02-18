@@ -8,6 +8,9 @@ version = '1.0.0'
 archivesBaseName = 'Hyggdrasil-API'
 
 java {
+    withSourcesJar()
+    withJavadocJar()
+
     toolchain {
         languageVersion = JavaLanguageVersion.of(8)
     }
@@ -18,28 +21,18 @@ compileJava {
     options.encoding = 'UTF-8'
 }
 
-task sourcesJar(type: Jar, dependsOn: classes) {
-    classifier 'sources'
-    from sourceSets.main.allSource
-}
-
-task javadocJar(type: Jar, dependsOn: classes) {
-    classifier 'javadoc'
-    from javadoc
-}
-
 tasks.withType(Javadoc) {
     options.encoding = 'UTF-8'
 }
 
-artifacts {
-    archives sourcesJar, javadocJar
+shadowJar {
+    configurations = [project.configurations.runtimeClasspath]
 }
 
 publishing {
     publications {
-        maven(MavenPublication) {
-            from components.java
+        maven(MavenPublication) { publication ->
+            project.shadow.component(publication)
             artifact tasks.sourcesJar
             artifact tasks.javadocJar
 
@@ -66,11 +59,7 @@ publishing {
     }
 }
 
-shadowJar {
-    configurations = [project.configurations.runtimeClasspath]
-}
-
 dependencies {
-    api 'redis.clients:jedis:3.7.0'
-    api 'com.google.code.gson:gson:2.8.9'
+    api 'redis.clients:jedis:4.1.1'
+    api 'com.google.code.gson:gson:2.9.0'
 }

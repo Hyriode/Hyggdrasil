@@ -1,16 +1,22 @@
 package fr.hyriode.hyggdrasil.api;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import fr.hyriode.hyggdrasil.api.event.HyggEventBus;
 import fr.hyriode.hyggdrasil.api.protocol.environment.HyggApplication;
 import fr.hyriode.hyggdrasil.api.protocol.environment.HyggEnvironment;
 import fr.hyriode.hyggdrasil.api.protocol.heartbeat.HyggHeartbeatTask;
 import fr.hyriode.hyggdrasil.api.protocol.packet.HyggPacketProcessor;
 import fr.hyriode.hyggdrasil.api.protocol.signature.HyggSignatureAlgorithm;
+import fr.hyriode.hyggdrasil.api.proxy.HyggProxyRequester;
 import fr.hyriode.hyggdrasil.api.pubsub.HyggPubSub;
 import fr.hyriode.hyggdrasil.api.scheduler.HyggScheduler;
+import fr.hyriode.hyggdrasil.api.server.HyggServerRequester;
 import fr.hyriode.hyggdrasil.api.util.builder.BuildException;
 import fr.hyriode.hyggdrasil.api.util.builder.BuilderEntry;
 import fr.hyriode.hyggdrasil.api.util.builder.IBuilder;
+import fr.hyriode.hyggdrasil.api.util.serializer.HyggSerializable;
+import fr.hyriode.hyggdrasil.api.util.serializer.HyggSerializer;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 
@@ -25,7 +31,6 @@ import java.util.logging.Logger;
  */
 public class HyggdrasilAPI {
 
-
     /** Application's name constant */
     public static final String NAME = "Hyggdrasil";
     /** APIs name constant */
@@ -35,11 +40,15 @@ public class HyggdrasilAPI {
     /** The algorithm used to sign/verify messages or create keys */
     public static final HyggSignatureAlgorithm ALGORITHM = HyggSignatureAlgorithm.RS256;
     /** The maximum of time to wait before timing out an application */
-    public static final int TIMED_OUT_TIME = 3 * 10000;
+    public static final int TIMED_OUT_TIME = 20 * 1000;
     /** The time before sending a heartbeat */
-    public static final int HEARTBEAT_TIME = 10000;
+    public static final int HEARTBEAT_TIME = 10 * 1000;
     /** {@link Gson} instance */
-    public static final Gson GSON = new Gson();
+    public static final Gson GSON = new GsonBuilder()
+            .registerTypeHierarchyAdapter(HyggSerializable.class, new HyggSerializer<>())
+            .create();
+    /** Normal {@link Gson} instance */
+    public static final Gson NORMAL_GSON = new Gson();
 
     /** Static instance of the logger */
     private static Logger logger;
@@ -57,6 +66,12 @@ public class HyggdrasilAPI {
     private final HyggPubSub pubSub;
     /** The packet processor used to send/receive packets */
     private final HyggPacketProcessor packetProcessor;
+    /** The event bus used to receive/call events */
+    private final HyggEventBus eventBus;
+    /** The server requester used to query or do action on servers */
+    private final HyggServerRequester serverRequester;
+    /** The proxy requester used to query or do action on proxies */
+    private final HyggProxyRequester proxyRequester;
 
     /**
      * Constructor of {@link HyggdrasilAPI}
@@ -71,6 +86,9 @@ public class HyggdrasilAPI {
         this.scheduler = new HyggScheduler();
         this.pubSub = new HyggPubSub(this);
         this.packetProcessor = new HyggPacketProcessor(this);
+        this.eventBus = new HyggEventBus(this);
+        this.serverRequester = new HyggServerRequester(this);
+        this.proxyRequester = new HyggProxyRequester(this);
     }
 
     /**
@@ -80,6 +98,7 @@ public class HyggdrasilAPI {
         log("Starting " + API_NAME + "...");
 
         this.pubSub.start();
+        this.eventBus.start();
         this.environment = this.environmentSupplier.get();
 
         if (this.environment.getApplication().getType() != HyggApplication.Type.HYGGDRASIL) {
@@ -89,6 +108,8 @@ public class HyggdrasilAPI {
 
     /**
      * Stop {@link HyggdrasilAPI}
+     *
+     * @param reason The reason of the stop
      */
     public void stop(String reason) {
         log("Stopping " + API_NAME + (reason != null ? " (reason: " + reason + ")" : "") + "...");
@@ -196,6 +217,36 @@ public class HyggdrasilAPI {
      */
     public HyggPacketProcessor getPacketProcessor() {
         return this.packetProcessor;
+    }
+
+    /**
+     * Get Hyggdrasil event bus.<br>
+     * This class is used to listen for events or call ones
+     *
+     * @return {@link HyggEventBus} instance
+     */
+    public HyggEventBus getEventBus() {
+        return this.eventBus;
+    }
+
+    /**
+     * Get the server requester.<br>
+     * This class is used to do actions on servers. Like create or remove one, wait for a state, etc.
+     *
+     * @return {@link HyggServerRequester} instance
+     */
+    public HyggServerRequester getServerRequester() {
+        return this.serverRequester;
+    }
+
+    /**
+     * Get the proxy requester.<br>
+     * This class is used to do actions on proxies. Like create or remove one, wait for a state, etc.
+     *
+     * @return {@link HyggProxyRequester} instance
+     */
+    public HyggProxyRequester getProxyRequester() {
+        return this.proxyRequester;
     }
 
     /**

@@ -1,9 +1,14 @@
 package fr.hyriode.hyggdrasil.server;
 
+import fr.hyriode.hyggdrasil.Hyggdrasil;
+import fr.hyriode.hyggdrasil.api.protocol.environment.HyggApplication;
 import fr.hyriode.hyggdrasil.api.server.HyggServer;
 import fr.hyriode.hyggdrasil.docker.image.DockerImage;
 import fr.hyriode.hyggdrasil.docker.swarm.DockerService;
 import fr.hyriode.hyggdrasil.util.References;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Project: Hyggdrasil
@@ -12,19 +17,15 @@ import fr.hyriode.hyggdrasil.util.References;
  */
 public class HyggServerService extends DockerService {
 
-    private static final DockerImage SERVER_IMAGE = new DockerImage("itzg/minecraft-server", "java8");
-
-    public HyggServerService(HyggServer server) {
-        super(server.getName(), SERVER_IMAGE, References.HYRIODE_NETWORK);
+    public HyggServerService(Hyggdrasil hyggdrasil, HyggServer server) {
+        super(server.getName(), HyggServerManager.SERVER_IMAGE, References.HYRIODE_NETWORK);
 
         this.hostname = server.getName();
 
         this.addLabel(References.STACK_NAME_LABEL, References.STACK_NAME);
-        this.addEnv("TYPE", "SPIGOT");
-        this.addEnv("VERSION", "1.8.8-R0.1-SNAPSHOT-latest");
-        this.addEnv("ONLINE_MODE", "FALSE");
-        this.addEnv("ENABLE_RCON", "FALSE");
-        this.addEnv("EULA", "TRUE");
+
+        this.envs.addAll(server.getOptions().asEnvs());
+        this.envs.addAll(hyggdrasil.createEnvsForClient(new HyggApplication(HyggApplication.Type.SERVER, this.hostname, System.currentTimeMillis())));
 
         final String serverFolder = References.DATA_HOST_FOLDER + "/servers/" + server.getName();
 

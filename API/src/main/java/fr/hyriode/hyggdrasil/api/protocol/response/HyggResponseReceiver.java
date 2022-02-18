@@ -3,10 +3,10 @@ package fr.hyriode.hyggdrasil.api.protocol.response;
 import fr.hyriode.hyggdrasil.api.HyggdrasilAPI;
 import fr.hyriode.hyggdrasil.api.protocol.HyggChannel;
 import fr.hyriode.hyggdrasil.api.protocol.packet.HyggPacket;
-import fr.hyriode.hyggdrasil.api.protocol.packet.request.HyggPacketHeader;
-import fr.hyriode.hyggdrasil.api.protocol.packet.request.HyggPacketRequest;
 import fr.hyriode.hyggdrasil.api.protocol.packet.model.HyggResponsePacket;
 import fr.hyriode.hyggdrasil.api.protocol.receiver.IHyggPacketReceiver;
+import fr.hyriode.hyggdrasil.api.protocol.request.HyggRequest;
+import fr.hyriode.hyggdrasil.api.protocol.request.HyggRequestHeader;
 
 /**
  * Project: Hyggdrasil
@@ -18,7 +18,7 @@ public class HyggResponseReceiver implements IHyggPacketReceiver {
     /** {@link HyggdrasilAPI} instance */
     private final HyggdrasilAPI hyggdrasilAPI;
     /** The original request */
-    private final HyggPacketRequest request;
+    private final HyggRequest request;
     /** Number of responses received */
     private int responses = 0;
 
@@ -28,13 +28,13 @@ public class HyggResponseReceiver implements IHyggPacketReceiver {
      * @param hyggdrasilAPI {@link HyggdrasilAPI} instance
      * @param request The original request
      */
-    public HyggResponseReceiver(HyggdrasilAPI hyggdrasilAPI, HyggPacketRequest request) {
+    public HyggResponseReceiver(HyggdrasilAPI hyggdrasilAPI, HyggRequest request) {
         this.hyggdrasilAPI = hyggdrasilAPI;
         this.request = request;
     }
 
     @Override
-    public HyggResponse receive(String channel, HyggPacket packet, HyggPacketHeader packetHeader) {
+    public HyggResponse receive(String channel, HyggPacket packet, HyggRequestHeader packetHeader) {
         if (packet instanceof HyggResponsePacket) {
             final HyggResponsePacket responsePacket = (HyggResponsePacket) packet;
 

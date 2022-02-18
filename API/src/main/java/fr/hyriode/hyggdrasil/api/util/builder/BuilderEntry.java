@@ -92,6 +92,7 @@ public class BuilderEntry<T> {
     /**
      * Set if this entry depends on other entries
      *
+     * @param requiredOptions The {@link BuilderEntry} required
      * @return {@link BuilderEntry}
      */
     public BuilderEntry<T> require(BuilderEntry<?>... requiredOptions) {

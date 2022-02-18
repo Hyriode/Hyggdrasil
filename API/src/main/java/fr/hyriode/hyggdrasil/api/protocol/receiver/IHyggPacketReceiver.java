@@ -1,8 +1,9 @@
 package fr.hyriode.hyggdrasil.api.protocol.receiver;
 
 import fr.hyriode.hyggdrasil.api.protocol.packet.HyggPacket;
-import fr.hyriode.hyggdrasil.api.protocol.packet.request.HyggPacketHeader;
+import fr.hyriode.hyggdrasil.api.protocol.request.HyggRequestHeader;
 import fr.hyriode.hyggdrasil.api.protocol.response.HyggResponse;
+import fr.hyriode.hyggdrasil.api.protocol.response.IHyggResponse;
 
 /**
  * Project: Hyggdrasil
@@ -20,6 +21,6 @@ public interface IHyggPacketReceiver {
      * @param packetHeader The header of the received packet
      * @return {@link HyggResponse} to send back
      */
-    HyggResponse receive(String channel, HyggPacket packet, HyggPacketHeader packetHeader);
+    IHyggResponse receive(String channel, HyggPacket packet, HyggRequestHeader packetHeader);
 
 }

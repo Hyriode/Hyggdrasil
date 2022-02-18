@@ -5,7 +5,6 @@ import fr.hyriode.hyggdrasil.docker.network.DockerNetworkDriver;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.function.Function;
 
 public class References {
 
@@ -17,6 +16,7 @@ public class References {
     public static final Path LOG_FOLDER = Paths.get(USER_DIR, "logs");
     public static final Path LOG_FILE = Paths.get(LOG_FOLDER.toString(), "hyggdrasil.log");
 
+    /** Files - Data */
     public static final Path DATA_FOLDER = Paths.get(USER_DIR, "data");
 
     public static final Path SERVERS_FOLDER = Paths.get(DATA_FOLDER.toString(), "servers");
@@ -28,8 +28,10 @@ public class References {
 
     public static final Path PRIVATE_KEY_FILE = Paths.get(DATA_FOLDER.toString(), "private.key");
 
-    /** Redis */
-    public static final String REDIS_KEY = "hyggdrasil:";
+    /** Files - Images */
+    public static final Path IMAGES_FOLDER = Paths.get(USER_DIR, "images");
+    public static final Path SERVER_IMAGES_FOLDER = Paths.get(IMAGES_FOLDER.toString(), "server");
+    public static final Path PROXY_IMAGES_FOLDER = Paths.get(IMAGES_FOLDER.toString(), "proxy");
 
     /** Docker */
     public static final String STACK_NAME = System.getenv("STACK_NAME");

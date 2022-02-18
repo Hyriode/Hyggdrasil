@@ -2,12 +2,9 @@ package fr.hyriode.hyggdrasil.api.protocol;
 
 import fr.hyriode.hyggdrasil.api.protocol.packet.HyggPacket;
 import fr.hyriode.hyggdrasil.api.protocol.packet.model.HyggHeartbeatPacket;
+import fr.hyriode.hyggdrasil.api.protocol.packet.model.proxy.*;
 import fr.hyriode.hyggdrasil.api.protocol.packet.model.HyggResponsePacket;
-import fr.hyriode.hyggdrasil.api.protocol.packet.model.proxy.HyggProxyServerActionPacket;
-import fr.hyriode.hyggdrasil.api.protocol.packet.model.proxy.HyggStartProxyPacket;
-import fr.hyriode.hyggdrasil.api.protocol.packet.model.proxy.HyggStopProxyPacket;
-import fr.hyriode.hyggdrasil.api.protocol.packet.model.server.HyggStopServerPacket;
-import fr.hyriode.hyggdrasil.api.protocol.packet.model.server.HyggStartServerPacket;
+import fr.hyriode.hyggdrasil.api.protocol.packet.model.server.*;
 
 /**
  * Project: Hyggdrasil
@@ -24,10 +21,16 @@ public enum HyggProtocol {
     PROXY_START_PACKET(30, HyggStartProxyPacket.class),
     PROXY_STOP_PACKET(31, HyggStopProxyPacket.class),
     PROXY_SERVER_ACTION_PACKET(32, HyggProxyServerActionPacket.class),
+    PROXY_INFO(33, HyggProxyInfoPacket.class),
+    PROXY_FETCH(34, HyggFetchServerPacket.class),
+    PROXIES_FETCH(35, HyggFetchProxiesPacket.class),
 
     /** Server packets section */
     SERVER_START_PACKET(50, HyggStartServerPacket.class),
     SERVER_STOP_PACKET(51, HyggStopServerPacket.class),
+    SERVER_INFO(52, HyggServerInfoPacket.class),
+    SERVER_FETCH(53, HyggFetchServerPacket.class),
+    SERVERS_FETCH(54, HyggFetchServersPacket.class),
 
     ;
 

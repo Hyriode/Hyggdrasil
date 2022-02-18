@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Comparator;
 
 /**
  * Project: Hyggdrasil
@@ -52,6 +53,16 @@ public class IOUtil {
     public static boolean delete(Path path) {
         try {
             Files.delete(path);
+            return true;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public static boolean deleteDirectory(Path path) {
+        try {
+            Files.walk(path).sorted(Comparator.reverseOrder()).forEach(IOUtil::delete);
             return true;
         } catch (IOException e) {
             e.printStackTrace();

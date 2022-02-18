@@ -4,16 +4,19 @@ import fr.hyriode.hyggdrasil.api.HyggdrasilAPI;
 import fr.hyriode.hyggdrasil.api.protocol.HyggChannel;
 import fr.hyriode.hyggdrasil.api.protocol.HyggProtocol;
 import fr.hyriode.hyggdrasil.api.protocol.packet.model.HyggResponsePacket;
-import fr.hyriode.hyggdrasil.api.protocol.packet.request.HyggPacketHeader;
-import fr.hyriode.hyggdrasil.api.protocol.packet.request.HyggPacketRequest;
 import fr.hyriode.hyggdrasil.api.protocol.receiver.IHyggPacketReceiver;
 import fr.hyriode.hyggdrasil.api.protocol.receiver.IHyggReceiver;
+import fr.hyriode.hyggdrasil.api.protocol.request.HyggRequest;
+import fr.hyriode.hyggdrasil.api.protocol.request.HyggRequestHeader;
 import fr.hyriode.hyggdrasil.api.protocol.response.HyggResponse;
+import fr.hyriode.hyggdrasil.api.protocol.response.IHyggResponse;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.security.*;
-import java.util.*;
+import java.util.Base64;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 
 /**
@@ -47,10 +50,10 @@ public class HyggPacketProcessor {
      *
      * @param channel Channel that will be used to send the packet
      * @param packet Packet to send
-     * @return A {@link HyggPacketRequest} object
+     * @return A {@link HyggRequest} object
      */
-    public HyggPacketRequest request(HyggChannel channel, HyggPacket packet) {
-        return new HyggPacketRequest(this.hyggdrasilAPI)
+    public HyggRequest request(HyggChannel channel, HyggPacket packet) {
+        return new HyggRequest(this.hyggdrasilAPI)
                 .withPacket(packet)
                 .withChannel(channel);
     }
@@ -68,12 +71,21 @@ public class HyggPacketProcessor {
 
                 if (result != null && result.getPacket() != null) {
                     final HyggPacket packet = result.getPacket();
-                    final HyggResponse response = packetReceiver.receive(ch, packet, result.getPacketHeader());
+                    final IHyggResponse returnedResponse = packetReceiver.receive(ch, packet, result.getPacketHeader());
 
-                    if (response != null) {
-                        final HyggResponse.Type type = response.getType();
+                    if (returnedResponse != null) {
+                        HyggResponse response;
+                        if (returnedResponse instanceof HyggResponse.Type) {
+                            final HyggResponse.Type type = (HyggResponse.Type) returnedResponse;
 
-                        if (type != HyggResponse.Type.NONE) {
+                            response = type.toResponse();
+                        } else if (returnedResponse instanceof HyggResponse) {
+                            response = (HyggResponse) returnedResponse;
+                        } else {
+                            return;
+                        }
+
+                        if (response.getType() != HyggResponse.Type.NONE) {
                             final HyggResponsePacket responsePacket = new HyggResponsePacket(packet.getUniqueId(), response);
 
                             this.request(channel, responsePacket).exec();
@@ -121,7 +133,7 @@ public class HyggPacketProcessor {
         if (id != -1) {
             final Base64.Encoder encoder = Base64.getEncoder();
             final Charset charset = StandardCharsets.UTF_8;
-            final HyggPacketHeader header = new HyggPacketHeader(this.hyggdrasilAPI.getEnvironment().getApplication(), id);
+            final HyggRequestHeader header = new HyggRequestHeader(this.hyggdrasilAPI.getEnvironment().getApplication(), id, System.currentTimeMillis());
             final String encodedHeader = encoder.encodeToString(header.asJson().getBytes(charset));
             final String encodedContent = encoder.encodeToString(packet.asJson().getBytes(charset));
             final String encodedHeaderAndContent = encodedHeader + MESSAGE_SEPARATOR + encodedContent;
@@ -172,13 +184,13 @@ public class HyggPacketProcessor {
     public HyggPacketDecodingResult decode(String message) {
         try {
             final Base64.Decoder decoder = Base64.getDecoder();
-            final String[] splitedRaw  = message.split("\\" + MESSAGE_SEPARATOR);
+            final String[] splitRaw  = message.split("\\" + MESSAGE_SEPARATOR);
 
-            if (splitedRaw.length >= 2) {
-                final String encodedHeader = splitedRaw[0];
-                final String encodedContent = splitedRaw[1];
+            if (splitRaw.length >= 2) {
+                final String encodedHeader = splitRaw[0];
+                final String encodedContent = splitRaw[1];
                 final String headerJson = new String(decoder.decode(encodedHeader));
-                final HyggPacketHeader header = HyggdrasilAPI.GSON.fromJson(headerJson, HyggPacketHeader.class);
+                final HyggRequestHeader header = HyggdrasilAPI.GSON.fromJson(headerJson, HyggRequestHeader.class);
 
                 if (header != null) {
                     final int packetId = header.getPacketId();
@@ -189,8 +201,8 @@ public class HyggPacketProcessor {
                         final HyggPacket packet = HyggdrasilAPI.GSON.fromJson(content, packetClass);
 
                         if (this.hyggdrasilAPI.onlyAcceptingHyggdrasilPackets()) {
-                            if (splitedRaw.length == 3) {
-                                final String signature = splitedRaw[2];
+                            if (splitRaw.length == 3) {
+                                final String signature = splitRaw[2];
 
                                 if (this.isValidSignature(encodedHeader + MESSAGE_SEPARATOR + encodedContent, signature)) {
                                     return new HyggPacketDecodingResult(header, packet, true);
@@ -213,6 +225,7 @@ public class HyggPacketProcessor {
                 throw new HyggPacketException(message, HyggPacketException.Type.Received.INVALID_FORMAT);
             }
         } catch (Exception e) {
+            e.printStackTrace();
             return null;
         }
     }

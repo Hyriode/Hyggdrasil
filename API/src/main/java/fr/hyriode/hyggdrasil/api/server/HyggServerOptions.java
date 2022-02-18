@@ -1,5 +1,8 @@
 package fr.hyriode.hyggdrasil.api.server;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Project: Hyggdrasil
  * Created by AstFaster
@@ -7,17 +10,12 @@ package fr.hyriode.hyggdrasil.api.server;
  */
 public class HyggServerOptions {
 
-    /** All the options */
     private boolean pvp = true;
     private boolean nether = false;
     private boolean broadcastAchievements = false;
     private boolean flight = false;
     private String difficulty = "normal";
     private int spawnProtection = 0;
-
-    /**
-     * Getters and setters of options
-     */
 
     public boolean isPvp() {
         return this.pvp;
@@ -65,6 +63,19 @@ public class HyggServerOptions {
 
     public void setSpawnProtection(int spawnProtection) {
         this.spawnProtection = spawnProtection;
+    }
+
+    public List<String> asEnvs() {
+        final List<String> envs = new ArrayList<>();
+
+        envs.add("PVP=" + this.pvp);
+        envs.add("ALLOW_NETHER=" + this.nether);
+        envs.add("ANNOUNCE_PLAYER_ACHIEVEMENTS=" + this.broadcastAchievements);
+        envs.add("ALLOW_FLIGHT=" + this.flight);
+        envs.add("DIFFICULTY=" + this.difficulty);
+        envs.add("SPAWN_PROTECTION=" + this.spawnProtection);
+
+        return envs;
     }
 
 }

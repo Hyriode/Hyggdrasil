@@ -22,8 +22,7 @@ public class HyggProxy {
     /** Proxy's started time (a timestamp in millis) */
     protected final long startedTime;
     /** Proxy's last heartbeat */
-    protected long lastHeartbeat;
-
+    protected long lastHeartbeat = -1;
 
     /**
      * Constructor of {@link HyggProxy}
@@ -33,6 +32,21 @@ public class HyggProxy {
     public HyggProxy(long startedTime) {
         this.name = "proxy-" + UUID.randomUUID().toString().substring(0, 5);
         this.state = HyggProxyState.CREATING;
+        this.startedTime = startedTime;
+    }
+
+    /**
+     * Full constructor of {@link HyggProxy}
+     *
+     * @param name The name of the proxy
+     * @param players The amount of players on the proxy
+     * @param state The current state of the proxy
+     * @param startedTime The time when the proxy started
+     */
+    public HyggProxy(String name, int players, HyggProxyState state, long startedTime) {
+        this.name = name;
+        this.players = players;
+        this.state = state;
         this.startedTime = startedTime;
     }
 
@@ -122,12 +136,18 @@ public class HyggProxy {
 
     /**
      * Set the last heartbeat of the proxy
+     *
+     * @return <code>true</code> if it's the first heartbeat of the proxy
      */
-    public void heartbeat() {
+    public boolean heartbeat() {
+        final long oldHeartbeat = this.lastHeartbeat;
+
         if (this.state == HyggProxyState.CREATING) {
             this.state = HyggProxyState.STARTING;
         }
         this.lastHeartbeat = System.currentTimeMillis();
+
+        return oldHeartbeat == -1;
     }
 
     /**

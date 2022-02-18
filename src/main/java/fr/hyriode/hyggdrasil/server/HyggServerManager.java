@@ -1,14 +1,23 @@
 package fr.hyriode.hyggdrasil.server;
 
+import com.github.dockerjava.api.command.InspectServiceCmd;
+import com.github.dockerjava.api.model.Service;
 import fr.hyriode.hyggdrasil.Hyggdrasil;
+import fr.hyriode.hyggdrasil.api.event.HyggEventBus;
+import fr.hyriode.hyggdrasil.api.event.model.server.HyggServerStartedEvent;
+import fr.hyriode.hyggdrasil.api.event.model.server.HyggServerStoppedEvent;
+import fr.hyriode.hyggdrasil.api.event.model.server.HyggServerUpdatedEvent;
 import fr.hyriode.hyggdrasil.api.protocol.HyggChannel;
 import fr.hyriode.hyggdrasil.api.protocol.packet.HyggPacketProcessor;
 import fr.hyriode.hyggdrasil.api.protocol.packet.model.proxy.HyggProxyServerActionPacket;
+import fr.hyriode.hyggdrasil.api.protocol.packet.model.server.HyggServerInfoPacket;
 import fr.hyriode.hyggdrasil.api.protocol.packet.model.server.HyggStopServerPacket;
 import fr.hyriode.hyggdrasil.api.protocol.response.HyggResponse;
 import fr.hyriode.hyggdrasil.api.protocol.response.HyggResponseCallback;
 import fr.hyriode.hyggdrasil.api.server.HyggServer;
+import fr.hyriode.hyggdrasil.api.server.HyggServerOptions;
 import fr.hyriode.hyggdrasil.api.server.HyggServerState;
+import fr.hyriode.hyggdrasil.docker.image.DockerImage;
 import fr.hyriode.hyggdrasil.docker.swarm.DockerSwarm;
 import fr.hyriode.hyggdrasil.util.IOUtil;
 import fr.hyriode.hyggdrasil.util.References;
@@ -17,12 +26,16 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.concurrent.TimeUnit;
+import java.util.function.BiFunction;
 
-import static fr.hyriode.hyggdrasil.api.protocol.response.HyggResponse.Type.*;
-import static fr.hyriode.hyggdrasil.api.protocol.packet.model.proxy.HyggProxyServerActionPacket.Action.*;
+import static fr.hyriode.hyggdrasil.api.protocol.packet.model.proxy.HyggProxyServerActionPacket.Action.ADD;
+import static fr.hyriode.hyggdrasil.api.protocol.packet.model.proxy.HyggProxyServerActionPacket.Action.REMOVE;
+import static fr.hyriode.hyggdrasil.api.protocol.response.HyggResponse.Type.SUCCESS;
 
 /**
  * Project: Hyggdrasil
@@ -31,10 +44,16 @@ import static fr.hyriode.hyggdrasil.api.protocol.packet.model.proxy.HyggProxySer
  */
 public class HyggServerManager {
 
+    public static final DockerImage SERVER_IMAGE = new DockerImage("hygg-server", "latest");
+
+    private static final String PLUGINS = "plugins";
+    private static final String WORLD = "world";
+
     private final Set<HyggServer> servers;
 
     private final DockerSwarm swarm;
     private final HyggPacketProcessor packetProcessor;
+    private final HyggEventBus eventBus;
 
     private final Hyggdrasil hyggdrasil;
 
@@ -42,40 +61,84 @@ public class HyggServerManager {
         this.hyggdrasil = hyggdrasil;
         this.swarm = this.hyggdrasil.getDocker().getSwarm();
         this.packetProcessor = this.hyggdrasil.getAPI().getPacketProcessor();
+        this.eventBus = this.hyggdrasil.getAPI().getEventBus();
         this.servers = new HashSet<>();
 
         IOUtil.createDirectory(References.SERVERS_COMMON_FOLDER);
         IOUtil.createDirectory(References.SERVERS_TYPES_FOLDER);
+
+        this.hyggdrasil.getDocker().getImageManager().buildImage(Paths.get(References.SERVER_IMAGES_FOLDER.toString(), "Dockerfile").toFile(), SERVER_IMAGE.getName());
+
+        this.removeOldServers();
     }
 
-    public String startServer(String type) {
+    private void removeOldServers() {
+        this.hyggdrasil.getAPI().getScheduler().schedule(() -> {
+            System.out.println("Removing old servers (after 1 minute of waiting)...");
+            try {
+                Files.list(References.SERVERS_FOLDER).forEach(path -> {
+                    final String pathStr = path.toString();
+
+                    if (!pathStr.equals(References.SERVERS_COMMON_FOLDER.toString()) && !pathStr.equals(References.SERVERS_TYPES_FOLDER.toString())) {
+                        final String[] splitPath = path.toString().split("/");
+                        final String serverName = splitPath[splitPath.length - 1];
+
+                        if (this.getServerByName(serverName) == null) {
+                            IOUtil.deleteDirectory(path);
+                            System.out.println("Removed '" + serverName + "'.");
+                        }
+                    }
+                });
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }, 45, TimeUnit.SECONDS);
+    }
+
+    public HyggServer startServer(String type) {
+        return this.startServer(type, new HyggServerOptions());
+    }
+
+    public HyggServer startServer(String type, HyggServerOptions options) {
         final Path typeFolder = this.getTypeFolder(type);
 
         if (typeFolder != null) {
-            final HyggServer server = new HyggServer(type);
+            final HyggServer server = new HyggServer(type, options);
+            final BiFunction<Path, Path, Boolean> copyFunction = (from, to) -> !Files.exists(from) || IOUtil.copyContent(from, to);
+            final Path typePluginsFolder = Paths.get(typeFolder.toString(), PLUGINS);
+            final Path typeWorldFolder = Paths.get(typeFolder.toString(), WORLD);
             final Path serverFolder = Paths.get(References.SERVERS_FOLDER.toString(), server.getName());
-            final Path pluginsFolder = Paths.get(serverFolder.toString(), "plugins");
-            final Path worldFolder = Paths.get(serverFolder.toString(), "world");
+            final Path pluginsFolder = Paths.get(serverFolder.toString(), PLUGINS);
+            final Path worldFolder = Paths.get(serverFolder.toString(), WORLD);
 
             if (IOUtil.createDirectory(pluginsFolder) && IOUtil.createDirectory(worldFolder)) {
-                if (IOUtil.copyContent(References.SERVERS_COMMON_FOLDER, pluginsFolder) && IOUtil.copyContent(Paths.get(typeFolder.toString(), "plugins"), pluginsFolder) && IOUtil.copyContent(Paths.get(typeFolder.toString(), "world"), worldFolder)) {
-                    final HyggProxyServerActionPacket packet = new HyggProxyServerActionPacket(ADD, server.getName());
+                if (!copyFunction.apply(typePluginsFolder, pluginsFolder) || !copyFunction.apply(typeWorldFolder, worldFolder)) {
+                    return null;
+                }
 
-                    this.swarm.runService(new HyggServerService(server));
+                if (IOUtil.copyContent(References.SERVERS_COMMON_FOLDER, pluginsFolder)) {
+                    this.swarm.runService(new HyggServerService(this.hyggdrasil, server));
 
-                    this.packetProcessor.request(HyggChannel.PROXIES, packet)
-                            .withMaxResponses(this.hyggdrasil.getProxyManager().getProxies().size())
-                            .exec();
+                    this.addServerToProxies(server);
 
                     this.servers.add(server);
 
+                    this.eventBus.publish(new HyggServerStartedEvent(server));
+
                     System.out.println("Started '" + server.getName() + "'.");
 
-                    return server.getName();
+                    return server;
                 }
             }
         }
         return null;
+    }
+
+    public void updateServer(HyggServer server, HyggServerInfoPacket info) {
+        server.setPlayers(info.getPlayers());
+        server.setState(info.getState());
+
+        this.eventBus.publish(new HyggServerUpdatedEvent(server));
     }
 
     public boolean stopServer(String name) {
@@ -83,19 +146,21 @@ public class HyggServerManager {
 
         if (server != null) {
             final Runnable action = () -> {
-                System.out.println("Stopping '" + name + "'...");
-
-                this.packetProcessor.request(HyggChannel.PROXIES, new HyggProxyServerActionPacket(REMOVE, name)).exec();
+                this.removeServerFromProxies(server);
 
                 this.swarm.removeService(name);
 
+                this.eventBus.publish(new HyggServerStoppedEvent(server));
+
                 IOUtil.delete(Paths.get(References.SERVERS_FOLDER.toString(), server.getName()));
+
+                System.out.println("Stopped '" + name + "'.");
             };
             final HyggResponseCallback callback = response -> {
                 final HyggResponse.Type type = response.getType();
 
                 if (type != SUCCESS) {
-                    System.err.println("'" + name + "' doesn't want to stop or an error occurred! Response: " + type + ". Reason: " + response.getMessage() + ". Forcing it to stop...");
+                    System.err.println("'" + name + "' doesn't want to stop or an error occurred! Response: " + type + ". Forcing it to stop...");
                 }
 
                 action.run();
@@ -119,6 +184,24 @@ public class HyggServerManager {
         return false;
     }
 
+    public void addServerToProxies(HyggServer server) {
+        this.actionOnProxies(ADD, server);
+    }
+
+    public void addServersToProxies() {
+        this.servers.forEach(this::addServerToProxies);
+    }
+
+    public void removeServerFromProxies(HyggServer server) {
+        this.actionOnProxies(REMOVE, server);
+    }
+
+    private void actionOnProxies(HyggProxyServerActionPacket.Action action, HyggServer server) {
+        this.packetProcessor.request(HyggChannel.PROXIES, new HyggProxyServerActionPacket(action, server.getName()))
+                .withMaxResponses(this.hyggdrasil.getProxyManager().getProxies().size())
+                .exec();
+    }
+
     private Path getTypeFolder(String type) {
         try {
             for (Path path : Files.list(References.SERVERS_TYPES_FOLDER).toList()) {
@@ -139,6 +222,17 @@ public class HyggServerManager {
             }
         }
         return null;
+    }
+
+    public List<HyggServer> getServersByType(String serverType) {
+        final List<HyggServer> result = new ArrayList<>();
+
+        for (HyggServer server : this.servers) {
+            if (server.getType().equals(serverType)) {
+                result.add(server);
+            }
+        }
+        return result;
     }
 
     public Set<HyggServer> getServers() {

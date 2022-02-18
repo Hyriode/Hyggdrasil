@@ -19,21 +19,26 @@ public class HyggApplication {
     public static final String TYPE_ENV = ENV.apply("type");
     /** The identifier environment variable key */
     public static final String NAME_ENV = ENV.apply("name");
+    /** The started time environment variable key */
+    public static final String STARTED_TIME_ENV = ENV.apply("started_time");
 
     /** The application {@link Type} */
     private final Type type;
     /** The name of the application. Ex: server-14sv8df */
     private final String name;
+    /** The time when the server started (a timestamp in milliseconds) */
+    private final long startedTime;
 
     /**
      * Constructor of {@link HyggApplication}
-     *
-     * @param type The type of the application
+     *  @param type The type of the application
      * @param name The name of the application
+     * @param startedTime The time when the application started
      */
-    public HyggApplication(Type type, String name) {
+    public HyggApplication(Type type, String name, long startedTime) {
         this.type = type;
         this.name = name;
+        this.startedTime = startedTime;
     }
 
     /**
@@ -56,6 +61,16 @@ public class HyggApplication {
     }
 
     /**
+     * Get the time when the application started.<br>
+     * The time is in a timestamp format in milliseconds
+     *
+     * @return A timestamp
+     */
+    public long getStartedTime() {
+        return this.startedTime;
+    }
+
+    /**
      * Load application information from environment variables if they are set.<br>
      * In most cases, Hyggdrasil will automatically provide them if the application was started by it.
      *
@@ -66,8 +81,9 @@ public class HyggApplication {
 
         final Type type = Type.valueOf(System.getenv(TYPE_ENV));
         final String id = System.getenv(NAME_ENV);
+        final long startedTime = Long.parseLong(System.getenv(STARTED_TIME_ENV));
 
-        return new HyggApplication(type, id);
+        return new HyggApplication(type, id, startedTime);
     }
 
     /**
@@ -80,6 +96,7 @@ public class HyggApplication {
 
         variables.add(TYPE_ENV + "=" + this.type);
         variables.add(NAME_ENV + "=" + this.name);
+        variables.add(STARTED_TIME_ENV + "=" + this.startedTime);
 
         return variables;
     }

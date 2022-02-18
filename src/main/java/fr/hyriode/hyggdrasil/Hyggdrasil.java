@@ -6,7 +6,7 @@ import fr.hyriode.hyggdrasil.api.protocol.environment.HyggApplication;
 import fr.hyriode.hyggdrasil.api.protocol.environment.HyggEnvironment;
 import fr.hyriode.hyggdrasil.api.protocol.environment.HyggKeys;
 import fr.hyriode.hyggdrasil.api.protocol.packet.HyggPacketProcessor;
-import fr.hyriode.hyggdrasil.api.protocol.signature.HyggSignatureAlgorithm;
+import fr.hyriode.hyggdrasil.common.HyggHeartbeatsCheck;
 import fr.hyriode.hyggdrasil.configuration.HyggConfiguration;
 import fr.hyriode.hyggdrasil.docker.Docker;
 import fr.hyriode.hyggdrasil.proxy.HyggProxyManager;
@@ -15,18 +15,11 @@ import fr.hyriode.hyggdrasil.receiver.HyggQueryReceiver;
 import fr.hyriode.hyggdrasil.receiver.HyggServersReceiver;
 import fr.hyriode.hyggdrasil.redis.HyggRedis;
 import fr.hyriode.hyggdrasil.server.HyggServerManager;
+import fr.hyriode.hyggdrasil.util.key.HyggKeyLoader;
 import fr.hyriode.hyggdrasil.util.IOUtil;
 import fr.hyriode.hyggdrasil.util.References;
 import fr.hyriode.hyggdrasil.util.logger.HyggLogger;
-import fr.hyriode.hyggdrasil.common.HyggHeartbeatsCheck;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.security.*;
-import java.security.interfaces.RSAPrivateCrtKey;
-import java.security.spec.InvalidKeySpecException;
-import java.security.spec.PKCS8EncodedKeySpec;
-import java.security.spec.RSAPublicKeySpec;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -65,8 +58,8 @@ public class Hyggdrasil {
             System.exit(-1);
         }
 
-        this.keys = this.loadKeys();
-        this.environment = new HyggEnvironment(new HyggApplication(HyggApplication.Type.HYGGDRASIL, "hyggdrasil"), this.redis.getCredentials(), this.keys);
+        this.keys = HyggKeyLoader.loadKeys();
+        this.environment = new HyggEnvironment(new HyggApplication(HyggApplication.Type.HYGGDRASIL, "hyggdrasil", System.currentTimeMillis()), this.redis.getCredentials(), this.keys);
         this.api = new HyggdrasilAPI.Builder()
                 .withJedisPool(this.redis.getJedisPool())
                 .withEnvironment(this.environment)
@@ -83,7 +76,8 @@ public class Hyggdrasil {
         this.registerReceivers();
 
         this.proxyManager.startProxy();
-        this.serverManager.stopServer("lobby");
+
+        this.api.getScheduler().schedule(() -> this.serverManager.startServer("lobby"), 20, TimeUnit.SECONDS);
 
         Runtime.getRuntime().addShutdownHook(new Thread(this::shutdown));
     }
@@ -92,62 +86,6 @@ public class Hyggdrasil {
         IOUtil.createDirectory(References.LOG_FOLDER);
 
         logger = new HyggLogger(References.NAME, References.LOG_FILE.toString());
-    }
-
-    private HyggKeys loadKeys() {
-        final HyggSignatureAlgorithm algorithm = HyggdrasilAPI.ALGORITHM;
-
-        PrivateKey privateKey = null;
-        PublicKey publicKey = null;
-        if (Files.exists(References.PRIVATE_KEY_FILE)) {
-            try {
-                final KeyFactory keyFactory = KeyFactory.getInstance(algorithm.getFamilyName());
-
-                privateKey = keyFactory.generatePrivate(new PKCS8EncodedKeySpec(Files.readAllBytes(References.PRIVATE_KEY_FILE)));
-
-                System.out.println("Private key read from its file.");
-
-                final RSAPrivateCrtKey rsaPrivateCrtKey = (RSAPrivateCrtKey) privateKey;
-                final RSAPublicKeySpec keySpec = new RSAPublicKeySpec(rsaPrivateCrtKey.getModulus(), rsaPrivateCrtKey.getPublicExponent());
-
-                publicKey = keyFactory.generatePublic(keySpec);
-
-                System.out.println("Public key generated from the private one.");
-            } catch (NoSuchAlgorithmException | InvalidKeySpecException | IOException e) {
-                Hyggdrasil.log(Level.SEVERE, "An error occurred while reading private key file! Deleting file...");
-
-                try {
-                    Files.delete(References.PRIVATE_KEY_FILE);
-                } catch (IOException ex) {
-                    ex.printStackTrace();
-                }
-
-                e.printStackTrace();
-            }
-        } else {
-            System.out.println("Generating key pair...");
-
-            try {
-                final KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance(algorithm.getFamilyName());
-
-                keyPairGenerator.initialize(algorithm.getMinimalKeyLength());
-
-                final KeyPair keyPair = keyPairGenerator.generateKeyPair();
-
-                privateKey = keyPair.getPrivate();
-                publicKey = keyPair.getPublic();
-
-                Files.write(References.PRIVATE_KEY_FILE, privateKey.getEncoded());
-            } catch (NoSuchAlgorithmException e) {
-                Hyggdrasil.log(Level.SEVERE, "An error occurred while generating new key pair!");
-                e.printStackTrace();
-            } catch (IOException e) {
-                Hyggdrasil.log(Level.SEVERE, "An error occurred while writing private key in file!");
-                e.printStackTrace();
-            }
-        }
-
-        return new HyggKeys(publicKey, privateKey);
     }
 
     private void registerReceivers() {
