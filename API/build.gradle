@@ -27,6 +27,7 @@ tasks.withType(Javadoc) {
 
 shadowJar {
     configurations = [project.configurations.runtimeClasspath]
+    classifier ''
 }
 
 publishing {
