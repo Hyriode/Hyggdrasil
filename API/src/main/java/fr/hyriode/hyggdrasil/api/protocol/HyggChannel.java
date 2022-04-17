@@ -17,7 +17,9 @@ public enum HyggChannel {
     /** The channel used by servers to send information to Hyggdrasil */
     SERVERS("servers"),
     /** The channel used by proxies to send information to Hyggdrasil */
-    PROXIES("proxies");
+    PROXIES("proxies"),
+    /** The channel used to interact with queues */
+    QUEUE("queue");
 
     /** The name of the channel */
     private final String name;

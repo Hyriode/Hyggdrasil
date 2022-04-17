@@ -1,6 +1,5 @@
-package fr.hyriode.hyggdrasil.api.protocol.packet.model;
+package fr.hyriode.hyggdrasil.api.protocol.packet;
 
-import fr.hyriode.hyggdrasil.api.protocol.packet.HyggPacket;
 import fr.hyriode.hyggdrasil.api.protocol.response.HyggResponse;
 
 import java.util.UUID;

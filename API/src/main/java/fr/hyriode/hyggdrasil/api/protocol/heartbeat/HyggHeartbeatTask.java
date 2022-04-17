@@ -2,7 +2,7 @@ package fr.hyriode.hyggdrasil.api.protocol.heartbeat;
 
 import fr.hyriode.hyggdrasil.api.HyggdrasilAPI;
 import fr.hyriode.hyggdrasil.api.protocol.HyggChannel;
-import fr.hyriode.hyggdrasil.api.protocol.packet.model.HyggHeartbeatPacket;
+import fr.hyriode.hyggdrasil.api.protocol.packet.HyggHeartbeatPacket;
 
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;

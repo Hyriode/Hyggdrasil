@@ -18,17 +18,21 @@ public class HyggEnvironment {
     private final HyggRedisCredentials redisCredentials;
     /** The {@link HyggKeys} object. The keys are used to sign messages or verify them */
     private final HyggKeys keys;
+    /** The data to provide to the application */
+    private final HyggData data;
 
     /**
      * Constructor of {@link HyggEnvironment}
-     *  @param application The application information
+     * @param application The application information
      * @param redisCredentials The credentials used for all Redis information
      * @param keys The keys used for messages
+     * @param data A data dictionary
      */
-    public HyggEnvironment(HyggApplication application, HyggRedisCredentials redisCredentials, HyggKeys keys) {
+    public HyggEnvironment(HyggApplication application, HyggRedisCredentials redisCredentials, HyggKeys keys, HyggData data) {
         this.application = application;
         this.redisCredentials = redisCredentials;
         this.keys = keys;
+        this.data = data;
     }
 
     /**
@@ -59,6 +63,15 @@ public class HyggEnvironment {
     }
 
     /**
+     * Get the data environment
+     *
+     * @return {@link HyggData} object
+     */
+    public HyggData getData() {
+        return this.data;
+    }
+
+    /**
      * Load application information from environment variables if they are set.<br>
      * In most cases, Hyggdrasil will automatically provide them if the application was started by it.
      *
@@ -67,7 +80,7 @@ public class HyggEnvironment {
     public static HyggEnvironment loadFromEnvironmentVariables() {
         HyggdrasilAPI.log("Loading application environment variables...");
 
-        return new HyggEnvironment(HyggApplication.loadFromEnvironmentVariables(), HyggRedisCredentials.loadFromEnvironmentVariables(), HyggKeys.loadFromEnvironmentVariables());
+        return new HyggEnvironment(HyggApplication.loadFromEnvironmentVariables(), HyggRedisCredentials.loadFromEnvironmentVariables(), HyggKeys.loadFromEnvironmentVariables(), HyggData.loadFromEnvironmentVariables());
     }
 
     /**
@@ -81,6 +94,7 @@ public class HyggEnvironment {
         variables.addAll(this.application.createEnvironmentVariables());
         variables.addAll(this.redisCredentials.createEnvironmentVariables());
         variables.addAll(this.keys.createEnvironmentVariables());
+        variables.add(this.data.asEnvironmentVariable());
 
         return variables;
     }

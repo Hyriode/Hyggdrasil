@@ -2,14 +2,14 @@ package fr.hyriode.hyggdrasil.receiver;
 
 import fr.hyriode.hyggdrasil.Hyggdrasil;
 import fr.hyriode.hyggdrasil.api.protocol.packet.HyggPacket;
-import fr.hyriode.hyggdrasil.api.protocol.packet.model.proxy.HyggFetchProxiesPacket;
-import fr.hyriode.hyggdrasil.api.protocol.packet.model.proxy.HyggFetchProxyPacket;
-import fr.hyriode.hyggdrasil.api.protocol.packet.model.proxy.HyggStartProxyPacket;
-import fr.hyriode.hyggdrasil.api.protocol.packet.model.proxy.HyggStopProxyPacket;
-import fr.hyriode.hyggdrasil.api.protocol.packet.model.server.HyggFetchServerPacket;
-import fr.hyriode.hyggdrasil.api.protocol.packet.model.server.HyggFetchServersPacket;
-import fr.hyriode.hyggdrasil.api.protocol.packet.model.server.HyggStartServerPacket;
-import fr.hyriode.hyggdrasil.api.protocol.packet.model.server.HyggStopServerPacket;
+import fr.hyriode.hyggdrasil.api.proxy.packet.HyggFetchProxiesPacket;
+import fr.hyriode.hyggdrasil.api.proxy.packet.HyggFetchProxyPacket;
+import fr.hyriode.hyggdrasil.api.proxy.packet.HyggStartProxyPacket;
+import fr.hyriode.hyggdrasil.api.proxy.packet.HyggStopProxyPacket;
+import fr.hyriode.hyggdrasil.api.server.packet.HyggFetchServerPacket;
+import fr.hyriode.hyggdrasil.api.server.packet.HyggFetchServersPacket;
+import fr.hyriode.hyggdrasil.api.server.packet.HyggStartServerPacket;
+import fr.hyriode.hyggdrasil.api.server.packet.HyggStopServerPacket;
 import fr.hyriode.hyggdrasil.api.protocol.receiver.IHyggPacketReceiver;
 import fr.hyriode.hyggdrasil.api.protocol.request.HyggRequestHeader;
 import fr.hyriode.hyggdrasil.api.protocol.response.HyggResponse;
@@ -52,7 +52,7 @@ public class HyggQueryReceiver implements IHyggPacketReceiver {
         } else if (packet instanceof final HyggStopProxyPacket query) {
             return this.proxyManager.stopProxy(query.getProxyName()) ? SUCCESS : ERROR;
         } else if (packet instanceof final HyggStartServerPacket query) {
-            final HyggServer server = this.serverManager.startServer(query.getServerType(), query.getServerOptions());
+            final HyggServer server = this.serverManager.startServer(query.getServerType(), query.getServerOptions(), query.getServerData());
 
             return server != null ? new HyggResponse(SUCCESS, new HyggServerResponse(server)) : ERROR;
         } else if (packet instanceof final HyggStopServerPacket query) {

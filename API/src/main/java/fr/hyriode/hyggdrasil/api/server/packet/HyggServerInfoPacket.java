@@ -1,5 +1,6 @@
-package fr.hyriode.hyggdrasil.api.protocol.packet.model.server;
+package fr.hyriode.hyggdrasil.api.server.packet;
 
+import fr.hyriode.hyggdrasil.api.protocol.environment.HyggData;
 import fr.hyriode.hyggdrasil.api.protocol.packet.HyggPacket;
 import fr.hyriode.hyggdrasil.api.server.HyggServerOptions;
 import fr.hyriode.hyggdrasil.api.server.HyggServerState;
@@ -19,19 +20,23 @@ public class HyggServerInfoPacket extends HyggPacket {
     private final long startedTime;
     /** The options of the server */
     private final HyggServerOptions options;
+    /** The data of the server */
+    private final HyggData data;
 
     /**
      * Constructor of {@link HyggServerInfoPacket}
-     *  @param state The current state of the server
+     * @param state The current state of the server
      * @param players The amount of players on the server
      * @param startedTime The time when the server started
      * @param options The options of the server
+     * @param data The data of the server
      */
-    public HyggServerInfoPacket(HyggServerState state, int players, long startedTime, HyggServerOptions options) {
+    public HyggServerInfoPacket(HyggServerState state, int players, long startedTime, HyggServerOptions options, HyggData data) {
         this.state = state;
         this.players = players;
         this.startedTime = startedTime;
         this.options = options;
+        this.data = data;
     }
 
     /**
@@ -68,6 +73,15 @@ public class HyggServerInfoPacket extends HyggPacket {
      */
     public HyggServerOptions getOptions() {
         return this.options;
+    }
+
+    /**
+     * Get all the data provided to the server at its start
+     *
+     * @return A {@link HyggData} object
+     */
+    public HyggData getData() {
+        return this.data;
     }
 
 }

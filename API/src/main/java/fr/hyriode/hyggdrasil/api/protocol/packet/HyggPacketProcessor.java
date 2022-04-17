@@ -3,7 +3,6 @@ package fr.hyriode.hyggdrasil.api.protocol.packet;
 import fr.hyriode.hyggdrasil.api.HyggdrasilAPI;
 import fr.hyriode.hyggdrasil.api.protocol.HyggChannel;
 import fr.hyriode.hyggdrasil.api.protocol.HyggProtocol;
-import fr.hyriode.hyggdrasil.api.protocol.packet.model.HyggResponsePacket;
 import fr.hyriode.hyggdrasil.api.protocol.receiver.IHyggPacketReceiver;
 import fr.hyriode.hyggdrasil.api.protocol.receiver.IHyggReceiver;
 import fr.hyriode.hyggdrasil.api.protocol.request.HyggRequest;

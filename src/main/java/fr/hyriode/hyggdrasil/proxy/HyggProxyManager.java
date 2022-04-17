@@ -7,8 +7,8 @@ import fr.hyriode.hyggdrasil.api.event.model.proxy.HyggProxyStoppedEvent;
 import fr.hyriode.hyggdrasil.api.event.model.proxy.HyggProxyUpdatedEvent;
 import fr.hyriode.hyggdrasil.api.protocol.HyggChannel;
 import fr.hyriode.hyggdrasil.api.protocol.packet.HyggPacketProcessor;
-import fr.hyriode.hyggdrasil.api.protocol.packet.model.proxy.HyggProxyInfoPacket;
-import fr.hyriode.hyggdrasil.api.protocol.packet.model.proxy.HyggStopProxyPacket;
+import fr.hyriode.hyggdrasil.api.proxy.packet.HyggProxyInfoPacket;
+import fr.hyriode.hyggdrasil.api.proxy.packet.HyggStopProxyPacket;
 import fr.hyriode.hyggdrasil.api.protocol.response.HyggResponse;
 import fr.hyriode.hyggdrasil.api.protocol.response.HyggResponseCallback;
 import fr.hyriode.hyggdrasil.api.proxy.HyggProxy;
@@ -18,10 +18,9 @@ import fr.hyriode.hyggdrasil.docker.swarm.DockerSwarm;
 import fr.hyriode.hyggdrasil.util.IOUtil;
 import fr.hyriode.hyggdrasil.util.References;
 
-import java.io.File;
 import java.nio.file.Paths;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 import static fr.hyriode.hyggdrasil.api.protocol.response.HyggResponse.Type.SUCCESS;
 
@@ -34,7 +33,7 @@ public class HyggProxyManager {
 
     public static final DockerImage PROXY_IMAGE = new DockerImage("hygg-proxy", "latest");
 
-    private final Set<HyggProxy> proxies;
+    private final List<HyggProxy> proxies;
 
     private final DockerSwarm swarm;
     private final HyggPacketProcessor packetProcessor;
@@ -47,7 +46,7 @@ public class HyggProxyManager {
         this.swarm = this.hyggdrasil.getDocker().getSwarm();
         this.packetProcessor = this.hyggdrasil.getAPI().getPacketProcessor();
         this.eventBus = this.hyggdrasil.getAPI().getEventBus();
-        this.proxies = new HashSet<>();
+        this.proxies = new ArrayList<>();
 
         IOUtil.createDirectory(References.PROXIES_PLUGINS_FOLDER);
 
@@ -123,7 +122,7 @@ public class HyggProxyManager {
         return null;
     }
 
-    public Set<HyggProxy> getProxies() {
+    public List<HyggProxy> getProxies() {
         return this.proxies;
     }
 

@@ -3,8 +3,8 @@ package fr.hyriode.hyggdrasil.receiver;
 import fr.hyriode.hyggdrasil.Hyggdrasil;
 import fr.hyriode.hyggdrasil.api.protocol.environment.HyggApplication;
 import fr.hyriode.hyggdrasil.api.protocol.packet.HyggPacket;
-import fr.hyriode.hyggdrasil.api.protocol.packet.model.HyggHeartbeatPacket;
-import fr.hyriode.hyggdrasil.api.protocol.packet.model.server.HyggServerInfoPacket;
+import fr.hyriode.hyggdrasil.api.protocol.packet.HyggHeartbeatPacket;
+import fr.hyriode.hyggdrasil.api.server.packet.HyggServerInfoPacket;
 import fr.hyriode.hyggdrasil.api.protocol.receiver.IHyggPacketReceiver;
 import fr.hyriode.hyggdrasil.api.protocol.request.HyggRequestHeader;
 import fr.hyriode.hyggdrasil.api.protocol.response.HyggResponse;
@@ -36,7 +36,7 @@ public class HyggServersReceiver implements IHyggPacketReceiver {
 
             if (packet instanceof final HyggServerInfoPacket info) {
                 if (server == null) {
-                    server = new HyggServer(serverName, info.getState(), info.getPlayers(), info.getStartedTime(), info.getOptions());
+                    server = new HyggServer(serverName, info.getState(), info.getPlayers(), info.getStartedTime(), info.getOptions(), info.getData());
 
                     serverManager.getServers().add(server);
                     serverManager.addServerToProxies(server);

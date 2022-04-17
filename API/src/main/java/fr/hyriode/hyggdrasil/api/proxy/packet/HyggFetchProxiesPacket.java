@@ -1,13 +1,11 @@
-package fr.hyriode.hyggdrasil.api.protocol.packet.model.proxy;
+package fr.hyriode.hyggdrasil.api.proxy.packet;
 
 import fr.hyriode.hyggdrasil.api.protocol.packet.HyggPacket;
 import fr.hyriode.hyggdrasil.api.protocol.response.content.HyggResponseContent;
 import fr.hyriode.hyggdrasil.api.proxy.HyggProxy;
-import fr.hyriode.hyggdrasil.api.server.HyggServer;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
 
 /**
  * Project: Hyggdrasil

@@ -2,6 +2,7 @@ package fr.hyriode.hyggdrasil.server;
 
 import fr.hyriode.hyggdrasil.Hyggdrasil;
 import fr.hyriode.hyggdrasil.api.protocol.environment.HyggApplication;
+import fr.hyriode.hyggdrasil.api.protocol.environment.HyggData;
 import fr.hyriode.hyggdrasil.api.server.HyggServer;
 import fr.hyriode.hyggdrasil.docker.image.DockerImage;
 import fr.hyriode.hyggdrasil.docker.swarm.DockerService;
@@ -24,12 +25,15 @@ public class HyggServerService extends DockerService {
 
         this.addLabel(References.STACK_NAME_LABEL, References.STACK_NAME);
 
+        this.addEnv("MEMORY", "6G");
+        this.addEnv("MAX_PLAYERS", "1000");
+
         this.envs.addAll(server.getOptions().asEnvs());
-        this.envs.addAll(hyggdrasil.createEnvsForClient(new HyggApplication(HyggApplication.Type.SERVER, this.hostname, System.currentTimeMillis())));
+        this.envs.addAll(hyggdrasil.createEnvsForClient(new HyggApplication(HyggApplication.Type.SERVER, this.hostname, System.currentTimeMillis()), server.getData()));
 
         final String serverFolder = References.DATA_HOST_FOLDER + "/servers/" + server.getName();
 
-        this.addMount(serverFolder + "", "/data");
+        this.addMount(serverFolder, "/data");
     }
 
 }

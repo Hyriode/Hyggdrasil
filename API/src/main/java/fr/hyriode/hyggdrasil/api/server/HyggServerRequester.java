@@ -5,10 +5,10 @@ import fr.hyriode.hyggdrasil.api.event.HyggEventListener;
 import fr.hyriode.hyggdrasil.api.event.model.server.HyggServerUpdatedEvent;
 import fr.hyriode.hyggdrasil.api.protocol.HyggChannel;
 import fr.hyriode.hyggdrasil.api.protocol.packet.HyggPacket;
-import fr.hyriode.hyggdrasil.api.protocol.packet.model.server.HyggFetchServerPacket;
-import fr.hyriode.hyggdrasil.api.protocol.packet.model.server.HyggFetchServersPacket;
-import fr.hyriode.hyggdrasil.api.protocol.packet.model.server.HyggStartServerPacket;
-import fr.hyriode.hyggdrasil.api.protocol.packet.model.server.HyggStopServerPacket;
+import fr.hyriode.hyggdrasil.api.server.packet.HyggFetchServerPacket;
+import fr.hyriode.hyggdrasil.api.server.packet.HyggFetchServersPacket;
+import fr.hyriode.hyggdrasil.api.server.packet.HyggStartServerPacket;
+import fr.hyriode.hyggdrasil.api.server.packet.HyggStopServerPacket;
 import fr.hyriode.hyggdrasil.api.protocol.request.HyggRequest;
 import fr.hyriode.hyggdrasil.api.protocol.response.HyggResponse;
 import fr.hyriode.hyggdrasil.api.protocol.response.content.HyggResponseContent;
@@ -100,11 +100,11 @@ public class HyggServerRequester {
     /**
      * Create a server with a given type
      *
-     * @param serverType The type of the server to create
+     * @param request The request to create the server
      * @param onCreated The {@link Consumer} to call when the server will be created
      */
-    public void createServer(String serverType, Consumer<HyggServer> onCreated) {
-        this.query(new HyggStartServerPacket(serverType))
+    public void createServer(HyggServerRequest request, Consumer<HyggServer> onCreated) {
+        this.query(new HyggStartServerPacket(request))
                 .withResponseCallback(response -> {
                     final HyggResponse.Type type = response.getType();
                     final HyggResponseContent content = response.getContent();
@@ -116,7 +116,7 @@ public class HyggServerRequester {
                             System.err.println("The request to create server was successfully done, but no server information was send back!");
                         }
                     } else {
-                        System.err.println("Couldn't create a server with type: " + serverType + ". Returned message: " + type + ".");
+                        System.err.println("Couldn't create a server with type: " + request.getServerType() + ". Returned message: " + type + ".");
                     }
                 }).exec();
     }

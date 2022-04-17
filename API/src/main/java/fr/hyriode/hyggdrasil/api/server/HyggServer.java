@@ -1,5 +1,7 @@
 package fr.hyriode.hyggdrasil.api.server;
 
+import fr.hyriode.hyggdrasil.api.protocol.environment.HyggData;
+
 import java.util.UUID;
 
 /**
@@ -8,6 +10,9 @@ import java.util.UUID;
  * on 16/10/2021 at 13:48
  */
 public class HyggServer {
+
+    public static final String GAME_TYPE_KEY = "game-type";
+    public static final String MAP_KEY = "map";
 
     /** Server's name */
     protected final String name;
@@ -18,9 +23,15 @@ public class HyggServer {
     protected HyggServerState state;
     /** Server's options (pvp, nether, etc.) */
     protected final HyggServerOptions options;
+    /** The data provided to the server */
+    protected final HyggData data;
 
     /** Current number of players on the server */
     protected int players;
+    /** The real amount of players connected on the server. It includes moderators, and spectators */
+    protected int realPlayers;
+    /** The available slots on the network */
+    protected int slots = -1;
 
     /** Server's started time (timestamp) */
     protected final long startedTime;
@@ -32,12 +43,14 @@ public class HyggServer {
      *
      * @param type Server's type (for example: lobby, nexus, etc.)
      * @param options Server's options (pvp, nether, etc.)
+     * @param data Server's data
      */
-    public HyggServer(String type, HyggServerOptions options) {
+    public HyggServer(String type, HyggServerOptions options, HyggData data) {
         this.name = type + "-" + UUID.randomUUID().toString().substring(0, 5);
         this.type = type;
         this.state = HyggServerState.CREATING;
         this.options = options;
+        this.data = data;
         this.startedTime = System.currentTimeMillis();
     }
 
@@ -49,12 +62,14 @@ public class HyggServer {
      * @param players The current amount of players on the server
      * @param startedTime The time when the server started
      * @param options Server's options (pvp, nether, etc.)
+     * @param data Server's data
      */
-    public HyggServer(String name, HyggServerState state, int players, long startedTime, HyggServerOptions options) {
+    public HyggServer(String name, HyggServerState state, int players, long startedTime, HyggServerOptions options, HyggData data) {
         this.name = name;
         this.type = getTypeFromName(name);
         this.state = state;
         this.options = options;
+        this.data = data;
         this.players = players;
         this.startedTime = startedTime;
     }
@@ -88,6 +103,25 @@ public class HyggServer {
     }
 
     /**
+     * Get the type of the game.<br>
+     * It can be null, because not all servers are game servers!
+     *
+     * @return A game type. Ex: DEFAULT, FOUR_FOUR, etc.
+     */
+    public String getGameType() {
+        return this.data.get(GAME_TYPE_KEY);
+    }
+
+    /**
+     * Get the name of the map used on the server
+     *
+     * @return A map name
+     */
+    public String getMap() {
+        return this.data.get(MAP_KEY);
+    }
+
+    /**
      * Get current server's state
      *
      * @return {@link HyggServerState}
@@ -115,6 +149,15 @@ public class HyggServer {
     }
 
     /**
+     * Get server's data
+     *
+     * @return A {@link HyggData} object
+     */
+    public HyggData getData() {
+        return this.data;
+    }
+
+    /**
      * Get current number of players on the server
      *
      * @return Number of players
@@ -130,6 +173,42 @@ public class HyggServer {
      */
     public void setPlayers(int players) {
         this.players = players;
+    }
+
+    /**
+     * Get the real amount of players on the server
+     *
+     * @return An amount of players
+     */
+    public int getRealPlayers() {
+        return this.realPlayers;
+    }
+
+    /**
+     * Set the real amount of players on the server
+     *
+     * @param realPlayers New real players amount
+     */
+    public void setRealPlayers(int realPlayers) {
+        this.realPlayers = realPlayers;
+    }
+
+    /**
+     * Get the available slots on the server
+     *
+     * @return A number
+     */
+    public int getSlots() {
+        return this.slots;
+    }
+
+    /**
+     * Set the server slots
+     *
+     * @param slots New slots
+     */
+    public void setSlots(int slots) {
+        this.slots = slots;
     }
 
     /**

@@ -1,4 +1,4 @@
-package fr.hyriode.hyggdrasil.api.protocol.packet.model.server;
+package fr.hyriode.hyggdrasil.api.server.packet;
 
 import fr.hyriode.hyggdrasil.api.protocol.packet.HyggPacket;
 

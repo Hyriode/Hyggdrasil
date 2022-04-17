@@ -1,7 +1,9 @@
-package fr.hyriode.hyggdrasil.api.protocol.packet.model.server;
+package fr.hyriode.hyggdrasil.api.server.packet;
 
+import fr.hyriode.hyggdrasil.api.protocol.environment.HyggData;
 import fr.hyriode.hyggdrasil.api.protocol.packet.HyggPacket;
 import fr.hyriode.hyggdrasil.api.server.HyggServerOptions;
+import fr.hyriode.hyggdrasil.api.server.HyggServerRequest;
 
 /**
  * Project: Hyggdrasil
@@ -14,26 +16,29 @@ public class HyggStartServerPacket extends HyggPacket {
     private final String serverType;
     /** The options to set to the server */
     private final HyggServerOptions serverOptions;
+    /** The data to provide to the server */
+    private final HyggData serverData;
 
     /**
      * Constructor of {@link HyggStartServerPacket}
      *
      * @param serverType The server type
      * @param serverOptions The options to set to the server
+     * @param serverData The dictionary of data
      */
-    public HyggStartServerPacket(String serverType, HyggServerOptions serverOptions) {
+    public HyggStartServerPacket(String serverType, HyggServerOptions serverOptions, HyggData serverData) {
         this.serverType = serverType;
         this.serverOptions = serverOptions;
+        this.serverData = serverData;
     }
 
     /**
-     * Constructor of {@link HyggStartServerPacket}
+     * Create a {@link HyggStartServerPacket} from a {@link HyggServerRequest} object
      *
-     * @param serverType The server type
+     * @param request The request
      */
-    public HyggStartServerPacket(String serverType) {
-        this.serverType = serverType;
-        this.serverOptions = new HyggServerOptions();
+    public HyggStartServerPacket(HyggServerRequest request) {
+        this(request.getServerType(), request.getServerOptions(), request.getServerData());
     }
 
     /**
@@ -52,6 +57,15 @@ public class HyggStartServerPacket extends HyggPacket {
      */
     public HyggServerOptions getServerOptions() {
         return this.serverOptions;
+    }
+
+    /**
+     * Get the data to provide to the server
+     *
+     * @return A {@link HyggData} object
+     */
+    public HyggData getServerData() {
+        return this.serverData;
     }
 
 }
