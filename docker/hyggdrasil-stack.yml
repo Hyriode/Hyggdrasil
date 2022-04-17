@@ -1,26 +1,29 @@
 version: "3.8"
 
 networks:
-  hyriode:
+  hyggdrasil:
     driver: overlay
 
 services:
   redis:
     image: redis:6.2.6-alpine
     networks:
-      - hyriode
+      - hyggdrasil
     command: redis-server --requirepass p@ssw0rd
 
   hyggdrasil:
     image: hyggdrasil:latest
     networks:
-      - hyriode
+      - hyggdrasil
     environment:
       STACK_NAME: hyggdrasil
-      NETWORK_NAME: hyriode
+      NETWORK_NAME: hyggdrasil
       REDIS_HOST: redis
       REDIS_PASS: p@ssw0rd
       DATA_FOLDER: C:/Users/Corentin/Documents/Hyriode/Hyggdrasil/docker/data
+      CLOUDFLARE_TOKEN:
+      CLOUDFLARE_ZONE_ID: a241ea3c38612c4601647c4bfe9b3b9c
+      CLOUDFLARE_DNS_ID: 6c27158fdebadb35aeb43412da6158d9
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./data/:/usr/app/data

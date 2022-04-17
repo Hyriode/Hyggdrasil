@@ -35,6 +35,8 @@ public class HyggProxyManager {
 
     private final List<HyggProxy> proxies;
 
+    private final HyggProxyBalancer balancer;
+
     private final DockerSwarm swarm;
     private final HyggPacketProcessor packetProcessor;
     private final HyggEventBus eventBus;
@@ -46,11 +48,18 @@ public class HyggProxyManager {
         this.swarm = this.hyggdrasil.getDocker().getSwarm();
         this.packetProcessor = this.hyggdrasil.getAPI().getPacketProcessor();
         this.eventBus = this.hyggdrasil.getAPI().getEventBus();
+        this.balancer = new HyggProxyBalancer(this.hyggdrasil, this);
         this.proxies = new ArrayList<>();
 
         IOUtil.createDirectory(References.PROXIES_PLUGINS_FOLDER);
 
         this.hyggdrasil.getDocker().getImageManager().buildImage(Paths.get(References.PROXY_IMAGES_FOLDER.toString(), "Dockerfile").toFile(), PROXY_IMAGE.getName());
+    }
+
+    public void stop() {
+        System.out.println("Stopping proxy manager...");
+
+        this.balancer.stop();
     }
 
     public HyggProxy startProxy() {
@@ -97,6 +106,10 @@ public class HyggProxyManager {
 
             proxy.setState(HyggProxyState.SHUTDOWN);
 
+            if (this.balancer.getCurrentProxy().equals(proxy.getName())) {
+                this.balancer.balance();
+            }
+
             this.packetProcessor.request(HyggChannel.PROXIES, new HyggStopProxyPacket(name))
                     .withResponseCallback(callback)
                     .withResponseTimeEndCallback(() -> {
@@ -120,6 +133,23 @@ public class HyggProxyManager {
             }
         }
         return null;
+    }
+
+    public HyggProxy getBestProxy() {
+        HyggProxy bestProxy = null;
+        for (HyggProxy proxy : this.proxies) {
+            if (proxy.getState() == HyggProxyState.READY) {
+                if (bestProxy == null) {
+                    bestProxy = proxy;
+                    continue;
+                }
+
+                if (proxy.getPlayers() < bestProxy.getPlayers()) {
+                    bestProxy = proxy;
+                }
+            }
+        }
+        return bestProxy;
     }
 
     public List<HyggProxy> getProxies() {

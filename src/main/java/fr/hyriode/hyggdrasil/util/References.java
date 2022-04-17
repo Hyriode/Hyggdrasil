@@ -11,6 +11,7 @@ public class References {
     /** Global */
     public static final String NAME = "Hyggdrasil";
     public static final String USER_DIR = System.getProperty("user.dir");
+    public static final String DOMAIN_NAME = System.getenv("DOMAIN_NAME");
 
     /** Files */
     public static final Path LOG_FOLDER = Paths.get(USER_DIR, "logs");

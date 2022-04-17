@@ -123,8 +123,11 @@ public class HyggQueueManager {
 
     public HyggQueue createQueue(String game, String gameType, String map) {
         final HyggQueue queue = new HyggQueue(this.hyggdrasil, game, gameType, map);
+        final String name = this.createQueueName(game, gameType, map);
 
-        this.queues.put(this.createQueueName(game, gameType, map), queue);
+        this.queues.put(name, queue);
+
+        System.out.println("Created '" + name + "' queue.");
 
         return queue;
     }
