@@ -8,14 +8,14 @@ import fr.hyriode.hyggdrasil.api.event.model.server.HyggServerUpdatedEvent;
 import fr.hyriode.hyggdrasil.api.protocol.HyggChannel;
 import fr.hyriode.hyggdrasil.api.protocol.environment.HyggData;
 import fr.hyriode.hyggdrasil.api.protocol.packet.HyggPacketProcessor;
-import fr.hyriode.hyggdrasil.api.proxy.packet.HyggProxyServerActionPacket;
-import fr.hyriode.hyggdrasil.api.server.packet.HyggServerInfoPacket;
-import fr.hyriode.hyggdrasil.api.server.packet.HyggStopServerPacket;
 import fr.hyriode.hyggdrasil.api.protocol.response.HyggResponse;
 import fr.hyriode.hyggdrasil.api.protocol.response.HyggResponseCallback;
+import fr.hyriode.hyggdrasil.api.proxy.packet.HyggProxyServerActionPacket;
 import fr.hyriode.hyggdrasil.api.server.HyggServer;
 import fr.hyriode.hyggdrasil.api.server.HyggServerOptions;
 import fr.hyriode.hyggdrasil.api.server.HyggServerState;
+import fr.hyriode.hyggdrasil.api.server.packet.HyggServerInfoPacket;
+import fr.hyriode.hyggdrasil.api.server.packet.HyggStopServerPacket;
 import fr.hyriode.hyggdrasil.docker.image.DockerImage;
 import fr.hyriode.hyggdrasil.docker.swarm.DockerSwarm;
 import fr.hyriode.hyggdrasil.util.IOUtil;
@@ -30,9 +30,9 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
 
+import static fr.hyriode.hyggdrasil.api.protocol.response.HyggResponse.Type.SUCCESS;
 import static fr.hyriode.hyggdrasil.api.proxy.packet.HyggProxyServerActionPacket.Action.ADD;
 import static fr.hyriode.hyggdrasil.api.proxy.packet.HyggProxyServerActionPacket.Action.REMOVE;
-import static fr.hyriode.hyggdrasil.api.protocol.response.HyggResponse.Type.SUCCESS;
 
 /**
  * Project: Hyggdrasil
@@ -129,25 +129,24 @@ public class HyggServerManager {
     public void updateServer(HyggServer server, HyggServerInfoPacket info) {
         server.setPlayers(info.getPlayers());
         server.setState(info.getState());
+        server.setSlots(info.getSlots());
 
         this.eventBus.publish(new HyggServerUpdatedEvent(server));
     }
 
-    public boolean stopServer(String name) {
+    public boolean stopServer(String name, long waitingTime) {
         final HyggServer server = this.getServerByName(name);
 
         if (server != null) {
-            final Runnable action = () -> {
+            final Runnable action = () -> this.hyggdrasil.getAPI().getScheduler().schedule(() -> {
                 this.removeServerFromProxies(server);
 
                 this.swarm.removeService(name);
 
-                this.eventBus.publish(new HyggServerStoppedEvent(server));
-
                 IOUtil.delete(Paths.get(References.SERVERS_FOLDER.toString(), server.getName()));
 
                 System.out.println("Stopped '" + name + "'.");
-            };
+            }, waitingTime, TimeUnit.SECONDS);
             final HyggResponseCallback callback = response -> {
                 final HyggResponse.Type type = response.getType();
 
@@ -159,6 +158,8 @@ public class HyggServerManager {
             };
 
             server.setState(HyggServerState.SHUTDOWN);
+
+            this.eventBus.publish(new HyggServerStoppedEvent(server));
 
             this.packetProcessor.request(HyggChannel.SERVERS, new HyggStopServerPacket(name))
                     .withResponseCallback(callback)
@@ -174,6 +175,10 @@ public class HyggServerManager {
             System.err.println("Couldn't stop a server with the following name: '" + name + "'!");
         }
         return false;
+    }
+
+    public boolean stopServer(String name) {
+       return this.stopServer(name, 0);
     }
 
     public void addServerToProxies(HyggServer server) {

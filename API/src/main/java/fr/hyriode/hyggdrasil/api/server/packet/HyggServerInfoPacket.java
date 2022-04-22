@@ -5,6 +5,9 @@ import fr.hyriode.hyggdrasil.api.protocol.packet.HyggPacket;
 import fr.hyriode.hyggdrasil.api.server.HyggServerOptions;
 import fr.hyriode.hyggdrasil.api.server.HyggServerState;
 
+import java.util.List;
+import java.util.UUID;
+
 /**
  * Project: Hyggdrasil
  * Created by AstFaster
@@ -14,29 +17,33 @@ public class HyggServerInfoPacket extends HyggPacket {
 
     /** The current state of the server */
     private final HyggServerState state;
-    /** The current amount of players on the server */
-    private final int players;
+    /** The current players on the server */
+    private final List<UUID> players;
     /** The time when the server started */
     private final long startedTime;
     /** The options of the server */
     private final HyggServerOptions options;
     /** The data of the server */
     private final HyggData data;
+    /** The slots of the server */
+    private final int slots;
 
     /**
      * Constructor of {@link HyggServerInfoPacket}
      * @param state The current state of the server
-     * @param players The amount of players on the server
+     * @param players The players on the server
      * @param startedTime The time when the server started
      * @param options The options of the server
      * @param data The data of the server
+     * @param slots The slots of the server
      */
-    public HyggServerInfoPacket(HyggServerState state, int players, long startedTime, HyggServerOptions options, HyggData data) {
+    public HyggServerInfoPacket(HyggServerState state, List<UUID> players, long startedTime, HyggServerOptions options, HyggData data, int slots) {
         this.state = state;
         this.players = players;
         this.startedTime = startedTime;
         this.options = options;
         this.data = data;
+        this.slots = slots;
     }
 
     /**
@@ -53,7 +60,7 @@ public class HyggServerInfoPacket extends HyggPacket {
      *
      * @return An amount of players
      */
-    public int getPlayers() {
+    public List<UUID> getPlayers() {
         return this.players;
     }
 
@@ -82,6 +89,15 @@ public class HyggServerInfoPacket extends HyggPacket {
      */
     public HyggData getData() {
         return this.data;
+    }
+
+    /**
+     * Get the slots available on the server
+     *
+     * @return A maximum amount of players
+     */
+    public int getSlots() {
+        return this.slots;
     }
 
 }

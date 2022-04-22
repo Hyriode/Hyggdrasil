@@ -3,18 +3,12 @@ package fr.hyriode.hyggdrasil.docker.image;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.BuildImageResultCallback;
 import com.github.dockerjava.api.command.PullImageResultCallback;
-import com.github.dockerjava.api.model.BuildResponseItem;
 import com.github.dockerjava.api.model.Image;
-import com.github.dockerjava.core.command.BuildImageCmdImpl;
-import com.github.dockerjava.core.exec.BuildImageCmdExec;
-import com.github.dockerjava.core.exec.CreateImageCmdExec;
 import fr.hyriode.hyggdrasil.Hyggdrasil;
 import fr.hyriode.hyggdrasil.docker.Docker;
 
 import java.io.Closeable;
 import java.io.File;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.stream.Collectors;

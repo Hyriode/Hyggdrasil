@@ -3,6 +3,7 @@ package fr.hyriode.hyggdrasil.api.queue;
 import fr.hyriode.hyggdrasil.api.HyggdrasilAPI;
 import fr.hyriode.hyggdrasil.api.protocol.HyggChannel;
 import fr.hyriode.hyggdrasil.api.queue.packet.HyggQueueTransferPacket;
+import fr.hyriode.hyggdrasil.api.queue.packet.HyggQueueUpdateGroupPacket;
 import fr.hyriode.hyggdrasil.api.server.HyggServer;
 
 import java.util.ArrayList;
@@ -18,7 +19,7 @@ public class HyggQueueGroup {
 
     private final String id;
     private HyggQueuePlayer leader;
-    private final List<HyggQueuePlayer> players;
+    private List<HyggQueuePlayer> players;
 
     private int priority;
 
@@ -29,6 +30,15 @@ public class HyggQueueGroup {
         this.priority = leader.getPriority();
 
         this.players.add(this.leader);
+
+        this.calculatePriority();
+    }
+
+    public void update(HyggQueueUpdateGroupPacket packet) {
+        final HyggQueueGroup group = packet.getGroup();
+
+        this.leader = group.getLeader();
+        this.players = group.getPlayers();
 
         this.calculatePriority();
     }

@@ -12,8 +12,9 @@ import fr.hyriode.hyggdrasil.api.server.HyggServerOptions;
 import fr.hyriode.hyggdrasil.api.server.HyggServerState;
 import fr.hyriode.hyggdrasil.server.HyggServerManager;
 
-import java.util.*;
-import java.util.concurrent.PriorityBlockingQueue;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -57,7 +58,7 @@ public class HyggQueue {
         for (HyggServer server : availableServers) {
             final List<HyggQueueGroup> groups = new ArrayList<>();
 
-            this.queue.drainGroups(groups, server.getSlots() - server.getPlayers());
+            this.queue.drainGroups(groups, server.getSlots() - server.getPlayers().size());
 
             for (HyggQueueGroup group : groups) {
                 group.send(this.hyggdrasil.getAPI(), server);
@@ -92,7 +93,7 @@ public class HyggQueue {
         int availableSlots = 0;
 
         for (HyggServer server : currentServers) {
-            availableSlots += server.getSlots() - server.getPlayers();
+            availableSlots += server.getSlots() - server.getPlayers().size();
         }
 
         if (size >= availableSlots) {
@@ -102,7 +103,10 @@ public class HyggQueue {
                 final HyggData data = new HyggData();
 
                 data.add(HyggServer.GAME_TYPE_KEY, this.gameType);
-                data.add(HyggServer.MAP_KEY, this.map);
+
+                if (this.map != null) {
+                    data.add(HyggServer.MAP_KEY, this.map);
+                }
 
                 this.serverManager.startServer(this.game, new HyggServerOptions(), data);
             }

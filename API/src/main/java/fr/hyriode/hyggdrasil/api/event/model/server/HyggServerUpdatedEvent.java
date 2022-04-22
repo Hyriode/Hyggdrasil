@@ -3,6 +3,9 @@ package fr.hyriode.hyggdrasil.api.event.model.server;
 import fr.hyriode.hyggdrasil.api.server.HyggServer;
 import fr.hyriode.hyggdrasil.api.server.HyggServerState;
 
+import java.util.List;
+import java.util.UUID;
+
 /**
  * Project: Hyggdrasil
  * Created by AstFaster
@@ -29,11 +32,11 @@ public class HyggServerUpdatedEvent extends HyggServerEvent {
     }
 
     /**
-     * Get the current amount of players that are on the server
+     * Get the current players that are on the server
      *
-     * @return An amount of players
+     * @return A list of players
      */
-    public int getServerPlayers() {
+    public List<UUID> getServerPlayers() {
         return this.server.getPlayers();
     }
 

@@ -10,20 +10,14 @@ import fr.hyriode.hyggdrasil.api.queue.HyggQueuePlayer;
 public class HyggQueueAddPlayerPacket extends HyggQueueAddPacket {
 
     private final HyggQueuePlayer player;
-    private final int priority;
 
-    public HyggQueueAddPlayerPacket(HyggQueuePlayer player, int priority, String game, String gameType, String map) {
+    public HyggQueueAddPlayerPacket(HyggQueuePlayer player, String game, String gameType, String map) {
         super(game, gameType, map);
         this.player = player;
-        this.priority = priority;
     }
 
     public HyggQueuePlayer getPlayer() {
         return this.player;
-    }
-
-    public int getPriority() {
-        return this.priority;
     }
 
 }

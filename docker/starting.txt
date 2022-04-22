@@ -1,0 +1,2 @@
+sudo docker run -d --name haproxy --restart unless-stopped -v /home/debian/hyggdrasil/docker/haproxy:/usr/local/etc/haproxy:ro -p 25565:25565 haproxy:2.5.5
+sudo docker stack deploy -c hyggdrasil-stack.yml hyggdrasil

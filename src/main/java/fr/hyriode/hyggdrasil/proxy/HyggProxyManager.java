@@ -7,17 +7,19 @@ import fr.hyriode.hyggdrasil.api.event.model.proxy.HyggProxyStoppedEvent;
 import fr.hyriode.hyggdrasil.api.event.model.proxy.HyggProxyUpdatedEvent;
 import fr.hyriode.hyggdrasil.api.protocol.HyggChannel;
 import fr.hyriode.hyggdrasil.api.protocol.packet.HyggPacketProcessor;
-import fr.hyriode.hyggdrasil.api.proxy.packet.HyggProxyInfoPacket;
-import fr.hyriode.hyggdrasil.api.proxy.packet.HyggStopProxyPacket;
 import fr.hyriode.hyggdrasil.api.protocol.response.HyggResponse;
 import fr.hyriode.hyggdrasil.api.protocol.response.HyggResponseCallback;
 import fr.hyriode.hyggdrasil.api.proxy.HyggProxy;
 import fr.hyriode.hyggdrasil.api.proxy.HyggProxyState;
+import fr.hyriode.hyggdrasil.api.proxy.packet.HyggProxyInfoPacket;
+import fr.hyriode.hyggdrasil.api.proxy.packet.HyggStopProxyPacket;
 import fr.hyriode.hyggdrasil.docker.image.DockerImage;
 import fr.hyriode.hyggdrasil.docker.swarm.DockerSwarm;
 import fr.hyriode.hyggdrasil.util.IOUtil;
 import fr.hyriode.hyggdrasil.util.References;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,11 +33,12 @@ import static fr.hyriode.hyggdrasil.api.protocol.response.HyggResponse.Type.SUCC
  */
 public class HyggProxyManager {
 
+    private static final int MAX_PROXIES = Integer.parseInt(System.getenv("MAX_PROXIES"));
+    private static final int STARTING_PORT = Integer.parseInt(System.getenv("PROXIES_STARTING_PORT"));
+
     public static final DockerImage PROXY_IMAGE = new DockerImage("hygg-proxy", "latest");
 
     private final List<HyggProxy> proxies;
-
-    private final HyggProxyBalancer balancer;
 
     private final DockerSwarm swarm;
     private final HyggPacketProcessor packetProcessor;
@@ -48,32 +51,61 @@ public class HyggProxyManager {
         this.swarm = this.hyggdrasil.getDocker().getSwarm();
         this.packetProcessor = this.hyggdrasil.getAPI().getPacketProcessor();
         this.eventBus = this.hyggdrasil.getAPI().getEventBus();
-        this.balancer = new HyggProxyBalancer(this.hyggdrasil, this);
         this.proxies = new ArrayList<>();
 
-        IOUtil.createDirectory(References.PROXIES_PLUGINS_FOLDER);
+        new HyggProxyBalancer(this.hyggdrasil, this);
+
+        IOUtil.createDirectory(References.PROXIES_COMMON_FOLDER);
 
         this.hyggdrasil.getDocker().getImageManager().buildImage(Paths.get(References.PROXY_IMAGES_FOLDER.toString(), "Dockerfile").toFile(), PROXY_IMAGE.getName());
     }
 
-    public void stop() {
-        System.out.println("Stopping proxy manager...");
+    public HyggProxy startProxy() {
+        if (this.proxies.size() >= MAX_PROXIES) {
+            System.err.println("Cannot start a new proxy! Proxies limit has already been reached (" + this.proxies.size() + "/" + MAX_PROXIES + ")!");
+            return null;
+        }
 
-        this.balancer.stop();
+        final int availablePort = this.getAvailablePort();
+
+        if (availablePort != -1) {
+            final HyggProxy proxy = new HyggProxy();
+            final Path proxyFolder = Paths.get(References.PROXIES_FOLDER.toString(), proxy.getName());
+
+            if (IOUtil.createDirectory(proxyFolder)) {
+                if (!Files.exists(References.PROXIES_COMMON_FOLDER) || !IOUtil.copyContent(References.PROXIES_COMMON_FOLDER, proxyFolder)) {
+                    return null;
+                }
+
+                proxy.setPort(availablePort);
+
+                this.swarm.runService(new HyggProxyService(this.hyggdrasil, proxy));
+
+                this.proxies.add(proxy);
+
+                this.eventBus.publish(new HyggProxyStartedEvent(proxy));
+
+                System.out.println("Started '" + proxy.getName() + "' (port: " + proxy.getPort() + ") [" + this.proxies.size() + "/" + MAX_PROXIES + "].");
+
+                return proxy;
+            }
+        }
+        return null;
     }
 
-    public HyggProxy startProxy() {
-        final HyggProxy proxy = new HyggProxy();
+    private int getAvailablePort() {
+        int availablePort = STARTING_PORT;
 
-        this.swarm.runService(new HyggProxyService(this.hyggdrasil, proxy));
-
-        this.proxies.add(proxy);
-
-        this.eventBus.publish(new HyggProxyStartedEvent(proxy));
-
-        System.out.println("Started '" + proxy.getName() + "' (port: " + proxy.getPort() + ").");
-
-        return proxy;
+        for (int i = STARTING_PORT; i < STARTING_PORT + MAX_PROXIES; i++) {
+            for (HyggProxy proxy : this.proxies) {
+                if (proxy.getPort() == i) {
+                    availablePort = -1;
+                } else {
+                    availablePort = i;
+                }
+            }
+        }
+        return availablePort;
     }
 
     public void updateProxy(HyggProxy proxy, HyggProxyInfoPacket info) {
@@ -92,6 +124,8 @@ public class HyggProxyManager {
 
                 this.eventBus.publish(new HyggProxyStoppedEvent(proxy));
 
+                IOUtil.delete(Paths.get(References.PROXIES_FOLDER.toString(), proxy.getName()));
+
                 System.out.println("Stopped '" + name + "'.");
             };
             final HyggResponseCallback callback = response -> {
@@ -105,10 +139,6 @@ public class HyggProxyManager {
             };
 
             proxy.setState(HyggProxyState.SHUTDOWN);
-
-            if (this.balancer.getCurrentProxy().equals(proxy.getName())) {
-                this.balancer.balance();
-            }
 
             this.packetProcessor.request(HyggChannel.PROXIES, new HyggStopProxyPacket(name))
                     .withResponseCallback(callback)

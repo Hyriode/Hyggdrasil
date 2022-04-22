@@ -1,7 +1,5 @@
 package fr.hyriode.hyggdrasil.api.queue.packet;
 
-import fr.hyriode.hyggdrasil.api.protocol.packet.HyggPacket;
-
 /**
  * Project: Hyggdrasil
  * Created by AstFaster

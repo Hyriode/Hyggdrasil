@@ -2,8 +2,6 @@ package fr.hyriode.hyggdrasil.api.server;
 
 import fr.hyriode.hyggdrasil.api.protocol.environment.HyggData;
 
-import java.util.HashMap;
-
 /**
  * Project: Hyggdrasil
  * Created by AstFaster

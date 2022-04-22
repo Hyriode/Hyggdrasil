@@ -115,4 +115,13 @@ public class HyggScheduler {
         }
     }
 
+    /**
+     * Get the executor service of the scheduler
+     *
+     * @return An {@link ExecutorService}
+     */
+    public ExecutorService getExecutorService() {
+        return this.executorService;
+    }
+
 }

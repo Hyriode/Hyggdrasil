@@ -5,19 +5,19 @@ import fr.hyriode.hyggdrasil.api.event.HyggEventListener;
 import fr.hyriode.hyggdrasil.api.event.model.server.HyggServerUpdatedEvent;
 import fr.hyriode.hyggdrasil.api.protocol.HyggChannel;
 import fr.hyriode.hyggdrasil.api.protocol.packet.HyggPacket;
-import fr.hyriode.hyggdrasil.api.server.packet.HyggFetchServerPacket;
-import fr.hyriode.hyggdrasil.api.server.packet.HyggFetchServersPacket;
-import fr.hyriode.hyggdrasil.api.server.packet.HyggStartServerPacket;
-import fr.hyriode.hyggdrasil.api.server.packet.HyggStopServerPacket;
 import fr.hyriode.hyggdrasil.api.protocol.request.HyggRequest;
 import fr.hyriode.hyggdrasil.api.protocol.response.HyggResponse;
 import fr.hyriode.hyggdrasil.api.protocol.response.content.HyggResponseContent;
 import fr.hyriode.hyggdrasil.api.protocol.response.content.HyggServerResponse;
+import fr.hyriode.hyggdrasil.api.server.packet.HyggFetchServerPacket;
+import fr.hyriode.hyggdrasil.api.server.packet.HyggFetchServersPacket;
+import fr.hyriode.hyggdrasil.api.server.packet.HyggStartServerPacket;
+import fr.hyriode.hyggdrasil.api.server.packet.HyggStopServerPacket;
 
 import java.util.List;
 import java.util.function.Consumer;
 
-import static fr.hyriode.hyggdrasil.api.protocol.response.HyggResponse.Type.*;
+import static fr.hyriode.hyggdrasil.api.protocol.response.HyggResponse.Type.SUCCESS;
 
 /**
  * Project: Hyggdrasil
@@ -213,7 +213,7 @@ public class HyggServerRequester {
         public void onEvent(HyggServerUpdatedEvent event) {
             final HyggServer server = event.getServer();
 
-            if (server.getName().equals(this.serverName) && event.getServerPlayers() == this.waitingPlayers) {
+            if (server.getName().equals(this.serverName) && event.getServerPlayers().size() == this.waitingPlayers) {
                 this.callback.accept(server);
 
                 this.unsubscribe(hyggdrasilAPI.getEventBus());

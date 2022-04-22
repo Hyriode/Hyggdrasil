@@ -2,14 +2,14 @@ package fr.hyriode.hyggdrasil.receiver;
 
 import fr.hyriode.hyggdrasil.Hyggdrasil;
 import fr.hyriode.hyggdrasil.api.protocol.environment.HyggApplication;
-import fr.hyriode.hyggdrasil.api.protocol.packet.HyggPacket;
 import fr.hyriode.hyggdrasil.api.protocol.packet.HyggHeartbeatPacket;
-import fr.hyriode.hyggdrasil.api.proxy.packet.HyggProxyInfoPacket;
+import fr.hyriode.hyggdrasil.api.protocol.packet.HyggPacket;
 import fr.hyriode.hyggdrasil.api.protocol.receiver.IHyggPacketReceiver;
 import fr.hyriode.hyggdrasil.api.protocol.request.HyggRequestHeader;
 import fr.hyriode.hyggdrasil.api.protocol.response.HyggResponse;
 import fr.hyriode.hyggdrasil.api.protocol.response.IHyggResponse;
 import fr.hyriode.hyggdrasil.api.proxy.HyggProxy;
+import fr.hyriode.hyggdrasil.api.proxy.packet.HyggProxyInfoPacket;
 import fr.hyriode.hyggdrasil.proxy.HyggProxyManager;
 
 /**

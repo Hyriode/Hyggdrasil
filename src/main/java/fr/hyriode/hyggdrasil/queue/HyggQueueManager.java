@@ -58,6 +58,10 @@ public class HyggQueueManager {
         } else if (!this.serverManager.isTypeExisting(packet.getGame())) {
             response.withType(HyggResponse.Type.ERROR).withContent(HyggQueueAddPacket.Response.INVALID_TYPE.asContent());
         } else {
+            if (currentQueue != null) {
+                currentQueue.removeGroup(group.getId());
+            }
+
             queue.addGroup(group);
 
             response.withContent(HyggQueueAddPacket.Response.ADDED.asContent());
@@ -87,6 +91,19 @@ public class HyggQueueManager {
             response.withType(HyggResponse.Type.ERROR).withContent(HyggQueueRemovePacket.Response.NOT_IN_QUEUE.asContent());
         } else if (!queue.removeGroup(groupId)) {
             response.withType(HyggResponse.Type.ERROR).withContent(HyggQueueRemovePacket.Response.UNKNOWN.asContent());
+        }
+        return response;
+    }
+
+    public HyggResponse handlePacket(HyggQueueUpdateGroupPacket packet) {
+        final String groupId = packet.getGroup().getId();
+        final HyggResponse response = new HyggResponse(HyggResponse.Type.SUCCESS).withContent(HyggQueueUpdateGroupPacket.Response.UPDATED.asContent());
+        final HyggQueue queue = this.getCurrentQueue(groupId);
+
+        if (queue == null) {
+            response.withType(HyggResponse.Type.ERROR).withContent(HyggQueueUpdateGroupPacket.Response.NOT_IN_QUEUE.asContent());
+        } else {
+            queue.getGroup(groupId).update(packet);
         }
         return response;
     }
@@ -121,7 +138,7 @@ public class HyggQueueManager {
         return queue;
     }
 
-    public HyggQueue createQueue(String game, String gameType, String map) {
+    private HyggQueue createQueue(String game, String gameType, String map) {
         final HyggQueue queue = new HyggQueue(this.hyggdrasil, game, gameType, map);
         final String name = this.createQueueName(game, gameType, map);
 
@@ -133,7 +150,7 @@ public class HyggQueueManager {
     }
 
     private String createQueueName(String game, String gameType, String map) {
-        return game + "@" + gameType + "@" + map;
+        return map != null ? game + "@" + gameType + "@" + map : game + "@" + gameType;
     }
 
 }

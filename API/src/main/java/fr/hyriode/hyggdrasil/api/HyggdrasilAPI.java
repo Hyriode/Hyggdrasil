@@ -3,6 +3,7 @@ package fr.hyriode.hyggdrasil.api;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import fr.hyriode.hyggdrasil.api.event.HyggEventBus;
+import fr.hyriode.hyggdrasil.api.lobby.HyggLobbyAPI;
 import fr.hyriode.hyggdrasil.api.protocol.environment.HyggApplication;
 import fr.hyriode.hyggdrasil.api.protocol.environment.HyggEnvironment;
 import fr.hyriode.hyggdrasil.api.protocol.heartbeat.HyggHeartbeatTask;
@@ -72,6 +73,8 @@ public class HyggdrasilAPI {
     private final HyggServerRequester serverRequester;
     /** The proxy requester used to query or do action on proxies */
     private final HyggProxyRequester proxyRequester;
+    /** The lobby api instance */
+    private final HyggLobbyAPI lobbyAPI;
 
     /**
      * Constructor of {@link HyggdrasilAPI}
@@ -89,6 +92,7 @@ public class HyggdrasilAPI {
         this.eventBus = new HyggEventBus(this);
         this.serverRequester = new HyggServerRequester(this);
         this.proxyRequester = new HyggProxyRequester(this);
+        this.lobbyAPI = new HyggLobbyAPI(this);
     }
 
     /**
@@ -247,6 +251,16 @@ public class HyggdrasilAPI {
      */
     public HyggProxyRequester getProxyRequester() {
         return this.proxyRequester;
+    }
+
+    /**
+     * Get the lobby api.<br>
+     * This api can be used to get the current best lobby
+     *
+     * @return The {@link HyggLobbyAPI} instance
+     */
+    public HyggLobbyAPI getLobbyAPI() {
+        return this.lobbyAPI;
     }
 
     /**

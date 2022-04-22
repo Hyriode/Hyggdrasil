@@ -20,7 +20,7 @@ public abstract class HyggQueueRemovePacket extends HyggPacket {
             return new HyggQueueRemovePacket.Response.Content(this);
         }
 
-        private static class Content extends HyggResponseContent {
+        public static class Content extends HyggResponseContent {
 
             private final HyggQueueRemovePacket.Response type;
 

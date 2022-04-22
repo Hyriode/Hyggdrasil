@@ -1,7 +1,7 @@
 package fr.hyriode.hyggdrasil.api.protocol;
 
-import fr.hyriode.hyggdrasil.api.protocol.packet.HyggPacket;
 import fr.hyriode.hyggdrasil.api.protocol.packet.HyggHeartbeatPacket;
+import fr.hyriode.hyggdrasil.api.protocol.packet.HyggPacket;
 import fr.hyriode.hyggdrasil.api.protocol.packet.HyggResponsePacket;
 import fr.hyriode.hyggdrasil.api.proxy.packet.*;
 import fr.hyriode.hyggdrasil.api.queue.packet.*;
@@ -25,6 +25,7 @@ public enum HyggProtocol {
     PROXY_INFO(33, HyggProxyInfoPacket.class),
     PROXY_FETCH(34, HyggFetchServerPacket.class),
     PROXIES_FETCH(35, HyggFetchProxiesPacket.class),
+    EVACUATE(36, HyggEvacuatePacket.class),
 
     /** Server packets section */
     SERVER_START(50, HyggStartServerPacket.class),
@@ -38,8 +39,9 @@ public enum HyggProtocol {
     QUEUE_ADD_GROUP(71, HyggQueueAddGroupPacket.class),
     QUEUE_REMOVE_PLAYER(72, HyggQueueRemovePlayerPacket.class),
     QUEUE_REMOVE_GROUP(73, HyggQueueRemoveGroupPacket.class),
-    QUEUE_INFO(74, HyggQueueInfoPacket.class),
-    QUEUE_TRANSFER(75, HyggQueueTransferPacket.class)
+    QUEUE_UPDATE_GROUP(74, HyggQueueUpdateGroupPacket.class),
+    QUEUE_INFO(75, HyggQueueInfoPacket.class),
+    QUEUE_TRANSFER(76, HyggQueueTransferPacket.class)
 
     ;
 

@@ -1,14 +1,11 @@
 package fr.hyriode.hyggdrasil.queue;
 
 import fr.hyriode.hyggdrasil.api.protocol.packet.HyggPacket;
-import fr.hyriode.hyggdrasil.api.queue.packet.HyggQueueAddGroupPacket;
-import fr.hyriode.hyggdrasil.api.queue.packet.HyggQueueAddPlayerPacket;
 import fr.hyriode.hyggdrasil.api.protocol.receiver.IHyggPacketReceiver;
 import fr.hyriode.hyggdrasil.api.protocol.request.HyggRequestHeader;
 import fr.hyriode.hyggdrasil.api.protocol.response.HyggResponse;
 import fr.hyriode.hyggdrasil.api.protocol.response.IHyggResponse;
-import fr.hyriode.hyggdrasil.api.queue.packet.HyggQueueRemoveGroupPacket;
-import fr.hyriode.hyggdrasil.api.queue.packet.HyggQueueRemovePlayerPacket;
+import fr.hyriode.hyggdrasil.api.queue.packet.*;
 
 /**
  * Project: Hyggdrasil
@@ -26,6 +23,8 @@ public class HyggQueueReceiver implements IHyggPacketReceiver {
     @Override
     public IHyggResponse receive(String channel, HyggPacket packet, HyggRequestHeader header) {
         if (packet instanceof final HyggQueueAddPlayerPacket queuePacket) {
+            return this.queueManager.handlePacket(queuePacket);
+        } else if (packet instanceof final HyggQueueUpdateGroupPacket queuePacket) {
             return this.queueManager.handlePacket(queuePacket);
         } else if (packet instanceof final HyggQueueAddGroupPacket queuePacket) {
             return this.queueManager.handlePacket(queuePacket);

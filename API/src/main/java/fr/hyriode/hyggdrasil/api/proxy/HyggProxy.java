@@ -10,7 +10,7 @@ import java.util.UUID;
 public class HyggProxy {
 
     /** The maximum amount of players that can handle a proxy */
-    public static final int MAX_PLAYERS = 500;
+    public static final int MAX_PLAYERS = 300;
 
     /** Proxy's name */
     protected final String name;

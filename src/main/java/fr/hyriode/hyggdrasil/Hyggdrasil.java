@@ -10,6 +10,7 @@ import fr.hyriode.hyggdrasil.api.protocol.packet.HyggPacketProcessor;
 import fr.hyriode.hyggdrasil.common.HyggHeartbeatsCheck;
 import fr.hyriode.hyggdrasil.configuration.HyggConfiguration;
 import fr.hyriode.hyggdrasil.docker.Docker;
+import fr.hyriode.hyggdrasil.lobby.HyggLobbyBalancer;
 import fr.hyriode.hyggdrasil.proxy.HyggProxyManager;
 import fr.hyriode.hyggdrasil.queue.HyggQueueManager;
 import fr.hyriode.hyggdrasil.receiver.HyggProxiesReceiver;
@@ -17,13 +18,12 @@ import fr.hyriode.hyggdrasil.receiver.HyggQueryReceiver;
 import fr.hyriode.hyggdrasil.receiver.HyggServersReceiver;
 import fr.hyriode.hyggdrasil.redis.HyggRedis;
 import fr.hyriode.hyggdrasil.server.HyggServerManager;
-import fr.hyriode.hyggdrasil.util.key.HyggKeyLoader;
 import fr.hyriode.hyggdrasil.util.IOUtil;
 import fr.hyriode.hyggdrasil.util.References;
+import fr.hyriode.hyggdrasil.util.key.HyggKeyLoader;
 import fr.hyriode.hyggdrasil.util.logger.HyggLogger;
 
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
 /**
@@ -44,6 +44,7 @@ public class Hyggdrasil {
     private HyggProxyManager proxyManager;
     private HyggServerManager serverManager;
     private HyggQueueManager queueManager;
+    private HyggLobbyBalancer lobbyBalancer;
 
     private boolean running;
 
@@ -73,13 +74,16 @@ public class Hyggdrasil {
         this.proxyManager = new HyggProxyManager(this);
         this.serverManager = new HyggServerManager(this);
         this.queueManager = new HyggQueueManager(this);
+        this.lobbyBalancer = new HyggLobbyBalancer(this);
         this.running = true;
 
         new HyggHeartbeatsCheck(this);
 
         this.registerReceivers();
 
-        this.proxyManager.startProxy();
+        for (int i = 0; i < Integer.parseInt(System.getenv("STARTING_PROXIES")); i++) {
+            this.proxyManager.startProxy();
+        }
 
         Runtime.getRuntime().addShutdownHook(new Thread(this::shutdown));
     }

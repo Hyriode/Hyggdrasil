@@ -21,9 +21,8 @@ services:
       REDIS_HOST: redis
       REDIS_PASS: p@ssw0rd
       DATA_FOLDER: C:/Users/Corentin/Documents/Hyriode/Hyggdrasil/docker/data
-      CLOUDFLARE_TOKEN:
-      CLOUDFLARE_ZONE_ID: a241ea3c38612c4601647c4bfe9b3b9c
-      CLOUDFLARE_DNS_ID: 6c27158fdebadb35aeb43412da6158d9
+      STARTING_PROXIES: 2
+      MINIMUM_LOBBIES: 4
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./data/:/usr/app/data

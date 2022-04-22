@@ -2,14 +2,6 @@ package fr.hyriode.hyggdrasil.receiver;
 
 import fr.hyriode.hyggdrasil.Hyggdrasil;
 import fr.hyriode.hyggdrasil.api.protocol.packet.HyggPacket;
-import fr.hyriode.hyggdrasil.api.proxy.packet.HyggFetchProxiesPacket;
-import fr.hyriode.hyggdrasil.api.proxy.packet.HyggFetchProxyPacket;
-import fr.hyriode.hyggdrasil.api.proxy.packet.HyggStartProxyPacket;
-import fr.hyriode.hyggdrasil.api.proxy.packet.HyggStopProxyPacket;
-import fr.hyriode.hyggdrasil.api.server.packet.HyggFetchServerPacket;
-import fr.hyriode.hyggdrasil.api.server.packet.HyggFetchServersPacket;
-import fr.hyriode.hyggdrasil.api.server.packet.HyggStartServerPacket;
-import fr.hyriode.hyggdrasil.api.server.packet.HyggStopServerPacket;
 import fr.hyriode.hyggdrasil.api.protocol.receiver.IHyggPacketReceiver;
 import fr.hyriode.hyggdrasil.api.protocol.request.HyggRequestHeader;
 import fr.hyriode.hyggdrasil.api.protocol.response.HyggResponse;
@@ -17,7 +9,15 @@ import fr.hyriode.hyggdrasil.api.protocol.response.IHyggResponse;
 import fr.hyriode.hyggdrasil.api.protocol.response.content.HyggProxyResponse;
 import fr.hyriode.hyggdrasil.api.protocol.response.content.HyggServerResponse;
 import fr.hyriode.hyggdrasil.api.proxy.HyggProxy;
+import fr.hyriode.hyggdrasil.api.proxy.packet.HyggFetchProxiesPacket;
+import fr.hyriode.hyggdrasil.api.proxy.packet.HyggFetchProxyPacket;
+import fr.hyriode.hyggdrasil.api.proxy.packet.HyggStartProxyPacket;
+import fr.hyriode.hyggdrasil.api.proxy.packet.HyggStopProxyPacket;
 import fr.hyriode.hyggdrasil.api.server.HyggServer;
+import fr.hyriode.hyggdrasil.api.server.packet.HyggFetchServerPacket;
+import fr.hyriode.hyggdrasil.api.server.packet.HyggFetchServersPacket;
+import fr.hyriode.hyggdrasil.api.server.packet.HyggStartServerPacket;
+import fr.hyriode.hyggdrasil.api.server.packet.HyggStopServerPacket;
 import fr.hyriode.hyggdrasil.proxy.HyggProxyManager;
 import fr.hyriode.hyggdrasil.server.HyggServerManager;
 
@@ -35,12 +35,9 @@ public class HyggQueryReceiver implements IHyggPacketReceiver {
     private final HyggProxyManager proxyManager;
     private final HyggServerManager serverManager;
 
-    private final Hyggdrasil hyggdrasil;
-
     public HyggQueryReceiver(Hyggdrasil hyggdrasil) {
-        this.hyggdrasil = hyggdrasil;
-        this.proxyManager = this.hyggdrasil.getProxyManager();
-        this.serverManager = this.hyggdrasil.getServerManager();
+        this.proxyManager = hyggdrasil.getProxyManager();
+        this.serverManager = hyggdrasil.getServerManager();
     }
 
     @Override

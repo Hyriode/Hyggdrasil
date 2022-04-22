@@ -4,14 +4,9 @@ import fr.hyriode.hyggdrasil.Hyggdrasil;
 import fr.hyriode.hyggdrasil.api.protocol.environment.HyggApplication;
 import fr.hyriode.hyggdrasil.api.protocol.environment.HyggData;
 import fr.hyriode.hyggdrasil.api.proxy.HyggProxy;
-import fr.hyriode.hyggdrasil.docker.image.DockerImage;
 import fr.hyriode.hyggdrasil.docker.swarm.DockerService;
 import fr.hyriode.hyggdrasil.util.PortUtil;
 import fr.hyriode.hyggdrasil.util.References;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 
 /**
  * Project: Hyggdrasil
@@ -20,23 +15,20 @@ import java.util.List;
  */
 public class HyggProxyService extends DockerService {
 
-    private static final int MIN_PORT = 45565;
-    private static final int MAX_PORT = 65535;
-
     public HyggProxyService(Hyggdrasil hyggdrasil, HyggProxy proxy) {
         super(proxy.getName(), HyggProxyManager.PROXY_IMAGE, References.HYRIODE_NETWORK);
         this.hostname = proxy.getName();
+        this.publishedPort = proxy.getPort();
         this.targetPort = 25577;
-        this.publishedPort = PortUtil.nextAvailablePort(MIN_PORT, MAX_PORT);
 
         this.envs.addAll(hyggdrasil.createEnvsForClient(new HyggApplication(HyggApplication.Type.PROXY, proxy.getName(), System.currentTimeMillis()), new HyggData()));
-        this.addEnv("MEMORY", "1G");
+        this.addEnv("MEMORY", "2G");
 
         this.addLabel(References.STACK_NAME_LABEL, References.STACK_NAME);
 
-        this.addMount(References.DATA_HOST_FOLDER + "/proxies/plugins", "/plugins");
+        final String proxyFolder = References.DATA_HOST_FOLDER + "/proxies/" + proxy.getName();
 
-        proxy.setPort(this.publishedPort);
+        this.addMount(proxyFolder, "/server");
     }
 
 }

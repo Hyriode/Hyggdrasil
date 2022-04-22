@@ -2,14 +2,9 @@ package fr.hyriode.hyggdrasil.server;
 
 import fr.hyriode.hyggdrasil.Hyggdrasil;
 import fr.hyriode.hyggdrasil.api.protocol.environment.HyggApplication;
-import fr.hyriode.hyggdrasil.api.protocol.environment.HyggData;
 import fr.hyriode.hyggdrasil.api.server.HyggServer;
-import fr.hyriode.hyggdrasil.docker.image.DockerImage;
 import fr.hyriode.hyggdrasil.docker.swarm.DockerService;
 import fr.hyriode.hyggdrasil.util.References;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Project: Hyggdrasil

@@ -2,6 +2,8 @@ package fr.hyriode.hyggdrasil.api.server;
 
 import fr.hyriode.hyggdrasil.api.protocol.environment.HyggData;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -26,10 +28,8 @@ public class HyggServer {
     /** The data provided to the server */
     protected final HyggData data;
 
-    /** Current number of players on the server */
-    protected int players;
-    /** The real amount of players connected on the server. It includes moderators, and spectators */
-    protected int realPlayers;
+    /** Current players on the server */
+    protected List<UUID> players;
     /** The available slots on the network */
     protected int slots = -1;
 
@@ -52,6 +52,7 @@ public class HyggServer {
         this.options = options;
         this.data = data;
         this.startedTime = System.currentTimeMillis();
+        this.players = new ArrayList<>();
     }
 
     /**
@@ -59,12 +60,12 @@ public class HyggServer {
      *
      * @param name The name of the server
      * @param state The current state of the server
-     * @param players The current amount of players on the server
+     * @param players The current of players on the server
      * @param startedTime The time when the server started
      * @param options Server's options (pvp, nether, etc.)
      * @param data Server's data
      */
-    public HyggServer(String name, HyggServerState state, int players, long startedTime, HyggServerOptions options, HyggData data) {
+    public HyggServer(String name, HyggServerState state, List<UUID> players, long startedTime, HyggServerOptions options, HyggData data) {
         this.name = name;
         this.type = getTypeFromName(name);
         this.state = state;
@@ -158,39 +159,21 @@ public class HyggServer {
     }
 
     /**
-     * Get current number of players on the server
+     * Get of players on the server
      *
-     * @return Number of players
+     * @return The list of players
      */
-    public int getPlayers() {
+    public List<UUID> getPlayers() {
         return this.players;
     }
 
     /**
-     * Set current number of players on the server
+     * Set all the players that are on the server
      *
-     * @param players New player amount
+     * @param players A list of players
      */
-    public void setPlayers(int players) {
+    public void setPlayers(List<UUID> players) {
         this.players = players;
-    }
-
-    /**
-     * Get the real amount of players on the server
-     *
-     * @return An amount of players
-     */
-    public int getRealPlayers() {
-        return this.realPlayers;
-    }
-
-    /**
-     * Set the real amount of players on the server
-     *
-     * @param realPlayers New real players amount
-     */
-    public void setRealPlayers(int realPlayers) {
-        this.realPlayers = realPlayers;
     }
 
     /**
