@@ -72,7 +72,7 @@ public class HyggServerManager {
 
     private void removeOldServers() {
         this.hyggdrasil.getAPI().getScheduler().schedule(() -> {
-            System.out.println("Removing old servers (after 1 minute of waiting)...");
+            System.out.println("Removing old servers (after 45 seconds of waiting)...");
             try {
                 Files.list(References.SERVERS_FOLDER).forEach(path -> {
                     final String pathStr = path.toString();
@@ -132,6 +132,8 @@ public class HyggServerManager {
         server.setSlots(info.getSlots());
 
         this.eventBus.publish(new HyggServerUpdatedEvent(server));
+
+        this.hyggdrasil.getLobbyBalancer().onUpdate(server);
     }
 
     public boolean stopServer(String name, long waitingTime) {
@@ -158,6 +160,8 @@ public class HyggServerManager {
             };
 
             server.setState(HyggServerState.SHUTDOWN);
+
+            this.hyggdrasil.getLobbyBalancer().onStop(server);
 
             this.eventBus.publish(new HyggServerStoppedEvent(server));
 
@@ -221,6 +225,17 @@ public class HyggServerManager {
 
         for (HyggServer server : this.servers) {
             if (server.getType().equals(game) && server.getGameType().equals(gameType) && server.getMap().equals(map)) {
+                servers.add(server);
+            }
+        }
+        return servers;
+    }
+
+    public List<HyggServer> getAvailableServers(String game, String gameType) {
+        final List<HyggServer> servers = new ArrayList<>();
+
+        for (HyggServer server : this.servers) {
+            if (server.getType().equals(game) && server.getGameType().equals(gameType)) {
                 servers.add(server);
             }
         }

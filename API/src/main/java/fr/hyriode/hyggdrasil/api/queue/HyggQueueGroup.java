@@ -2,7 +2,8 @@ package fr.hyriode.hyggdrasil.api.queue;
 
 import fr.hyriode.hyggdrasil.api.HyggdrasilAPI;
 import fr.hyriode.hyggdrasil.api.protocol.HyggChannel;
-import fr.hyriode.hyggdrasil.api.queue.packet.HyggQueueTransferPacket;
+import fr.hyriode.hyggdrasil.api.queue.packet.HyggQueueTransferGroupPacket;
+import fr.hyriode.hyggdrasil.api.queue.packet.HyggQueueTransferPlayerPacket;
 import fr.hyriode.hyggdrasil.api.queue.packet.HyggQueueUpdateGroupPacket;
 import fr.hyriode.hyggdrasil.api.server.HyggServer;
 
@@ -17,13 +18,13 @@ import java.util.UUID;
  */
 public class HyggQueueGroup {
 
-    private final String id;
+    private final UUID id;
     private HyggQueuePlayer leader;
     private List<HyggQueuePlayer> players;
 
     private int priority;
 
-    public HyggQueueGroup(String id, HyggQueuePlayer leader, List<HyggQueuePlayer> players) {
+    public HyggQueueGroup(UUID id, HyggQueuePlayer leader, List<HyggQueuePlayer> players) {
         this.id = id;
         this.leader = leader;
         this.players = players;
@@ -86,7 +87,7 @@ public class HyggQueueGroup {
         }
     }
 
-    public String getId() {
+    public UUID getId() {
         return this.id;
     }
 
@@ -131,8 +132,10 @@ public class HyggQueueGroup {
     }
 
     public void send(HyggdrasilAPI hyggdrasilAPI, HyggServer server) {
-        for (HyggQueuePlayer player : this.players) {
-            hyggdrasilAPI.getPacketProcessor().request(HyggChannel.QUEUE, new HyggQueueTransferPacket(player.getUniqueId(), server.getName())).exec();
+        if (this.players.size() == 1) {
+            hyggdrasilAPI.getPacketProcessor().request(HyggChannel.QUEUE, new HyggQueueTransferPlayerPacket(this.leader.getUniqueId(), server.getName())).exec();
+        } else {
+            hyggdrasilAPI.getPacketProcessor().request(HyggChannel.QUEUE, new HyggQueueTransferGroupPacket(this.id, server.getName())).exec();
         }
     }
 

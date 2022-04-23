@@ -29,6 +29,7 @@ public class HyggQueueManager {
         this.hyggdrasil = hyggdrasil;
         this.serverManager = this.hyggdrasil.getServerManager();
         this.queues = new ConcurrentHashMap<>();
+
         this.hyggdrasil.getAPI().getPacketProcessor().registerReceiver(HyggChannel.QUEUE, new HyggQueueReceiver(this));
     }
 
@@ -41,7 +42,7 @@ public class HyggQueueManager {
     public HyggResponse handlePacket(HyggQueueAddPlayerPacket packet) {
         final HyggQueuePlayer player = packet.getPlayer();
 
-        return this.handleAddPacket(packet, new HyggQueueGroup(player.getUniqueId().toString(), player, new ArrayList<>()));
+        return this.handleAddPacket(packet, new HyggQueueGroup(player.getUniqueId(), player, new ArrayList<>()));
     }
 
     public HyggResponse handlePacket(HyggQueueAddGroupPacket packet) {
@@ -51,7 +52,7 @@ public class HyggQueueManager {
     private HyggResponse handleAddPacket(HyggQueueAddPacket packet, HyggQueueGroup group) {
         final HyggResponse response = new HyggResponse(HyggResponse.Type.SUCCESS);
         final HyggQueue queue = this.getQueue(packet.getGame(), packet.getGameType(), packet.getMap());
-        final HyggQueue currentQueue = this.getCurrentQueue(group.getId());
+        final HyggQueue currentQueue = this.getCurrentPlayerQueue(group.getId());
 
         if (queue.equals(currentQueue)) {
             response.withType(HyggResponse.Type.ERROR).withContent(HyggQueueAddPacket.Response.ALREADY_IN.asContent());
@@ -72,7 +73,7 @@ public class HyggQueueManager {
     public HyggResponse handlePacket(HyggQueueRemovePlayerPacket packet) {
         final UUID playerId = packet.getPlayerId();
         final HyggResponse response = new HyggResponse(HyggResponse.Type.SUCCESS).withContent(HyggQueueRemovePacket.Response.REMOVED.asContent());
-        final HyggQueue queue = this.getCurrentQueue(playerId);
+        final HyggQueue queue = this.getCurrentPlayerQueue(playerId);
 
         if (queue == null) {
             response.withType(HyggResponse.Type.ERROR).withContent(HyggQueueRemovePacket.Response.NOT_IN_QUEUE.asContent());
@@ -83,9 +84,9 @@ public class HyggQueueManager {
     }
 
     public HyggResponse handlePacket(HyggQueueRemoveGroupPacket packet) {
-        final String groupId = packet.getGroupId();
+        final UUID groupId = packet.getGroupId();
         final HyggResponse response = new HyggResponse(HyggResponse.Type.SUCCESS).withContent(HyggQueueRemovePacket.Response.REMOVED.asContent());
-        final HyggQueue queue = this.getCurrentQueue(groupId);
+        final HyggQueue queue = this.getCurrentGroupQueue(groupId);
 
         if (queue == null) {
             response.withType(HyggResponse.Type.ERROR).withContent(HyggQueueRemovePacket.Response.NOT_IN_QUEUE.asContent());
@@ -96,9 +97,9 @@ public class HyggQueueManager {
     }
 
     public HyggResponse handlePacket(HyggQueueUpdateGroupPacket packet) {
-        final String groupId = packet.getGroup().getId();
+        final UUID groupId = packet.getGroup().getId();
         final HyggResponse response = new HyggResponse(HyggResponse.Type.SUCCESS).withContent(HyggQueueUpdateGroupPacket.Response.UPDATED.asContent());
-        final HyggQueue queue = this.getCurrentQueue(groupId);
+        final HyggQueue queue = this.getCurrentGroupQueue(groupId);
 
         if (queue == null) {
             response.withType(HyggResponse.Type.ERROR).withContent(HyggQueueUpdateGroupPacket.Response.NOT_IN_QUEUE.asContent());
@@ -108,7 +109,7 @@ public class HyggQueueManager {
         return response;
     }
 
-    private HyggQueue getCurrentQueue(String groupId) {
+    private HyggQueue getCurrentGroupQueue(UUID groupId) {
         for (HyggQueue queue : this.queues.values()) {
             if (queue.containsGroup(groupId)) {
                 return queue;
@@ -117,7 +118,7 @@ public class HyggQueueManager {
         return null;
     }
 
-    private HyggQueue getCurrentQueue(UUID playerId) {
+    private HyggQueue getCurrentPlayerQueue(UUID playerId) {
         for (HyggQueue queue : this.queues.values()) {
             if (queue.containsPlayer(playerId)) {
                 return queue;

@@ -169,6 +169,10 @@ public class Hyggdrasil {
         return this.queueManager;
     }
 
+    public HyggLobbyBalancer getLobbyBalancer() {
+        return this.lobbyBalancer;
+    }
+
     public boolean isRunning() {
         return this.running;
     }

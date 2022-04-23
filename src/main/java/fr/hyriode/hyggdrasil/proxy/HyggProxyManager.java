@@ -18,11 +18,13 @@ import fr.hyriode.hyggdrasil.docker.swarm.DockerSwarm;
 import fr.hyriode.hyggdrasil.util.IOUtil;
 import fr.hyriode.hyggdrasil.util.References;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import static fr.hyriode.hyggdrasil.api.protocol.response.HyggResponse.Type.SUCCESS;
 
@@ -58,6 +60,32 @@ public class HyggProxyManager {
         IOUtil.createDirectory(References.PROXIES_COMMON_FOLDER);
 
         this.hyggdrasil.getDocker().getImageManager().buildImage(Paths.get(References.PROXY_IMAGES_FOLDER.toString(), "Dockerfile").toFile(), PROXY_IMAGE.getName());
+
+        this.removeOldProxies();
+    }
+
+    private void removeOldProxies() {
+        this.hyggdrasil.getAPI().getScheduler().schedule(() -> {
+            System.out.println("Removing old proxies (after 45 seconds of waiting)...");
+            try {
+                Files.list(References.PROXIES_FOLDER).forEach(path -> {
+                    final String pathStr = path.toString();
+
+                    if (!pathStr.equals(References.PROXIES_COMMON_FOLDER.toString())) {
+                        final String[] splitPath = path.toString().split("/");
+                        final String proxyName = splitPath[splitPath.length - 1];
+
+                        if (this.getProxyByName(proxyName) == null) {
+                            IOUtil.deleteDirectory(path);
+
+                            System.out.println("Removed '" + proxyName + "'.");
+                        }
+                    }
+                });
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }, 45, TimeUnit.SECONDS);
     }
 
     public HyggProxy startProxy() {

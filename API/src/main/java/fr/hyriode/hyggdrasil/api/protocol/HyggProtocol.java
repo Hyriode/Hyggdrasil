@@ -41,7 +41,8 @@ public enum HyggProtocol {
     QUEUE_REMOVE_GROUP(73, HyggQueueRemoveGroupPacket.class),
     QUEUE_UPDATE_GROUP(74, HyggQueueUpdateGroupPacket.class),
     QUEUE_INFO(75, HyggQueueInfoPacket.class),
-    QUEUE_TRANSFER(76, HyggQueueTransferPacket.class)
+    QUEUE_TRANSFER_PLAYER(76, HyggQueueTransferPlayerPacket.class),
+    QUEUE_TRANSFER_GROUP(767, HyggQueueTransferGroupPacket.class)
 
     ;
 

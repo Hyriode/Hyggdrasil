@@ -1,5 +1,7 @@
 package fr.hyriode.hyggdrasil.api.queue.packet;
 
+import java.util.UUID;
+
 /**
  * Project: Hyggdrasil
  * Created by AstFaster
@@ -7,13 +9,13 @@ package fr.hyriode.hyggdrasil.api.queue.packet;
  */
 public class HyggQueueRemoveGroupPacket extends HyggQueueRemovePacket {
 
-    private final String groupId;
+    private final UUID groupId;
 
-    public HyggQueueRemoveGroupPacket(String groupId) {
+    public HyggQueueRemoveGroupPacket(UUID groupId) {
         this.groupId = groupId;
     }
 
-    public String getGroupId() {
+    public UUID getGroupId() {
         return this.groupId;
     }
 

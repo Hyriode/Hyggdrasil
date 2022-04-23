@@ -40,12 +40,13 @@ public class HyggLobbyBalancer {
         this.lobbies = new CopyOnWriteArrayList<>();
         this.startedLobbies = new ArrayList<>();
 
-        for (int i = 0; i < MINIMUM_LOBBIES; i++) {
-            this.startLobby();
-        }
+        this.hyggdrasil.getAPI().getScheduler().schedule(() -> {
+            for (int i = 0; i < MINIMUM_LOBBIES; i++) {
+                this.startLobby();
+            }
 
-        this.startTasks();
-        this.registerListeners();
+            this.startTasks();
+        }, 15, TimeUnit.SECONDS);
     }
 
     private void startTasks() {
@@ -54,48 +55,36 @@ public class HyggLobbyBalancer {
         final HyggScheduler scheduler = this.hyggdrasil.getAPI().getScheduler();
 
         scheduler.schedule(() -> {
-            try (final Jedis jedis = hyggdrasil.getRedis().getJedis()) {
+            try (final Jedis jedis = this.hyggdrasil.getRedis().getJedis()) {
                 for (HyggServer lobby : this.lobbies) {
                     jedis.zrem(HyggLobbyAPI.REDIS_KEY, lobby.getName());
                     jedis.zadd(HyggLobbyAPI.REDIS_KEY, lobby.getPlayers().size(), lobby.getName());
                 }
             }
-        }, 1, 1, TimeUnit.SECONDS);
+        }, 800, 800, TimeUnit.MILLISECONDS);
         scheduler.schedule(this::process, 500, 500, TimeUnit.MILLISECONDS);
     }
 
-    private void registerListeners() {
-        final HyggEventBus eventBus = this.hyggdrasil.getAPI().getEventBus();
+    public void onUpdate(HyggServer server) {
+        if (server.getType().equals(HyggLobbyAPI.TYPE)) {
+            final String serverName = server.getName();
 
-        eventBus.subscribe(HyggServerStartedEvent.class, event -> {
-            final HyggServer server = event.getServer();
+            if (server.getState() == HyggServerState.READY) {
+                this.startedLobbies.remove(serverName);
 
-            if (server.getType().equals(HyggLobbyAPI.TYPE)) {
-                this.addLobby(server.getName());
+                System.out.println("Added '" + serverName + "' in lobby balancer.");
+
+                this.addLobby(serverName);
+            } else {
+                this.removeLobby(serverName);
             }
-        });
-        eventBus.subscribe(HyggServerUpdatedEvent.class, event -> {
-            final HyggServer server = event.getServer();
+        }
+    }
 
-            if (server.getType().equals(HyggLobbyAPI.TYPE)) {
-                final String serverName = server.getName();
-
-                if (server.getState() == HyggServerState.PLAYING) {
-                    this.startedLobbies.remove(serverName);
-
-                    this.addLobby(serverName);
-                } else {
-                    this.removeLobby(serverName);
-                }
-            }
-        });
-        eventBus.subscribe(HyggServerStoppedEvent.class, event -> {
-            final HyggServer server = event.getServer();
-
-            if (server.getType().equals(HyggLobbyAPI.TYPE)) {
-                this.removeLobby(server.getName());
-            }
-        });
+    public void onStop(HyggServer server) {
+        if (server.getType().equals(HyggLobbyAPI.TYPE)) {
+            this.removeLobby(server.getName());
+        }
     }
 
     private void process() {
@@ -125,6 +114,7 @@ public class HyggLobbyBalancer {
 
         if (lobby != null) {
             lobby.setSlots(HyggLobbyAPI.MAX_PLAYERS);
+            lobby.getData().add(HyggServer.MAP_KEY, "normal");
 
             this.startedLobbies.add(lobby.getName());
         }

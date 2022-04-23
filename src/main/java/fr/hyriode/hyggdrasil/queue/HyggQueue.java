@@ -115,8 +115,9 @@ public class HyggQueue {
 
     private List<HyggServer> getAvailableServers() {
         final List<HyggServer> servers = new ArrayList<>();
+        final List<HyggServer> availableServers = this.map != null ? this.serverManager.getAvailableServers(this.game, this.gameType, this.map) : this.serverManager.getAvailableServers(this.game, this.gameType);
 
-        for (HyggServer server : this.serverManager.getAvailableServers(this.game, this.gameType, this.map)) {
+        for (HyggServer server : availableServers) {
             if (server.getState() == HyggServerState.READY) {
                 servers.add(server);
             }
@@ -137,7 +138,7 @@ public class HyggQueue {
         return this.queue.remove(group);
     }
 
-    public boolean removeGroup(String groupId) {
+    public boolean removeGroup(UUID groupId) {
         for (HyggQueueGroup group : this.queue) {
             if (group.getId().equals(groupId)) {
                 return this.removeGroup(group);
@@ -162,7 +163,7 @@ public class HyggQueue {
         return false;
     }
 
-    public boolean containsGroup(String groupId) {
+    public boolean containsGroup(UUID groupId) {
         for (HyggQueueGroup group : this.queue) {
             if (group.getId().equals(groupId)) {
                 return true;
@@ -180,7 +181,7 @@ public class HyggQueue {
         return false;
     }
 
-    public HyggQueueGroup getGroup(String groupId) {
+    public HyggQueueGroup getGroup(UUID groupId) {
         for (HyggQueueGroup group : this.queue) {
             if (group.getId().equals(groupId)) {
                 return group;
