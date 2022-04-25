@@ -36,6 +36,8 @@ public class HyggQueue {
     private final HyggServerManager serverManager;
     private final Hyggdrasil hyggdrasil;
 
+    private boolean started;
+
     public HyggQueue(Hyggdrasil hyggdrasil, String game, String gameType, String map) {
         this.hyggdrasil = hyggdrasil;
         this.serverManager = this.hyggdrasil.getServerManager();
@@ -56,12 +58,16 @@ public class HyggQueue {
         this.anticipateServers(availableServers);
 
         for (HyggServer server : availableServers) {
-            final List<HyggQueueGroup> groups = new ArrayList<>();
+            if (server.getState() == HyggServerState.READY) {
+                final List<HyggQueueGroup> groups = new ArrayList<>();
 
-            this.queue.drainGroups(groups, server.getSlots() - server.getPlayers().size());
+                this.queue.drainGroups(groups, server.getSlots() - server.getPlayers().size());
 
-            for (HyggQueueGroup group : groups) {
-                group.send(this.hyggdrasil.getAPI(), server);
+                for (HyggQueueGroup group : groups) {
+                    if (this.queue.remove(group)) {
+                        group.send(this.hyggdrasil.getAPI(), server);
+                    }
+                }
             }
         }
     }
@@ -93,11 +99,37 @@ public class HyggQueue {
         int availableSlots = 0;
 
         for (HyggServer server : currentServers) {
-            availableSlots += server.getSlots() - server.getPlayers().size();
+            final HyggServerState state = server.getState();
+
+            if (state == HyggServerState.CREATING || state == HyggServerState.STARTING || state == HyggServerState.READY) {
+                availableSlots += server.getSlots() - server.getPlayers().size();
+            }
+        }
+
+        if (size == 0) {
+            return;
         }
 
         if (size >= availableSlots) {
-            final int neededServers = (int) Math.ceil((double) (size - availableSlots) / slots) + 1;
+            int neededServers = (int) Math.ceil((double) (size - availableSlots) / slots);
+
+            if (slots == -1 && !this.started) {
+                if (neededServers >= 0) {
+                    neededServers++;
+                } else {
+                    neededServers = 2;
+                }
+
+                this.started = true;
+            } else if (slots == -1) {
+                return;
+            } else {
+                neededServers++;
+            }
+
+            if (neededServers <= 0) {
+                return;
+            }
 
             for (int i = 0; i < neededServers; i++) {
                 final HyggData data = new HyggData();
@@ -108,21 +140,13 @@ public class HyggQueue {
                     data.add(HyggServer.MAP_KEY, this.map);
                 }
 
-                this.serverManager.startServer(this.game, new HyggServerOptions(), data);
+                this.serverManager.startServer(this.game, new HyggServerOptions(), data, slots);
             }
         }
     }
 
     private List<HyggServer> getAvailableServers() {
-        final List<HyggServer> servers = new ArrayList<>();
-        final List<HyggServer> availableServers = this.map != null ? this.serverManager.getAvailableServers(this.game, this.gameType, this.map) : this.serverManager.getAvailableServers(this.game, this.gameType);
-
-        for (HyggServer server : availableServers) {
-            if (server.getState() == HyggServerState.READY) {
-                servers.add(server);
-            }
-        }
-        return servers;
+        return this.map != null ? this.serverManager.getAvailableServers(this.game, this.gameType, this.map) : this.serverManager.getAvailableServers(this.game, this.gameType);
     }
 
     public void disable() {

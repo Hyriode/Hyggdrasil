@@ -203,7 +203,9 @@ public class HyggRequest {
                     responseReceiver.unregister(this.channel);
 
                     if (this.maxResponses == initialMaxResponses) {
-                        this.responseTimeEndCallback.run();
+                        if (this.responseTimeEndCallback != null) {
+                            this.responseTimeEndCallback.run();
+                        }
                     }
                 }, this.responseTime, TimeUnit.MILLISECONDS);
             }

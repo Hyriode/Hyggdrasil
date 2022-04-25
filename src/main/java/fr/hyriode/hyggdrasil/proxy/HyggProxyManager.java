@@ -107,7 +107,7 @@ public class HyggProxyManager {
 
                 proxy.setPort(availablePort);
 
-                this.swarm.runService(new HyggProxyService(this.hyggdrasil, proxy));
+                this.swarm.runService(new HyggProxyService(this.hyggdrasil, proxy, this.proxies.size() == 0));
 
                 this.proxies.add(proxy);
 

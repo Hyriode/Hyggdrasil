@@ -15,14 +15,17 @@ import fr.hyriode.hyggdrasil.util.References;
  */
 public class HyggProxyService extends DockerService {
 
-    public HyggProxyService(Hyggdrasil hyggdrasil, HyggProxy proxy) {
+    public HyggProxyService(Hyggdrasil hyggdrasil, HyggProxy proxy, boolean first) {
         super(proxy.getName(), HyggProxyManager.PROXY_IMAGE, References.HYRIODE_NETWORK);
         this.hostname = proxy.getName();
         this.publishedPort = proxy.getPort();
         this.targetPort = 25577;
 
-        this.envs.addAll(hyggdrasil.createEnvsForClient(new HyggApplication(HyggApplication.Type.PROXY, proxy.getName(), System.currentTimeMillis()), new HyggData()));
-        this.addEnv("MEMORY", "2G");
+        final HyggData data = new HyggData();
+
+        data.add("first-proxy", "true");
+
+        this.envs.addAll(hyggdrasil.createEnvsForClient(new HyggApplication(HyggApplication.Type.PROXY, proxy.getName(), System.currentTimeMillis()), data));
 
         this.addLabel(References.STACK_NAME_LABEL, References.STACK_NAME);
 

@@ -18,6 +18,10 @@ public class HyggLobbyAPI {
     public static final String REDIS_KEY = "lobby-balancer";
     /** The type of the lobby servers */
     public static final String TYPE = "lobby";
+    /** The Redis key of the current lobby map */
+    public static final String MAP = "lobby-map";
+    /** The default map name of the lobby */
+    public static final String DEFAULT_MAP = "normal";
 
     private final HyggdrasilAPI hyggdrasilAPI;
 
@@ -39,6 +43,33 @@ public class HyggLobbyAPI {
             }
         }
         return null;
+    }
+
+    /**
+     * Get the current map of the lobby
+     *
+     * @return A map name
+     */
+    public String getCurrentMap() {
+        try (final Jedis jedis = this.hyggdrasilAPI.getJedis()) {
+            final String map = jedis.get(MAP);
+
+            if (map != null) {
+                return map;
+            }
+            return DEFAULT_MAP;
+        }
+    }
+
+    /**
+     * Set the current map
+     *
+     * @param map The new current map
+     */
+    public void setCurrentMap(String map) {
+        try (final Jedis jedis = this.hyggdrasilAPI.getJedis()) {
+            jedis.set(MAP, map);
+        }
     }
 
 }

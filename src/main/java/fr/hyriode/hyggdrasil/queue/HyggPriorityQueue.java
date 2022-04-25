@@ -16,18 +16,10 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public class HyggPriorityQueue extends PriorityBlockingQueue<HyggQueueGroup> {
 
-    private final ReentrantLock lock;
-    private Method removeAt;
+    private final ReentrantLock lock = new ReentrantLock();
 
     public HyggPriorityQueue() {
         super(100000, Comparator.comparingInt(HyggQueueGroup::getPriority));
-        this.lock = new ReentrantLock();
-
-        try {
-            this.removeAt = PriorityBlockingQueue.class.getDeclaredMethod("removeAt", int.class);
-        } catch (NoSuchMethodException e) {
-            e.printStackTrace();
-        }
     }
 
     public void drainGroups(Collection<HyggQueueGroup> collection, int maxElements) {
@@ -38,7 +30,8 @@ public class HyggPriorityQueue extends PriorityBlockingQueue<HyggQueueGroup> {
             return;
         }
 
-        this.lock.lock();
+        final ReentrantLock lock = this.lock;
+        lock.lock();
 
         try {
             int remainingElements = maxElements;
@@ -51,20 +44,17 @@ public class HyggPriorityQueue extends PriorityBlockingQueue<HyggQueueGroup> {
                 if (remainingElements - groupSize >= 0) {
                     collection.add(group);
 
-                    try {
-                        this.removeAt.setAccessible(true);
-                        this.removeAt.invoke(this, j);
-                    } catch (IllegalAccessException | InvocationTargetException e) {
-                        e.printStackTrace();
-                    }
-
                     remainingElements -= groupSize;
                 } else {
                     j++;
                 }
+
+                if (remainingElements <= 0) {
+                    break;
+                }
             }
         } finally {
-            this.lock.unlock();
+            lock.unlock();
         }
     }
 

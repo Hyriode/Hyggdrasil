@@ -46,13 +46,21 @@ public class HyggLobbyBalancer {
             }
 
             this.startTasks();
-        }, 15, TimeUnit.SECONDS);
+        }, 10, TimeUnit.SECONDS);
     }
 
     private void startTasks() {
         System.out.println("Starting lobby balancing tasks...");
 
         final HyggScheduler scheduler = this.hyggdrasil.getAPI().getScheduler();
+
+        try (final Jedis jedis = this.hyggdrasil.getRedis().getJedis()) {
+            System.out.println("Removing old lobbies from balancer...");
+
+            for (String lobby : jedis.zrange(HyggLobbyAPI.REDIS_KEY, 0, -1)) {
+                jedis.zrem(HyggLobbyAPI.REDIS_KEY, lobby);
+            }
+        }
 
         scheduler.schedule(() -> {
             try (final Jedis jedis = this.hyggdrasil.getRedis().getJedis()) {
@@ -71,8 +79,6 @@ public class HyggLobbyBalancer {
 
             if (server.getState() == HyggServerState.READY) {
                 this.startedLobbies.remove(serverName);
-
-                System.out.println("Added '" + serverName + "' in lobby balancer.");
 
                 this.addLobby(serverName);
             } else {
@@ -110,12 +116,14 @@ public class HyggLobbyBalancer {
     }
 
     private void startLobby() {
-        final HyggServer lobby = this.hyggdrasil.getServerManager().startServer(HyggLobbyAPI.TYPE, new HyggServerOptions(), new HyggData());
+        final HyggData data = new HyggData();
+
+        data.add(HyggServer.MAP_KEY, this.hyggdrasil.getAPI().getLobbyAPI().getCurrentMap());
+        data.add(HyggServer.GAME_TYPE_KEY, "default");
+
+        final HyggServer lobby = this.hyggdrasil.getServerManager().startServer(HyggLobbyAPI.TYPE, new HyggServerOptions(), new HyggData(), HyggLobbyAPI.MAX_PLAYERS);
 
         if (lobby != null) {
-            lobby.setSlots(HyggLobbyAPI.MAX_PLAYERS);
-            lobby.getData().add(HyggServer.MAP_KEY, "normal");
-
             this.startedLobbies.add(lobby.getName());
         }
     }

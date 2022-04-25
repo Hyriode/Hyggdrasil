@@ -20,9 +20,6 @@ public class HyggServerService extends DockerService {
 
         this.addLabel(References.STACK_NAME_LABEL, References.STACK_NAME);
 
-        this.addEnv("MEMORY", "6G");
-        this.addEnv("MAX_PLAYERS", "1000");
-
         this.envs.addAll(server.getOptions().asEnvs());
         this.envs.addAll(hyggdrasil.createEnvsForClient(new HyggApplication(HyggApplication.Type.SERVER, this.hostname, System.currentTimeMillis()), server.getData()));
 

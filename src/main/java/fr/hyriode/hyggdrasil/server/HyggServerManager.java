@@ -94,21 +94,21 @@ public class HyggServerManager {
         }, 45, TimeUnit.SECONDS);
     }
 
-    public HyggServer startServer(String type, HyggServerOptions options, HyggData data) {
+    public HyggServer startServer(String type, HyggServerOptions options, HyggData data, int slots) {
         final Path typeFolder = this.getTypeFolder(type);
 
         if (typeFolder != null) {
             final HyggServer server = new HyggServer(type, options, data);
-            final Path typePluginsFolder = Paths.get(typeFolder.toString(), PLUGINS);
             final Path serverFolder = Paths.get(References.SERVERS_FOLDER.toString(), server.getName());
-            final Path pluginsFolder = Paths.get(serverFolder.toString(), PLUGINS);
 
-            if (IOUtil.createDirectory(pluginsFolder)) {
-                if (!COPY.apply(typePluginsFolder, pluginsFolder)) {
-                    return null;
-                }
+            if (IOUtil.createDirectory(serverFolder)) {
+                if (IOUtil.copyContent(References.SERVERS_COMMON_FOLDER, serverFolder)) {
+                    if (!COPY.apply(Paths.get(typeFolder.toString(), PLUGINS), Paths.get(serverFolder.toString(), PLUGINS))) {
+                        return null;
+                    }
 
-                if (IOUtil.copyContent(References.SERVERS_COMMON_FOLDER, pluginsFolder)) {
+                    server.setSlots(slots);
+
                     this.swarm.runService(new HyggServerService(this.hyggdrasil, server));
 
                     this.addServerToProxies(server);

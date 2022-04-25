@@ -49,7 +49,7 @@ public class HyggQueryReceiver implements IHyggPacketReceiver {
         } else if (packet instanceof final HyggStopProxyPacket query) {
             return this.proxyManager.stopProxy(query.getProxyName()) ? SUCCESS : ERROR;
         } else if (packet instanceof final HyggStartServerPacket query) {
-            final HyggServer server = this.serverManager.startServer(query.getServerType(), query.getServerOptions(), query.getServerData());
+            final HyggServer server = this.serverManager.startServer(query.getServerType(), query.getServerOptions(), query.getServerData(), -1);
 
             return server != null ? new HyggResponse(SUCCESS, new HyggServerResponse(server)) : ERROR;
         } else if (packet instanceof final HyggStopServerPacket query) {
