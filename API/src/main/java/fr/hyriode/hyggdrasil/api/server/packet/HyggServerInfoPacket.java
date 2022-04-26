@@ -19,6 +19,8 @@ public class HyggServerInfoPacket extends HyggPacket {
     private final HyggServerState state;
     /** The current players on the server */
     private final List<UUID> players;
+    /** The current players playing on the server */
+    private final List<UUID> playersPlaying;
     /** The time when the server started */
     private final long startedTime;
     /** The options of the server */
@@ -32,14 +34,16 @@ public class HyggServerInfoPacket extends HyggPacket {
      * Constructor of {@link HyggServerInfoPacket}
      * @param state The current state of the server
      * @param players The players on the server
+     * @param playersPlaying The players playing on the server
      * @param startedTime The time when the server started
      * @param options The options of the server
      * @param data The data of the server
      * @param slots The slots of the server
      */
-    public HyggServerInfoPacket(HyggServerState state, List<UUID> players, long startedTime, HyggServerOptions options, HyggData data, int slots) {
+    public HyggServerInfoPacket(HyggServerState state, List<UUID> players, List<UUID> playersPlaying, long startedTime, HyggServerOptions options, HyggData data, int slots) {
         this.state = state;
         this.players = players;
+        this.playersPlaying = playersPlaying;
         this.startedTime = startedTime;
         this.options = options;
         this.data = data;
@@ -62,6 +66,15 @@ public class HyggServerInfoPacket extends HyggPacket {
      */
     public List<UUID> getPlayers() {
         return this.players;
+    }
+
+    /**
+     * Get the current amount of players that are playing on the server
+     *
+     * @return An amount of players
+     */
+    public List<UUID> getPlayersPlaying() {
+        return this.playersPlaying;
     }
 
     /**

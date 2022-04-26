@@ -30,6 +30,8 @@ public class HyggServer {
 
     /** Current players on the server */
     protected List<UUID> players;
+    /** The players playing on the server (not the moderators, spectators, etc) */
+    protected List<UUID> playingPlayers;
     /** The available slots on the network */
     protected int slots = -1;
 
@@ -159,7 +161,7 @@ public class HyggServer {
     }
 
     /**
-     * Get of players on the server
+     * Get all the players on the server
      *
      * @return The list of players
      */
@@ -174,6 +176,24 @@ public class HyggServer {
      */
     public void setPlayers(List<UUID> players) {
         this.players = players;
+    }
+
+    /**
+     * Get all the players playing on the server
+     *
+     * @return The list of players playing
+     */
+    public List<UUID> getPlayingPlayers() {
+        return this.playingPlayers;
+    }
+
+    /**
+     * Set all the players playing on the server
+     *
+     * @param playingPlayers A list of players playing
+     */
+    public void setPlayingPlayers(List<UUID> playingPlayers) {
+        this.playingPlayers = playingPlayers;
     }
 
     /**

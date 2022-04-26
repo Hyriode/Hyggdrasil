@@ -95,53 +95,28 @@ public class HyggQueue {
 
     private void anticipateServers(List<HyggServer> currentServers) {
         final int slots = currentServers.isEmpty() ? -1 : currentServers.get(0).getSlots();
-        final int size = this.getSize();
-        int availableSlots = 0;
 
+        int currentPlayers = this.getSize();
         for (HyggServer server : currentServers) {
-            final HyggServerState state = server.getState();
-
-            if (state == HyggServerState.CREATING || state == HyggServerState.STARTING || state == HyggServerState.READY) {
-                availableSlots += server.getSlots() - server.getPlayers().size();
-            }
+            currentPlayers += server.getPlayingPlayers().size();
         }
 
-        if (size == 0) {
+        final int neededServers = (int) ((currentPlayers) * 1.2 / slots + 2);
+
+        if (currentPlayers == 0 && neededServers >= 2) {
             return;
         }
 
-        if (size >= availableSlots) {
-            int neededServers = (int) Math.ceil((double) (size - availableSlots) / slots);
+        for (int i = 0; i < neededServers - currentServers.size(); i++ ) {
+            final HyggData data = new HyggData();
 
-            if (slots == -1 && !this.started) {
-                if (neededServers >= 0) {
-                    neededServers++;
-                } else {
-                    neededServers = 2;
-                }
+            data.add(HyggServer.GAME_TYPE_KEY, this.gameType);
 
-                this.started = true;
-            } else if (slots == -1) {
-                return;
-            } else {
-                neededServers++;
+            if (this.map != null) {
+                data.add(HyggServer.MAP_KEY, this.map);
             }
 
-            if (neededServers <= 0) {
-                return;
-            }
-
-            for (int i = 0; i < neededServers; i++) {
-                final HyggData data = new HyggData();
-
-                data.add(HyggServer.GAME_TYPE_KEY, this.gameType);
-
-                if (this.map != null) {
-                    data.add(HyggServer.MAP_KEY, this.map);
-                }
-
-                this.serverManager.startServer(this.game, new HyggServerOptions(), data, slots);
-            }
+            this.serverManager.startServer(this.game, new HyggServerOptions(), data, slots);
         }
     }
 
