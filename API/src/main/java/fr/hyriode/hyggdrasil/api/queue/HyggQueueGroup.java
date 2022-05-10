@@ -2,9 +2,9 @@ package fr.hyriode.hyggdrasil.api.queue;
 
 import fr.hyriode.hyggdrasil.api.HyggdrasilAPI;
 import fr.hyriode.hyggdrasil.api.protocol.HyggChannel;
-import fr.hyriode.hyggdrasil.api.queue.packet.HyggQueueTransferGroupPacket;
-import fr.hyriode.hyggdrasil.api.queue.packet.HyggQueueTransferPlayerPacket;
-import fr.hyriode.hyggdrasil.api.queue.packet.HyggQueueUpdateGroupPacket;
+import fr.hyriode.hyggdrasil.api.queue.packet.group.HyggQueueTransferGroupPacket;
+import fr.hyriode.hyggdrasil.api.queue.packet.group.HyggQueueUpdateGroupPacket;
+import fr.hyriode.hyggdrasil.api.queue.packet.player.HyggQueueTransferPlayerPacket;
 import fr.hyriode.hyggdrasil.api.server.HyggServer;
 
 import java.util.ArrayList;

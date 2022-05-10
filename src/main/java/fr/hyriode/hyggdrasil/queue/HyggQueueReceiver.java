@@ -5,7 +5,11 @@ import fr.hyriode.hyggdrasil.api.protocol.receiver.IHyggPacketReceiver;
 import fr.hyriode.hyggdrasil.api.protocol.request.HyggRequestHeader;
 import fr.hyriode.hyggdrasil.api.protocol.response.HyggResponse;
 import fr.hyriode.hyggdrasil.api.protocol.response.IHyggResponse;
-import fr.hyriode.hyggdrasil.api.queue.packet.*;
+import fr.hyriode.hyggdrasil.api.queue.packet.group.HyggQueueAddGroupPacket;
+import fr.hyriode.hyggdrasil.api.queue.packet.group.HyggQueueRemoveGroupPacket;
+import fr.hyriode.hyggdrasil.api.queue.packet.group.HyggQueueUpdateGroupPacket;
+import fr.hyriode.hyggdrasil.api.queue.packet.player.HyggQueueAddPlayerPacket;
+import fr.hyriode.hyggdrasil.api.queue.packet.player.HyggQueueRemovePlayerPacket;
 
 /**
  * Project: Hyggdrasil

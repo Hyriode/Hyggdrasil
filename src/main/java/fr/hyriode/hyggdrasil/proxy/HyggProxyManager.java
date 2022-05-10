@@ -152,7 +152,7 @@ public class HyggProxyManager {
 
                 this.eventBus.publish(new HyggProxyStoppedEvent(proxy));
 
-                IOUtil.delete(Paths.get(References.PROXIES_FOLDER.toString(), proxy.getName()));
+                IOUtil.deleteDirectory(Paths.get(References.PROXIES_FOLDER.toString(), proxy.getName()));
 
                 System.out.println("Stopped '" + name + "'.");
             };

@@ -1,36 +1,25 @@
-package fr.hyriode.hyggdrasil.api.queue.packet;
+package fr.hyriode.hyggdrasil.api.queue.packet.group;
 
 import fr.hyriode.hyggdrasil.api.protocol.packet.HyggPacket;
 import fr.hyriode.hyggdrasil.api.protocol.response.content.HyggResponseContent;
+import fr.hyriode.hyggdrasil.api.queue.HyggQueueGroup;
 import fr.hyriode.hyggdrasil.api.queue.HyggQueueInfo;
 
 /**
  * Project: Hyggdrasil
  * Created by AstFaster
- * on 16/04/2022 at 15:19
+ * on 19/04/2022 at 15:55
  */
-public abstract class HyggQueueAddPacket extends HyggPacket {
+public class HyggQueueUpdateGroupPacket extends HyggPacket {
 
-    protected final String game;
-    protected final String gameType;
-    protected final String map;
+    private final HyggQueueGroup group;
 
-    public HyggQueueAddPacket(String game, String gameType, String map) {
-        this.game = game;
-        this.gameType = gameType;
-        this.map = map;
+    public HyggQueueUpdateGroupPacket(HyggQueueGroup group) {
+        this.group = group;
     }
 
-    public String getGame() {
-        return this.game;
-    }
-
-    public String getGameType() {
-        return this.gameType;
-    }
-
-    public String getMap() {
-        return this.map;
+    public HyggQueueGroup getGroup() {
+        return this.group;
     }
 
     public static class Response extends HyggResponseContent {
@@ -55,9 +44,8 @@ public abstract class HyggQueueAddPacket extends HyggPacket {
 
     public enum ResponseType {
 
-        INVALID_TYPE,
-        ALREADY_IN,
-        ADDED;
+        UPDATED,
+        NOT_IN_QUEUE
 
     }
 

@@ -128,8 +128,11 @@ public class HyggServerManager {
 
     public void updateServer(HyggServer server, HyggServerInfoPacket info) {
         server.setPlayers(info.getPlayers());
+        server.setPlayingPlayers(server.getPlayingPlayers());
         server.setState(info.getState());
         server.setSlots(info.getSlots());
+        server.setData(info.getData());
+        server.setOptions(info.getOptions());
 
         this.eventBus.publish(new HyggServerUpdatedEvent(server));
 
@@ -145,7 +148,9 @@ public class HyggServerManager {
 
                 this.swarm.removeService(name);
 
-                IOUtil.delete(Paths.get(References.SERVERS_FOLDER.toString(), server.getName()));
+                this.servers.remove(server);
+
+                IOUtil.deleteDirectory(Paths.get(References.SERVERS_FOLDER.toString(), server.getName()));
 
                 System.out.println("Stopped '" + name + "'.");
             }, waitingTime, TimeUnit.SECONDS);

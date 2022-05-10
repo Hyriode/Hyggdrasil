@@ -1,4 +1,6 @@
-package fr.hyriode.hyggdrasil.api.queue.packet;
+package fr.hyriode.hyggdrasil.api.queue.packet.player;
+
+import fr.hyriode.hyggdrasil.api.queue.packet.HyggQueueRemovePacket;
 
 import java.util.UUID;
 

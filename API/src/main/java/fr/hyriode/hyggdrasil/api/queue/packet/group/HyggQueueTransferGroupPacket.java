@@ -1,4 +1,4 @@
-package fr.hyriode.hyggdrasil.api.queue.packet;
+package fr.hyriode.hyggdrasil.api.queue.packet.group;
 
 import fr.hyriode.hyggdrasil.api.protocol.packet.HyggPacket;
 

@@ -24,9 +24,9 @@ public class HyggServer {
     /** Current server's state */
     protected HyggServerState state;
     /** Server's options (pvp, nether, etc.) */
-    protected final HyggServerOptions options;
+    protected HyggServerOptions options;
     /** The data provided to the server */
-    protected final HyggData data;
+    protected HyggData data;
 
     /** Current players on the server */
     protected List<UUID> players;
@@ -55,6 +55,7 @@ public class HyggServer {
         this.data = data;
         this.startedTime = System.currentTimeMillis();
         this.players = new ArrayList<>();
+        this.playingPlayers = new ArrayList<>();
     }
 
     /**
@@ -63,17 +64,19 @@ public class HyggServer {
      * @param name The name of the server
      * @param state The current state of the server
      * @param players The current of players on the server
+     * @param playersPlaying The current of players playing on the server
      * @param startedTime The time when the server started
      * @param options Server's options (pvp, nether, etc.)
      * @param data Server's data
      */
-    public HyggServer(String name, HyggServerState state, List<UUID> players, long startedTime, HyggServerOptions options, HyggData data) {
+    public HyggServer(String name, HyggServerState state, List<UUID> players, List<UUID> playersPlaying, long startedTime, HyggServerOptions options, HyggData data) {
         this.name = name;
         this.type = getTypeFromName(name);
         this.state = state;
         this.options = options;
         this.data = data;
         this.players = players;
+        this.playingPlayers = playersPlaying;
         this.startedTime = startedTime;
     }
 
@@ -152,12 +155,30 @@ public class HyggServer {
     }
 
     /**
+     * Set the server's options
+     *
+     * @param options New {@link HyggServerOptions}
+     */
+    public void setOptions(HyggServerOptions options) {
+        this.options = options;
+    }
+
+    /**
      * Get server's data
      *
      * @return A {@link HyggData} object
      */
     public HyggData getData() {
         return this.data;
+    }
+
+    /**
+     * Set server's data
+     *
+     * @param data The {@link HyggData} object
+     */
+    public void setData(HyggData data) {
+        this.data = data;
     }
 
     /**

@@ -1,6 +1,7 @@
-package fr.hyriode.hyggdrasil.api.queue.packet;
+package fr.hyriode.hyggdrasil.api.queue.packet.player;
 
 import fr.hyriode.hyggdrasil.api.queue.HyggQueuePlayer;
+import fr.hyriode.hyggdrasil.api.queue.packet.HyggQueueAddPacket;
 
 /**
  * Project: Hyggdrasil

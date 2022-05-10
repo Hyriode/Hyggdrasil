@@ -1,8 +1,10 @@
 package fr.hyriode.hyggdrasil.queue;
 
 import fr.hyriode.hyggdrasil.Hyggdrasil;
+import fr.hyriode.hyggdrasil.api.protocol.HyggChannel;
 import fr.hyriode.hyggdrasil.api.protocol.environment.HyggData;
 import fr.hyriode.hyggdrasil.api.queue.HyggQueueGroup;
+import fr.hyriode.hyggdrasil.api.queue.HyggQueueInfo;
 import fr.hyriode.hyggdrasil.api.queue.HyggQueuePlayer;
 import fr.hyriode.hyggdrasil.api.queue.packet.HyggQueueInfoPacket;
 import fr.hyriode.hyggdrasil.api.scheduler.HyggScheduler;
@@ -12,9 +14,7 @@ import fr.hyriode.hyggdrasil.api.server.HyggServerOptions;
 import fr.hyriode.hyggdrasil.api.server.HyggServerState;
 import fr.hyriode.hyggdrasil.server.HyggServerManager;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -24,9 +24,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class HyggQueue {
 
-    private final String game;
-    private final String gameType;
-    private final String map;
+    private final HyggQueueInfo info;
 
     private final HyggPriorityQueue queue;
 
@@ -36,14 +34,10 @@ public class HyggQueue {
     private final HyggServerManager serverManager;
     private final Hyggdrasil hyggdrasil;
 
-    private boolean started;
-
-    public HyggQueue(Hyggdrasil hyggdrasil, String game, String gameType, String map) {
+    public HyggQueue(Hyggdrasil hyggdrasil, HyggQueueInfo info) {
         this.hyggdrasil = hyggdrasil;
+        this.info = info;
         this.serverManager = this.hyggdrasil.getServerManager();
-        this.game = game;
-        this.gameType = gameType;
-        this.map = map;
         this.queue = new HyggPriorityQueue();
 
         final HyggScheduler scheduler = this.hyggdrasil.getAPI().getScheduler();
@@ -55,13 +49,19 @@ public class HyggQueue {
     private void process() {
         final List<HyggServer> availableServers = this.getAvailableServers();
 
+        availableServers.sort(Comparator.comparingInt(server -> server.getPlayingPlayers().size()));
+        Collections.reverse(availableServers);
+
         this.anticipateServers(availableServers);
 
         for (HyggServer server : availableServers) {
-            if (server.getState() == HyggServerState.READY) {
+            final int slots = server.getSlots();
+            final int players = server.getPlayingPlayers().size();
+
+            if (server.getState() == HyggServerState.READY && players < slots) {
                 final List<HyggQueueGroup> groups = new ArrayList<>();
 
-                this.queue.drainGroups(groups, server.getSlots() - server.getPlayers().size());
+                this.queue.drainGroups(groups, slots - players);
 
                 for (HyggQueueGroup group : groups) {
                     if (this.queue.remove(group)) {
@@ -79,18 +79,15 @@ public class HyggQueue {
             final HyggQueueGroup group = groups.get(i);
 
             for (HyggQueuePlayer player : group.getPlayers()) {
-                this.sendQueueInfo(player, i + 1, group.getSize());
+                this.sendQueueInfo(player, group, i + 1);
             }
         }
     }
 
-    private void sendQueueInfo(HyggQueuePlayer player, int place, int groupSize) {
-        final HyggQueueInfoPacket packet = new HyggQueueInfoPacket(player, this.game, this.gameType, this.map);
+    private void sendQueueInfo(HyggQueuePlayer player, HyggQueueGroup group, int place) {
+        final HyggQueueInfoPacket packet = new HyggQueueInfoPacket(player, group, this.info, place);
 
-        packet.setQueueSize(this.getSize());
-        packet.setGroupsInQueue(this.queue.size());
-        packet.setPlace(place);
-        packet.setGroupSize(groupSize);
+        this.hyggdrasil.getAPI().getPacketProcessor().request(HyggChannel.QUEUE, packet).exec();
     }
 
     private void anticipateServers(List<HyggServer> currentServers) {
@@ -101,27 +98,31 @@ public class HyggQueue {
             currentPlayers += server.getPlayingPlayers().size();
         }
 
-        final int neededServers = (int) ((currentPlayers) * 1.2 / slots + 2);
+        int neededServers = currentPlayers / slots + 2;
 
-        if (currentPlayers == 0 && neededServers >= 2) {
+        if (currentPlayers == 0 && currentServers.size() >= 2) {
             return;
+        }
+
+        if (neededServers < 2 && currentServers.size() < 2) {
+            neededServers = 2;
         }
 
         for (int i = 0; i < neededServers - currentServers.size(); i++ ) {
             final HyggData data = new HyggData();
 
-            data.add(HyggServer.GAME_TYPE_KEY, this.gameType);
+            data.add(HyggServer.GAME_TYPE_KEY, this.info.getGameType());
 
-            if (this.map != null) {
-                data.add(HyggServer.MAP_KEY, this.map);
+            if (this.info.getMap() != null) {
+                data.add(HyggServer.MAP_KEY, this.info.getMap());
             }
 
-            this.serverManager.startServer(this.game, new HyggServerOptions(), data, slots);
+            this.serverManager.startServer(this.info.getGame(), new HyggServerOptions(), data, slots);
         }
     }
 
     private List<HyggServer> getAvailableServers() {
-        return this.map != null ? this.serverManager.getAvailableServers(this.game, this.gameType, this.map) : this.serverManager.getAvailableServers(this.game, this.gameType);
+        return this.info.getMap() != null ? this.serverManager.getAvailableServers(this.info.getGame(), this.info.getGameType(), this.info.getMap()) : this.serverManager.getAvailableServers(this.info.getGame(), this.info.getGameType());
     }
 
     public void disable() {
@@ -208,16 +209,8 @@ public class HyggQueue {
         return size;
     }
 
-    public String getGame() {
-        return this.game;
-    }
-
-    public String getGameType() {
-        return this.gameType;
-    }
-
-    public String getMap() {
-        return this.map;
+    public HyggQueueInfo getInfo() {
+        return this.info;
     }
 
 }

@@ -1,6 +1,8 @@
 package fr.hyriode.hyggdrasil.api.queue.packet;
 
 import fr.hyriode.hyggdrasil.api.protocol.packet.HyggPacket;
+import fr.hyriode.hyggdrasil.api.queue.HyggQueueGroup;
+import fr.hyriode.hyggdrasil.api.queue.HyggQueueInfo;
 import fr.hyriode.hyggdrasil.api.queue.HyggQueuePlayer;
 
 /**
@@ -11,68 +13,32 @@ import fr.hyriode.hyggdrasil.api.queue.HyggQueuePlayer;
 public class HyggQueueInfoPacket extends HyggPacket {
 
     private final HyggQueuePlayer player;
-    private final String game;
-    private final String gameType;
-    private final String map;
+    private final HyggQueueGroup group;
+    private final HyggQueueInfo queueInfo;
 
-    private int place;
-    private int groupSize;
-    private int queueSize;
-    private int groupsInQueue;
+    private final int place;
 
-    public HyggQueueInfoPacket(HyggQueuePlayer player, String game, String gameType, String map) {
+    public HyggQueueInfoPacket(HyggQueuePlayer player, HyggQueueGroup group, HyggQueueInfo queueInfo, int place) {
         this.player = player;
-        this.game = game;
-        this.gameType = gameType;
-        this.map = map;
+        this.group = group;
+        this.queueInfo = queueInfo;
+        this.place = place;
     }
 
     public HyggQueuePlayer getPlayer() {
         return this.player;
     }
 
-    public String getGame() {
-        return this.game;
+    public HyggQueueGroup getGroup() {
+        return this.group;
     }
 
-    public String getGameType() {
-        return this.gameType;
-    }
-
-    public String getMap() {
-        return this.map;
+    public HyggQueueInfo getQueueInfo() {
+        return this.queueInfo;
     }
 
     public int getPlace() {
         return this.place;
-    }
-
-    public void setPlace(int place) {
-        this.place = place;
-    }
-
-    public int getGroupSize() {
-        return this.groupSize;
-    }
-
-    public void setGroupSize(int groupSize) {
-        this.groupSize = groupSize;
-    }
-
-    public int getQueueSize() {
-        return this.queueSize;
-    }
-
-    public void setQueueSize(int queueSize) {
-        this.queueSize = queueSize;
-    }
-
-    public int getGroupsInQueue() {
-        return this.groupsInQueue;
-    }
-
-    public void setGroupsInQueue(int groupsInQueue) {
-        this.groupsInQueue = groupsInQueue;
     }
 
 }

@@ -36,7 +36,7 @@ public class HyggServersReceiver implements IHyggPacketReceiver {
 
             if (packet instanceof final HyggServerInfoPacket info) {
                 if (server == null) {
-                    server = new HyggServer(serverName, info.getState(), info.getPlayers(), info.getStartedTime(), info.getOptions(), info.getData());
+                    server = new HyggServer(serverName, info.getState(), info.getPlayers(), info.getPlayersPlaying(), info.getStartedTime(), info.getOptions(), info.getData());
 
                     serverManager.getServers().add(server);
                     serverManager.addServerToProxies(server);

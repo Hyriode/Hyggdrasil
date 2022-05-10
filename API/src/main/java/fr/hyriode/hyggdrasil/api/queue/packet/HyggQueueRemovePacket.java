@@ -1,7 +1,9 @@
 package fr.hyriode.hyggdrasil.api.queue.packet;
 
 import fr.hyriode.hyggdrasil.api.protocol.packet.HyggPacket;
+import fr.hyriode.hyggdrasil.api.protocol.response.HyggResponse;
 import fr.hyriode.hyggdrasil.api.protocol.response.content.HyggResponseContent;
+import fr.hyriode.hyggdrasil.api.queue.HyggQueueInfo;
 
 /**
  * Project: Hyggdrasil
@@ -10,29 +12,31 @@ import fr.hyriode.hyggdrasil.api.protocol.response.content.HyggResponseContent;
  */
 public abstract class HyggQueueRemovePacket extends HyggPacket {
 
-    public enum Response {
+    public static class Response extends HyggResponseContent {
+
+        private final ResponseType type;
+        private final HyggQueueInfo queueInfo;
+
+        public Response(ResponseType type, HyggQueueInfo queueInfo) {
+            this.type = type;
+            this.queueInfo = queueInfo;
+        }
+
+        public ResponseType getType() {
+            return this.type;
+        }
+
+        public HyggQueueInfo getQueueInfo() {
+            return this.queueInfo;
+        }
+
+    }
+
+    public enum ResponseType {
 
         NOT_IN_QUEUE,
         REMOVED,
-        UNKNOWN;
-
-        public HyggResponseContent asContent() {
-            return new HyggQueueRemovePacket.Response.Content(this);
-        }
-
-        public static class Content extends HyggResponseContent {
-
-            private final HyggQueueRemovePacket.Response type;
-
-            public Content(HyggQueueRemovePacket.Response type) {
-                this.type = type;
-            }
-
-            public HyggQueueRemovePacket.Response getType() {
-                return this.type;
-            }
-
-        }
+        UNKNOWN
 
     }
 

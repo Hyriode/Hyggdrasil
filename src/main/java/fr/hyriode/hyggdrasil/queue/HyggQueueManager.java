@@ -4,8 +4,15 @@ import fr.hyriode.hyggdrasil.Hyggdrasil;
 import fr.hyriode.hyggdrasil.api.protocol.HyggChannel;
 import fr.hyriode.hyggdrasil.api.protocol.response.HyggResponse;
 import fr.hyriode.hyggdrasil.api.queue.HyggQueueGroup;
+import fr.hyriode.hyggdrasil.api.queue.HyggQueueInfo;
 import fr.hyriode.hyggdrasil.api.queue.HyggQueuePlayer;
-import fr.hyriode.hyggdrasil.api.queue.packet.*;
+import fr.hyriode.hyggdrasil.api.queue.packet.HyggQueueAddPacket;
+import fr.hyriode.hyggdrasil.api.queue.packet.HyggQueueRemovePacket;
+import fr.hyriode.hyggdrasil.api.queue.packet.group.HyggQueueAddGroupPacket;
+import fr.hyriode.hyggdrasil.api.queue.packet.group.HyggQueueRemoveGroupPacket;
+import fr.hyriode.hyggdrasil.api.queue.packet.group.HyggQueueUpdateGroupPacket;
+import fr.hyriode.hyggdrasil.api.queue.packet.player.HyggQueueAddPlayerPacket;
+import fr.hyriode.hyggdrasil.api.queue.packet.player.HyggQueueRemovePlayerPacket;
 import fr.hyriode.hyggdrasil.server.HyggServerManager;
 
 import java.util.ArrayList;
@@ -55,9 +62,11 @@ public class HyggQueueManager {
         final HyggQueue currentQueue = this.getCurrentPlayerQueue(group.getId());
 
         if (queue.equals(currentQueue)) {
-            response.withType(HyggResponse.Type.ERROR).withContent(HyggQueueAddPacket.Response.ALREADY_IN.asContent());
+            response.withType(HyggResponse.Type.ERROR)
+                    .withContent(new HyggQueueAddPacket.Response(HyggQueueAddPacket.ResponseType.ALREADY_IN, queue.getInfo()));
         } else if (!this.serverManager.isTypeExisting(packet.getGame())) {
-            response.withType(HyggResponse.Type.ERROR).withContent(HyggQueueAddPacket.Response.INVALID_TYPE.asContent());
+            response.withType(HyggResponse.Type.ERROR)
+                    .withContent(new HyggQueueAddPacket.Response(HyggQueueAddPacket.ResponseType.INVALID_TYPE, queue.getInfo()));
         } else {
             if (currentQueue != null) {
                 currentQueue.removeGroup(group.getId());
@@ -65,46 +74,53 @@ public class HyggQueueManager {
 
             queue.addGroup(group);
 
-            response.withContent(HyggQueueAddPacket.Response.ADDED.asContent());
+            response.withContent(new HyggQueueAddPacket.Response(HyggQueueAddPacket.ResponseType.ADDED, queue.getInfo()));
         }
         return response;
     }
 
     public HyggResponse handlePacket(HyggQueueRemovePlayerPacket packet) {
         final UUID playerId = packet.getPlayerId();
-        final HyggResponse response = new HyggResponse(HyggResponse.Type.SUCCESS).withContent(HyggQueueRemovePacket.Response.REMOVED.asContent());
+        final HyggResponse response = new HyggResponse(HyggResponse.Type.ERROR)
+                .withContent(new HyggQueueRemovePacket.Response(HyggQueueRemovePacket.ResponseType.UNKNOWN, null));
         final HyggQueue queue = this.getCurrentPlayerQueue(playerId);
 
         if (queue == null) {
-            response.withType(HyggResponse.Type.ERROR).withContent(HyggQueueRemovePacket.Response.NOT_IN_QUEUE.asContent());
-        } else if (!queue.removePlayer(playerId)) {
-            response.withType(HyggResponse.Type.ERROR).withContent(HyggQueueRemovePacket.Response.UNKNOWN.asContent());
+            response.withContent(new HyggQueueRemovePacket.Response(HyggQueueRemovePacket.ResponseType.NOT_IN_QUEUE, null));
+        } else if (queue.removePlayer(playerId)) {
+            response.withType(HyggResponse.Type.SUCCESS)
+                    .withContent(new HyggQueueRemovePacket.Response(HyggQueueRemovePacket.ResponseType.REMOVED, null));
         }
         return response;
     }
 
     public HyggResponse handlePacket(HyggQueueRemoveGroupPacket packet) {
         final UUID groupId = packet.getGroupId();
-        final HyggResponse response = new HyggResponse(HyggResponse.Type.SUCCESS).withContent(HyggQueueRemovePacket.Response.REMOVED.asContent());
+        final HyggResponse response = new HyggResponse(HyggResponse.Type.ERROR)
+                .withContent(new HyggQueueRemovePacket.Response(HyggQueueRemovePacket.ResponseType.UNKNOWN, null));
         final HyggQueue queue = this.getCurrentGroupQueue(groupId);
 
         if (queue == null) {
-            response.withType(HyggResponse.Type.ERROR).withContent(HyggQueueRemovePacket.Response.NOT_IN_QUEUE.asContent());
-        } else if (!queue.removeGroup(groupId)) {
-            response.withType(HyggResponse.Type.ERROR).withContent(HyggQueueRemovePacket.Response.UNKNOWN.asContent());
+            response.withContent(new HyggQueueRemovePacket.Response(HyggQueueRemovePacket.ResponseType.NOT_IN_QUEUE, null));
+        } else if (queue.removeGroup(groupId)) {
+            response.withType(HyggResponse.Type.SUCCESS)
+                    .withContent(new HyggQueueRemovePacket.Response(HyggQueueRemovePacket.ResponseType.REMOVED, queue.getInfo()));
         }
         return response;
     }
 
     public HyggResponse handlePacket(HyggQueueUpdateGroupPacket packet) {
         final UUID groupId = packet.getGroup().getId();
-        final HyggResponse response = new HyggResponse(HyggResponse.Type.SUCCESS).withContent(HyggQueueUpdateGroupPacket.Response.UPDATED.asContent());
+        final HyggResponse response = new HyggResponse(HyggResponse.Type.SUCCESS);
         final HyggQueue queue = this.getCurrentGroupQueue(groupId);
 
         if (queue == null) {
-            response.withType(HyggResponse.Type.ERROR).withContent(HyggQueueUpdateGroupPacket.Response.NOT_IN_QUEUE.asContent());
+            response.withType(HyggResponse.Type.ERROR)
+                    .withContent(new HyggQueueUpdateGroupPacket.Response(HyggQueueUpdateGroupPacket.ResponseType.NOT_IN_QUEUE, null));
         } else {
             queue.getGroup(groupId).update(packet);
+
+            response.withContent(new HyggQueueUpdateGroupPacket.Response(HyggQueueUpdateGroupPacket.ResponseType.UPDATED, queue.getInfo()));
         }
         return response;
     }
@@ -140,7 +156,7 @@ public class HyggQueueManager {
     }
 
     private HyggQueue createQueue(String game, String gameType, String map) {
-        final HyggQueue queue = new HyggQueue(this.hyggdrasil, game, gameType, map);
+        final HyggQueue queue = new HyggQueue(this.hyggdrasil, new HyggQueueInfo(game, gameType, map, 0, 0));
         final String name = this.createQueueName(game, gameType, map);
 
         this.queues.put(name, queue);
