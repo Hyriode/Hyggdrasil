@@ -117,7 +117,9 @@ public class HyggServerManager {
 
                     this.eventBus.publish(new HyggServerStartedEvent(server));
 
-                    System.out.println("Started '" + server.getName() + "'.");
+                    final String map = server.getMap();
+
+                    System.out.println("Started '" + server.getName() + "' (" + server.getType() + "#" + server.getGameType() + (map != null ? " with map: " + map : "") + ").");
 
                     return server;
                 }
