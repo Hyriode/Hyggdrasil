@@ -4,7 +4,14 @@ import fr.hyriode.hyggdrasil.api.protocol.packet.HyggHeartbeatPacket;
 import fr.hyriode.hyggdrasil.api.protocol.packet.HyggPacket;
 import fr.hyriode.hyggdrasil.api.protocol.packet.HyggResponsePacket;
 import fr.hyriode.hyggdrasil.api.proxy.packet.*;
-import fr.hyriode.hyggdrasil.api.queue.packet.*;
+import fr.hyriode.hyggdrasil.api.queue.packet.HyggQueueInfoPacket;
+import fr.hyriode.hyggdrasil.api.queue.packet.group.HyggQueueAddGroupPacket;
+import fr.hyriode.hyggdrasil.api.queue.packet.group.HyggQueueRemoveGroupPacket;
+import fr.hyriode.hyggdrasil.api.queue.packet.group.HyggQueueTransferGroupPacket;
+import fr.hyriode.hyggdrasil.api.queue.packet.group.HyggQueueUpdateGroupPacket;
+import fr.hyriode.hyggdrasil.api.queue.packet.player.HyggQueueAddPlayerPacket;
+import fr.hyriode.hyggdrasil.api.queue.packet.player.HyggQueueRemovePlayerPacket;
+import fr.hyriode.hyggdrasil.api.queue.packet.player.HyggQueueTransferPlayerPacket;
 import fr.hyriode.hyggdrasil.api.server.packet.*;
 
 /**
@@ -42,7 +49,7 @@ public enum HyggProtocol {
     QUEUE_UPDATE_GROUP(74, HyggQueueUpdateGroupPacket.class),
     QUEUE_INFO(75, HyggQueueInfoPacket.class),
     QUEUE_TRANSFER_PLAYER(76, HyggQueueTransferPlayerPacket.class),
-    QUEUE_TRANSFER_GROUP(767, HyggQueueTransferGroupPacket.class)
+    QUEUE_TRANSFER_GROUP(77, HyggQueueTransferGroupPacket.class)
 
     ;
 

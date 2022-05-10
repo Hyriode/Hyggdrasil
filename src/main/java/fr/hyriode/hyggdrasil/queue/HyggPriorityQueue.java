@@ -2,8 +2,6 @@ package fr.hyriode.hyggdrasil.queue;
 
 import fr.hyriode.hyggdrasil.api.queue.HyggQueueGroup;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.concurrent.PriorityBlockingQueue;

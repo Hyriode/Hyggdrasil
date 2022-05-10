@@ -1,10 +1,6 @@
 package fr.hyriode.hyggdrasil.lobby;
 
 import fr.hyriode.hyggdrasil.Hyggdrasil;
-import fr.hyriode.hyggdrasil.api.event.HyggEventBus;
-import fr.hyriode.hyggdrasil.api.event.model.server.HyggServerStartedEvent;
-import fr.hyriode.hyggdrasil.api.event.model.server.HyggServerStoppedEvent;
-import fr.hyriode.hyggdrasil.api.event.model.server.HyggServerUpdatedEvent;
 import fr.hyriode.hyggdrasil.api.lobby.HyggLobbyAPI;
 import fr.hyriode.hyggdrasil.api.protocol.HyggChannel;
 import fr.hyriode.hyggdrasil.api.protocol.environment.HyggData;

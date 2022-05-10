@@ -5,7 +5,6 @@ import fr.hyriode.hyggdrasil.api.protocol.environment.HyggApplication;
 import fr.hyriode.hyggdrasil.api.protocol.environment.HyggData;
 import fr.hyriode.hyggdrasil.api.proxy.HyggProxy;
 import fr.hyriode.hyggdrasil.docker.swarm.DockerService;
-import fr.hyriode.hyggdrasil.util.PortUtil;
 import fr.hyriode.hyggdrasil.util.References;
 
 /**

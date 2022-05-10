@@ -1,7 +1,6 @@
 package fr.hyriode.hyggdrasil.api.queue.packet;
 
 import fr.hyriode.hyggdrasil.api.protocol.packet.HyggPacket;
-import fr.hyriode.hyggdrasil.api.protocol.response.HyggResponse;
 import fr.hyriode.hyggdrasil.api.protocol.response.content.HyggResponseContent;
 import fr.hyriode.hyggdrasil.api.queue.HyggQueueInfo;
 

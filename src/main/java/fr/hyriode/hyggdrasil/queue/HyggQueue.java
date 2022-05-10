@@ -90,16 +90,6 @@ public class HyggQueue {
         this.hyggdrasil.getAPI().getPacketProcessor().request(HyggChannel.QUEUE, packet).exec();
     }
 
-    public static void main(String[] args) {
-        final int slots = 2;
-        final int players = 4;
-        final int queueSize = 3;
-        final int totalServers = 2;
-        final int neededServers = (players + queueSize) / slots + 2;
-
-        System.out.println(neededServers);
-    }
-
     private void anticipateServers(List<HyggServer> currentServers) {
         final int slots = currentServers.isEmpty() ? -1 : currentServers.get(0).getSlots();
 
