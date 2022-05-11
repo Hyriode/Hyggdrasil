@@ -135,6 +135,7 @@ public class HyggServerManager {
         server.setSlots(info.getSlots());
         server.setData(info.getData());
         server.setOptions(info.getOptions());
+        server.setAccessible(info.isAccessible());
 
         this.eventBus.publish(new HyggServerUpdatedEvent(server));
 

@@ -40,6 +40,9 @@ public class HyggServer {
     /** The last time that the server send a heartbeat */
     protected long lastHeartbeat = -1;
 
+    /** Is the server accessible to normal players (not moderators) */
+    protected boolean accessible;
+
     /**
      * Constructor of {@link HyggServer}
      *
@@ -267,6 +270,24 @@ public class HyggServer {
      */
     public long getLastHeartbeat() {
         return this.lastHeartbeat;
+    }
+
+    /**
+     * Set if the server is accessible or not
+     *
+     * @param accessible The accessibility value of the server
+     */
+    public void setAccessible(boolean accessible) {
+        this.accessible = accessible;
+    }
+
+    /**
+     * Check if the server is accessible
+     *
+     * @return <code>true</code> if yes
+     */
+    public boolean isAccessible() {
+        return this.accessible;
     }
 
     @Override

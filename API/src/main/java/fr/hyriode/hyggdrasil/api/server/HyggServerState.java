@@ -10,15 +10,15 @@ public enum HyggServerState {
     /** Server is in creation (Docker just created it) */
     CREATING(0,"Creating"),
     /** Server is starting (onEnable in plugin) */
-    STARTING(1, "Starting"),
+    STARTING(2, "Starting"),
     /** Server is ready to host players */
-    READY(2, "Ready"),
+    READY(3, "Ready"),
     /** Server is playing a game */
-    PLAYING(3, "In Game"),
+    PLAYING(4, "In Game"),
     /** Server is stopping (onDisable in plugin) */
-    SHUTDOWN(4, "Shutdown"),
+    SHUTDOWN(5, "Shutdown"),
     /** Server is idling (an error occurred or just freezing) */
-    IDLE(5, "Freeze");
+    IDLE(6, "Freeze");
 
     /** State's id */
     private final int id;

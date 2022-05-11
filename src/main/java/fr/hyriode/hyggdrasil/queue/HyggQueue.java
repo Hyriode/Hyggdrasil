@@ -11,7 +11,6 @@ import fr.hyriode.hyggdrasil.api.scheduler.HyggScheduler;
 import fr.hyriode.hyggdrasil.api.scheduler.HyggTask;
 import fr.hyriode.hyggdrasil.api.server.HyggServer;
 import fr.hyriode.hyggdrasil.api.server.HyggServerOptions;
-import fr.hyriode.hyggdrasil.api.server.HyggServerState;
 import fr.hyriode.hyggdrasil.server.HyggServerManager;
 
 import java.util.*;
@@ -58,7 +57,7 @@ public class HyggQueue {
             final int slots = server.getSlots();
             final int players = server.getPlayingPlayers().size();
 
-            if (server.getState() == HyggServerState.READY && players < slots) {
+            if (server.isAccessible() && players < slots) {
                 final List<HyggQueueGroup> groups = new ArrayList<>();
 
                 this.queue.drainGroups(groups, slots - players);
@@ -91,7 +90,19 @@ public class HyggQueue {
     }
 
     private void anticipateServers(List<HyggServer> currentServers) {
-        final int slots = currentServers.isEmpty() ? -1 : currentServers.get(0).getSlots();
+        int slots = -1;
+
+        for (HyggServer server : currentServers) {
+            final int serverSlots = server.getSlots();
+
+            if (slots == -1) {
+                slots = serverSlots;
+            }
+
+            if (serverSlots != -1 && serverSlots < slots) {
+                slots = serverSlots;
+            }
+        }
 
         int currentPlayers = this.getSize();
         for (HyggServer server : currentServers) {
@@ -101,6 +112,10 @@ public class HyggQueue {
         int neededServers = currentPlayers / slots + 2;
 
         if (currentPlayers == 0 && currentServers.size() >= 2) {
+            return;
+        }
+
+        if (currentServers.size() == neededServers) {
             return;
         }
 

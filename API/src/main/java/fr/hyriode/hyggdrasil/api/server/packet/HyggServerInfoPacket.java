@@ -29,6 +29,8 @@ public class HyggServerInfoPacket extends HyggPacket {
     private final HyggData data;
     /** The slots of the server */
     private final int slots;
+    /** Is the server accessible by players */
+    private final boolean accessible;
 
     /**
      * Constructor of {@link HyggServerInfoPacket}
@@ -39,8 +41,9 @@ public class HyggServerInfoPacket extends HyggPacket {
      * @param options The options of the server
      * @param data The data of the server
      * @param slots The slots of the server
+     * @param accessible Is server accessible
      */
-    public HyggServerInfoPacket(HyggServerState state, List<UUID> players, List<UUID> playersPlaying, long startedTime, HyggServerOptions options, HyggData data, int slots) {
+    public HyggServerInfoPacket(HyggServerState state, List<UUID> players, List<UUID> playersPlaying, long startedTime, HyggServerOptions options, HyggData data, int slots, boolean accessible) {
         this.state = state;
         this.players = players;
         this.playersPlaying = playersPlaying;
@@ -48,6 +51,7 @@ public class HyggServerInfoPacket extends HyggPacket {
         this.options = options;
         this.data = data;
         this.slots = slots;
+        this.accessible = accessible;
     }
 
     /**
@@ -111,6 +115,15 @@ public class HyggServerInfoPacket extends HyggPacket {
      */
     public int getSlots() {
         return this.slots;
+    }
+
+    /**
+     * Check if the server is accessible to normal players (not moderators and stuff)
+     *
+     * @return <code>true</code> if the server is accessible
+     */
+    public boolean isAccessible() {
+        return this.accessible;
     }
 
 }
