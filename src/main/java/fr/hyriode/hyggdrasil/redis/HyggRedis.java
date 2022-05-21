@@ -2,7 +2,7 @@ package fr.hyriode.hyggdrasil.redis;
 
 import fr.hyriode.hyggdrasil.Hyggdrasil;
 import fr.hyriode.hyggdrasil.api.protocol.environment.HyggRedisCredentials;
-import fr.hyriode.hyggdrasil.configuration.nested.RedisConfiguration;
+import fr.hyriode.hyggdrasil.config.nested.HyggRedisConfig;
 import fr.hyriode.hyggdrasil.util.References;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
@@ -25,8 +25,8 @@ public class HyggRedis {
 
     private final HyggRedisCredentials credentials;
 
-    public HyggRedis(RedisConfiguration configuration) {
-        this.credentials = new HyggRedisCredentials(configuration.getHostname(), configuration.getPort(), configuration.getPassword());
+    public HyggRedis(HyggRedisConfig config) {
+        this.credentials = new HyggRedisCredentials(config.getHostname(), config.getPort(), config.getPassword());
     }
 
     public boolean connect() {

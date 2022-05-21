@@ -41,7 +41,7 @@ public class HyggProxiesReceiver implements IHyggPacketReceiver {
                     proxyManager.getProxies().add(proxy);
                 }
 
-                proxyManager.updateProxy(proxy, info);
+                proxyManager.updateProxyInfo(proxy, info);
             }
 
             if (proxy != null) {

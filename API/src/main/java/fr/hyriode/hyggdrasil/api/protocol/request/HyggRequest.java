@@ -190,7 +190,6 @@ public class HyggRequest {
      * Execute the request. In this case it will send the packet and manage responses
      */
     public void exec() {
-        final int initialMaxResponses = this.maxResponses;
         final HyggPacketProcessor packetProcessor = this.hyggdrasilAPI.getPacketProcessor();
 
         if (this.packet != null) {
@@ -202,7 +201,7 @@ public class HyggRequest {
                 this.hyggdrasilAPI.getScheduler().schedule(() -> {
                     responseReceiver.unregister(this.channel);
 
-                    if (this.maxResponses == initialMaxResponses) {
+                    if (responseReceiver.getResponses() < this.maxResponses) {
                         if (this.responseTimeEndCallback != null) {
                             this.responseTimeEndCallback.run();
                         }

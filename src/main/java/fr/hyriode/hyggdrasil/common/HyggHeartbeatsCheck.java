@@ -21,16 +21,13 @@ public class HyggHeartbeatsCheck implements Runnable {
     private final HyggProxyManager proxyManager;
     private final HyggServerManager serverManager;
 
-    private final Hyggdrasil hyggdrasil;
-
     public HyggHeartbeatsCheck(Hyggdrasil hyggdrasil) {
-        this.hyggdrasil = hyggdrasil;
-        this.proxyManager = this.hyggdrasil.getProxyManager();
-        this.serverManager = this.hyggdrasil.getServerManager();
+        this.proxyManager = hyggdrasil.getProxyManager();
+        this.serverManager = hyggdrasil.getServerManager();
 
         System.out.println("Starting heartbeats check task...");
 
-        this.hyggdrasil.getAPI().getScheduler().schedule(this, 0, HyggdrasilAPI.HEARTBEAT_TIME, TimeUnit.SECONDS);
+        hyggdrasil.getAPI().getScheduler().schedule(this, 0, HyggdrasilAPI.HEARTBEAT_TIME, TimeUnit.MILLISECONDS);
     }
 
     @Override
@@ -38,42 +35,46 @@ public class HyggHeartbeatsCheck implements Runnable {
         final long currentTime = System.currentTimeMillis();
 
         for (HyggServer server : this.serverManager.getServers()) {
-            if (server.getState() != HyggServerState.CREATING) {
-                final long lastHeartbeat = server.getLastHeartbeat();
+            final long lastHeartbeat = server.getLastHeartbeat();
 
-                if (!this.isResponding(currentTime, lastHeartbeat)) {
-                    final String serverName = server.getName();
+            if (server.getState() == HyggServerState.CREATING || this.isResponding(currentTime, lastHeartbeat)) {
+                continue;
+            }
 
-                    server.setState(HyggServerState.IDLE);
+            final String serverName = server.getName();
 
-                    System.err.println("'" + serverName + "' didn't send a heartbeat!");
+            server.setState(HyggServerState.IDLE);
 
-                    if (this.isTimedOut(currentTime, lastHeartbeat)) {
-                        System.err.println("'" + serverName + "' timed out! Killing it...");
+            this.serverManager.updateServer(server);
 
-                        this.serverManager.stopServer(serverName);
-                    }
-                }
+            System.err.println("'" + serverName + "' didn't send a heartbeat!");
+
+            if (this.isTimedOut(currentTime, lastHeartbeat)) {
+                System.err.println("'" + serverName + "' timed out! Killing it...");
+
+                this.serverManager.stopServer(serverName);
             }
         }
 
         for (HyggProxy proxy : this.proxyManager.getProxies()) {
-            if (proxy.getState() != HyggProxyState.CREATING) {
-                final long lastHeartbeat = proxy.getLastHeartbeat();
+            final long lastHeartbeat = proxy.getLastHeartbeat();
 
-                if (!this.isResponding(currentTime, lastHeartbeat)) {
-                    final String proxyName = proxy.getName();
+            if (proxy.getState() == HyggProxyState.CREATING || this.isResponding(currentTime, lastHeartbeat)) {
+                continue;
+            }
 
-                    proxy.setState(HyggProxyState.IDLE);
+            final String proxyName = proxy.getName();
 
-                    System.err.println("'" + proxyName + "' didn't send a heartbeat!");
+            proxy.setState(HyggProxyState.IDLE);
 
-                    if (this.isTimedOut(currentTime, lastHeartbeat)) {
-                        System.err.println("'" + proxyName + "' timed out! Killing it...");
+            this.proxyManager.updateProxy(proxy);
 
-                        this.proxyManager.stopProxy(proxyName);
-                    }
-                }
+            System.err.println("'" + proxyName + "' didn't send a heartbeat!");
+
+            if (this.isTimedOut(currentTime, lastHeartbeat)) {
+                System.err.println("'" + proxyName + "' timed out! Killing it...");
+
+                this.proxyManager.stopProxy(proxyName);
             }
         }
     }
@@ -83,7 +84,7 @@ public class HyggHeartbeatsCheck implements Runnable {
     }
 
     private boolean isResponding(long currentTime, long lastHeartbeat) {
-        return currentTime - lastHeartbeat >= HyggdrasilAPI.HEARTBEAT_TIME;
+        return currentTime - lastHeartbeat <= HyggdrasilAPI.HEARTBEAT_TIME;
     }
 
 }

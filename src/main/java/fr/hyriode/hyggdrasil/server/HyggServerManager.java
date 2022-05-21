@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
+import java.util.stream.Collectors;
 
 import static fr.hyriode.hyggdrasil.api.protocol.response.HyggResponse.Type.SUCCESS;
 import static fr.hyriode.hyggdrasil.api.proxy.packet.HyggProxyServerActionPacket.Action.ADD;
@@ -66,6 +67,8 @@ public class HyggServerManager {
         IOUtil.createDirectory(References.SERVERS_TYPES_FOLDER);
 
         this.hyggdrasil.getDocker().getImageManager().buildImage(Paths.get(References.SERVER_IMAGES_FOLDER.toString(), "Dockerfile").toFile(), SERVER_IMAGE.getName());
+
+        this.hyggdrasil.getAPI().getScheduler().schedule(new HyggRemoveServersTask(this.hyggdrasil), 1, 1, TimeUnit.MINUTES);
 
         this.removeOldServers();
     }
@@ -114,7 +117,6 @@ public class HyggServerManager {
                     this.addServerToProxies(server);
 
                     this.servers.add(server);
-
                     this.eventBus.publish(new HyggServerStartedEvent(server));
 
                     final String map = server.getMap();
@@ -128,17 +130,20 @@ public class HyggServerManager {
         return null;
     }
 
-    public void updateServer(HyggServer server, HyggServerInfoPacket info) {
+    public void updateServerInfo(HyggServer server, HyggServerInfoPacket info) {
         server.setPlayers(info.getPlayers());
-        server.setPlayingPlayers(server.getPlayingPlayers());
+        server.setPlayingPlayers(info.getPlayersPlaying());
         server.setState(info.getState());
         server.setSlots(info.getSlots());
         server.setData(info.getData());
         server.setOptions(info.getOptions());
         server.setAccessible(info.isAccessible());
 
-        this.eventBus.publish(new HyggServerUpdatedEvent(server));
+        this.updateServer(server);
+    }
 
+    public void updateServer(HyggServer server) {
+        this.eventBus.publish(new HyggServerUpdatedEvent(server));
         this.hyggdrasil.getLobbyBalancer().onUpdate(server);
     }
 

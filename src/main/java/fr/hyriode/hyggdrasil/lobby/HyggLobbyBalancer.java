@@ -9,6 +9,7 @@ import fr.hyriode.hyggdrasil.api.scheduler.HyggScheduler;
 import fr.hyriode.hyggdrasil.api.server.HyggServer;
 import fr.hyriode.hyggdrasil.api.server.HyggServerOptions;
 import fr.hyriode.hyggdrasil.api.server.HyggServerState;
+import fr.hyriode.hyggdrasil.rule.HyggServerRule;
 import redis.clients.jedis.Jedis;
 
 import java.util.ArrayList;
@@ -23,8 +24,9 @@ import java.util.concurrent.TimeUnit;
  */
 public class HyggLobbyBalancer {
 
-    private static final int MINIMUM_LOBBIES = Integer.parseInt(System.getenv("MINIMUM_LOBBIES"));
     private static final int MIN_PLAYERS = 5;
+
+    private final int minimumLobbies;
 
     private final List<HyggServer> lobbies;
     private final List<String> startedLobbies;
@@ -35,14 +37,9 @@ public class HyggLobbyBalancer {
         this.hyggdrasil = hyggdrasil;
         this.lobbies = new CopyOnWriteArrayList<>();
         this.startedLobbies = new ArrayList<>();
+        this.minimumLobbies = this.hyggdrasil.getRules().getServerRules().getOrDefault(HyggLobbyAPI.TYPE, new HyggServerRule()).getMinimums().getOrDefault("default", 0);
 
-        this.hyggdrasil.getAPI().getScheduler().schedule(() -> {
-            for (int i = 0; i < MINIMUM_LOBBIES; i++) {
-                this.startLobby();
-            }
-
-            this.startTasks();
-        }, 10, TimeUnit.SECONDS);
+        this.startTasks();
     }
 
     private void startTasks() {
@@ -97,9 +94,9 @@ public class HyggLobbyBalancer {
             for (int i = neededLobbies - lobbiesNumber; i > 0; i--) {
                 this.startLobby();
             }
-        } else if (lobbiesNumber > neededLobbies && lobbiesNumber > MINIMUM_LOBBIES) {
+        } else if (lobbiesNumber > neededLobbies && lobbiesNumber > this.minimumLobbies) {
             for (HyggServer server : this.lobbies) {
-                if (this.getLobbiesNumber() == neededLobbies || this.getLobbiesNumber() <= MINIMUM_LOBBIES) {
+                if (this.getLobbiesNumber() == neededLobbies || this.getLobbiesNumber() <= this.minimumLobbies) {
                     break;
                 }
 
@@ -117,7 +114,7 @@ public class HyggLobbyBalancer {
         data.add(HyggServer.MAP_KEY, this.hyggdrasil.getAPI().getLobbyAPI().getCurrentMap());
         data.add(HyggServer.GAME_TYPE_KEY, "default");
 
-        final HyggServer lobby = this.hyggdrasil.getServerManager().startServer(HyggLobbyAPI.TYPE, new HyggServerOptions(), new HyggData(), HyggLobbyAPI.MAX_PLAYERS);
+        final HyggServer lobby = this.hyggdrasil.getServerManager().startServer(HyggLobbyAPI.TYPE, new HyggServerOptions(), data, HyggLobbyAPI.MAX_PLAYERS);
 
         if (lobby != null) {
             this.startedLobbies.add(lobby.getName());

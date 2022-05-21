@@ -15,6 +15,7 @@ import fr.hyriode.hyggdrasil.api.proxy.packet.HyggProxyInfoPacket;
 import fr.hyriode.hyggdrasil.api.proxy.packet.HyggStopProxyPacket;
 import fr.hyriode.hyggdrasil.docker.image.DockerImage;
 import fr.hyriode.hyggdrasil.docker.swarm.DockerSwarm;
+import fr.hyriode.hyggdrasil.rule.HyggProxyRule;
 import fr.hyriode.hyggdrasil.util.IOUtil;
 import fr.hyriode.hyggdrasil.util.References;
 
@@ -35,10 +36,10 @@ import static fr.hyriode.hyggdrasil.api.protocol.response.HyggResponse.Type.SUCC
  */
 public class HyggProxyManager {
 
-    private static final int MAX_PROXIES = Integer.parseInt(System.getenv("MAX_PROXIES"));
-    private static final int STARTING_PORT = Integer.parseInt(System.getenv("PROXIES_STARTING_PORT"));
-
     public static final DockerImage PROXY_IMAGE = new DockerImage("hygg-proxy", "latest");
+
+    private final int maxProxies;
+    private final int startingPort;
 
     private final List<HyggProxy> proxies;
 
@@ -54,6 +55,11 @@ public class HyggProxyManager {
         this.packetProcessor = this.hyggdrasil.getAPI().getPacketProcessor();
         this.eventBus = this.hyggdrasil.getAPI().getEventBus();
         this.proxies = new ArrayList<>();
+
+        final HyggProxyRule proxyRule = this.hyggdrasil.getRules().getProxyRule();
+
+        this.maxProxies = proxyRule.getMaxProxies();
+        this.startingPort = proxyRule.getStartingPort();
 
         new HyggProxyBalancer(this.hyggdrasil, this);
 
@@ -89,8 +95,8 @@ public class HyggProxyManager {
     }
 
     public HyggProxy startProxy() {
-        if (this.proxies.size() >= MAX_PROXIES) {
-            System.err.println("Cannot start a new proxy! Proxies limit has already been reached (" + this.proxies.size() + "/" + MAX_PROXIES + ")!");
+        if (this.proxies.size() >= this.maxProxies) {
+            System.err.println("Cannot start a new proxy! Proxies limit has already been reached (" + this.proxies.size() + "/" + this.maxProxies + ")!");
             return null;
         }
 
@@ -108,12 +114,10 @@ public class HyggProxyManager {
                 proxy.setPort(availablePort);
 
                 this.swarm.runService(new HyggProxyService(this.hyggdrasil, proxy, this.proxies.size() == 0));
-
                 this.proxies.add(proxy);
-
                 this.eventBus.publish(new HyggProxyStartedEvent(proxy));
 
-                System.out.println("Started '" + proxy.getName() + "' (port: " + proxy.getPort() + ") [" + this.proxies.size() + "/" + MAX_PROXIES + "].");
+                System.out.println("Started '" + proxy.getName() + "' (port: " + proxy.getPort() + ") [" + this.proxies.size() + "/" + this.maxProxies + "].");
 
                 return proxy;
             }
@@ -122,9 +126,9 @@ public class HyggProxyManager {
     }
 
     private int getAvailablePort() {
-        int availablePort = STARTING_PORT;
+        int availablePort = this.startingPort;
 
-        for (int i = STARTING_PORT; i < STARTING_PORT + MAX_PROXIES; i++) {
+        for (int i = this.startingPort; i < this.startingPort + this.maxProxies; i++) {
             for (HyggProxy proxy : this.proxies) {
                 if (proxy.getPort() == i) {
                     availablePort = -1;
@@ -136,10 +140,14 @@ public class HyggProxyManager {
         return availablePort;
     }
 
-    public void updateProxy(HyggProxy proxy, HyggProxyInfoPacket info) {
+    public void updateProxyInfo(HyggProxy proxy, HyggProxyInfoPacket info) {
         proxy.setPlayers(info.getPlayers());
         proxy.setState(info.getState());
 
+        this.updateProxy(proxy);
+    }
+
+    public void updateProxy(HyggProxy proxy) {
         this.eventBus.publish(new HyggProxyUpdatedEvent(proxy));
     }
 

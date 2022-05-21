@@ -1,5 +1,7 @@
 package fr.hyriode.hyggdrasil.util;
 
+import fr.hyriode.hyggdrasil.Hyggdrasil;
+import fr.hyriode.hyggdrasil.config.HyggConfig;
 import fr.hyriode.hyggdrasil.docker.network.DockerNetwork;
 import fr.hyriode.hyggdrasil.docker.network.DockerNetworkDriver;
 
@@ -34,9 +36,6 @@ public class References {
     public static final Path PROXY_IMAGES_FOLDER = Paths.get(IMAGES_FOLDER.toString(), "proxy");
 
     /** Docker */
-    public static final String STACK_NAME = System.getenv("STACK_NAME");
-    public static final String DATA_HOST_FOLDER = System.getenv("DATA_FOLDER");
     public static final String STACK_NAME_LABEL = "com.docker.stack.namespace";
-    public static final DockerNetwork HYRIODE_NETWORK = new DockerNetwork(STACK_NAME + "_" + System.getenv("NETWORK_NAME"), DockerNetworkDriver.OVERLAY);
 
 }

@@ -63,5 +63,9 @@ public class HyggResponseReceiver implements IHyggPacketReceiver {
     public void unregister(HyggChannel channel) {
         this.hyggdrasilAPI.getPacketProcessor().unregisterReceiver(channel, this);
     }
-    
+
+    public int getResponses() {
+        return this.responses;
+    }
+
 }

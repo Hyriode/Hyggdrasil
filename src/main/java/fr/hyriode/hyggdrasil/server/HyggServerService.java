@@ -3,6 +3,8 @@ package fr.hyriode.hyggdrasil.server;
 import fr.hyriode.hyggdrasil.Hyggdrasil;
 import fr.hyriode.hyggdrasil.api.protocol.environment.HyggApplication;
 import fr.hyriode.hyggdrasil.api.server.HyggServer;
+import fr.hyriode.hyggdrasil.common.HyriodeNetwork;
+import fr.hyriode.hyggdrasil.config.HyggConfig;
 import fr.hyriode.hyggdrasil.docker.swarm.DockerService;
 import fr.hyriode.hyggdrasil.util.References;
 
@@ -14,16 +16,15 @@ import fr.hyriode.hyggdrasil.util.References;
 public class HyggServerService extends DockerService {
 
     public HyggServerService(Hyggdrasil hyggdrasil, HyggServer server) {
-        super(server.getName(), HyggServerManager.SERVER_IMAGE, References.HYRIODE_NETWORK);
-
+        super(server.getName(), HyggServerManager.SERVER_IMAGE, HyriodeNetwork.get());
         this.hostname = server.getName();
 
-        this.addLabel(References.STACK_NAME_LABEL, References.STACK_NAME);
+        this.addLabel(References.STACK_NAME_LABEL, Hyggdrasil.getConfig().getDocker().getStackName());
 
         this.envs.addAll(server.getOptions().asEnvs());
         this.envs.addAll(hyggdrasil.createEnvsForClient(new HyggApplication(HyggApplication.Type.SERVER, this.hostname, System.currentTimeMillis()), server.getData()));
 
-        final String serverFolder = References.DATA_HOST_FOLDER + "/servers/" + server.getName();
+        final String serverFolder = Hyggdrasil.getConfig().getDocker().getDataFolder() + "/servers/" + server.getName();
 
         this.addMount(serverFolder, "/data");
     }

@@ -34,7 +34,7 @@ public class HyggHeartbeatTask implements Runnable {
 
         HyggdrasilAPI.log("Starting heartbeat task...");
 
-        this.hyggdrasilAPI.getScheduler().schedule(this, 0, HyggdrasilAPI.HEARTBEAT_TIME, TimeUnit.SECONDS);
+        this.hyggdrasilAPI.getScheduler().schedule(this, 0, HyggdrasilAPI.HEARTBEAT_TIME, TimeUnit.MILLISECONDS);
     }
 
     @Override

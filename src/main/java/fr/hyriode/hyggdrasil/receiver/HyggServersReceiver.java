@@ -42,7 +42,7 @@ public class HyggServersReceiver implements IHyggPacketReceiver {
                     serverManager.addServerToProxies(server);
                 }
 
-                serverManager.updateServer(server, info);
+                serverManager.updateServerInfo(server, info);
             }
 
             if (server != null) {

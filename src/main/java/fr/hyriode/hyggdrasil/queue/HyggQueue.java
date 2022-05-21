@@ -62,6 +62,10 @@ public class HyggQueue {
 
                 this.queue.drainGroups(groups, slots - players);
 
+                if (groups.size() > 0) {
+                    System.out.println("[Queue] Sending " + groups.size() + " groups on " + server.getName() + "#" + server.getGameType());
+                }
+
                 for (HyggQueueGroup group : groups) {
                     if (this.queue.remove(group)) {
                         group.send(this.hyggdrasil.getAPI(), server);
@@ -97,6 +101,7 @@ public class HyggQueue {
 
             if (slots == -1) {
                 slots = serverSlots;
+                continue;
             }
 
             if (serverSlots != -1 && serverSlots < slots) {
@@ -109,18 +114,14 @@ public class HyggQueue {
             currentPlayers += server.getPlayingPlayers().size();
         }
 
-        int neededServers = currentPlayers / slots + 2;
+        final int neededServers = (int) Math.ceil((double) currentPlayers / slots) + 1;
 
-        if (currentPlayers == 0 && currentServers.size() >= 2) {
+        if (currentPlayers == 0 && neededServers >= 1 && currentServers.size() >= 1) {
             return;
         }
 
-        if (currentServers.size() == neededServers) {
-            return;
-        }
-
-        if (currentServers.size() < 2) {
-            neededServers = 2 - currentServers.size();
+        if (neededServers != currentServers.size() && neededServers != 0) {
+            System.out.println("[Queue] Creating " + this.info.getGame() + "#" + this.info.getGameType() + " server (needed: " + neededServers + "; current: " + currentServers.size() + ")");
         }
 
         for (int i = 0; i < neededServers - currentServers.size(); i++ ) {
