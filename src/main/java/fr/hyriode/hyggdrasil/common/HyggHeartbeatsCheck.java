@@ -37,7 +37,7 @@ public class HyggHeartbeatsCheck implements Runnable {
         for (HyggServer server : this.serverManager.getServers()) {
             final long lastHeartbeat = server.getLastHeartbeat();
 
-            if (server.getState() == HyggServerState.CREATING || this.isResponding(currentTime, lastHeartbeat)) {
+            if (server.getState() == HyggServerState.CREATING || lastHeartbeat == -1 || this.isResponding(currentTime, lastHeartbeat)) {
                 continue;
             }
 

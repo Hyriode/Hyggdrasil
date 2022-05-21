@@ -41,7 +41,7 @@ public class HyggHeartbeatTask implements Runnable {
     public void run() {
         this.hyggdrasilAPI.getPacketProcessor().request(HyggChannel.getForApplication(this.hyggdrasilAPI.getEnvironment().getApplication()), new HyggHeartbeatPacket())
                 .withResponseCallback(response -> {
-                    if (!this.timedOut) {
+                    if (!this.timedOut && !this.responding) {
                         HyggdrasilAPI.log("Hyggdrasil is now responding!");
                     }
 
