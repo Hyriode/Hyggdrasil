@@ -77,8 +77,9 @@ public class HyggServerManager {
     private void removeOldServers() {
         this.hyggdrasil.getAPI().getScheduler().schedule(() -> {
             System.out.println("Removing old servers (after 45 seconds of waiting)...");
-            try {
-                Files.list(References.SERVERS_FOLDER).forEach(path -> {
+
+            try (final Stream<Path> stream = Files.list(References.SERVERS_FOLDER)) {
+                stream.forEach(path -> {
                     final String pathStr = path.toString();
 
                     if (!pathStr.equals(References.SERVERS_COMMON_FOLDER.toString()) && !pathStr.equals(References.SERVERS_TYPES_FOLDER.toString())) {
