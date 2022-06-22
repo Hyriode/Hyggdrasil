@@ -120,7 +120,7 @@ public class HyggQueue {
             return;
         }
 
-        if (neededServers != currentServers.size() && neededServers > 0) {
+        if (neededServers > currentServers.size()) {
             System.out.println("[Queue] Creating " + this.info.getGame() + "#" + this.info.getGameType() + " server (needed: " + neededServers + "; current: " + currentServers.size() + ")");
         }
 

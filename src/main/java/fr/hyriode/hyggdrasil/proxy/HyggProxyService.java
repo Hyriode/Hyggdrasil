@@ -34,6 +34,7 @@ public class HyggProxyService extends DockerService {
 
         final String proxyFolder = Hyggdrasil.getConfig().getDocker().getDataFolder() + "/proxies/" + proxy.getName();
 
+        this.addMount(proxyFolder, "/config");
         this.addMount(proxyFolder, "/server");
     }
 

@@ -13,7 +13,7 @@ import java.util.Map;
 public class HyggData {
 
     /** The environment variable key */
-    private static final String KEY = HyggdrasilAPI.PREFIX + "_DATA";
+    private static final String KEY = HyggdrasilAPI.PREFIX.toUpperCase() + "_DATA";
 
     /** The map of all data */
     private final Map<String, String> data;

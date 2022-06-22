@@ -20,6 +20,8 @@ public class HyggLobbyAPI {
     public static final String TYPE = "lobby";
     /** The Redis key of the current lobby map */
     public static final String MAP = "lobby-map";
+    /** The game type of a lobby */
+    public static final String GAME_TYPE = "default";
     /** The default map name of the lobby */
     public static final String DEFAULT_MAP = "normal";
 

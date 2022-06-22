@@ -28,7 +28,7 @@ public class HyggLobbyBalancer {
 
     private final int minimumLobbies;
 
-    private final List<HyggServer> lobbies;
+    private final List<String> lobbies;
     private final List<String> startedLobbies;
 
     private final Hyggdrasil hyggdrasil;
@@ -57,12 +57,14 @@ public class HyggLobbyBalancer {
 
         scheduler.schedule(() -> {
             try (final Jedis jedis = this.hyggdrasil.getRedis().getJedis()) {
-                for (HyggServer lobby : this.lobbies) {
-                    jedis.zrem(HyggLobbyAPI.REDIS_KEY, lobby.getName());
-                    jedis.zadd(HyggLobbyAPI.REDIS_KEY, lobby.getPlayers().size(), lobby.getName());
+                for (String lobby : this.lobbies) {
+                    final HyggServer server = this.hyggdrasil.getServerManager().getServerByName(lobby);
+
+                    jedis.zadd(HyggLobbyAPI.REDIS_KEY, server.getPlayers().size(), lobby);
                 }
             }
         }, 800, 800, TimeUnit.MILLISECONDS);
+
         scheduler.schedule(this::process, 500, 500, TimeUnit.MILLISECONDS);
     }
 
@@ -75,14 +77,14 @@ public class HyggLobbyBalancer {
 
                 this.addLobby(serverName);
             } else {
-                this.removeLobby(serverName);
+                this.removeLobby(server);
             }
         }
     }
 
     public void onStop(HyggServer server) {
         if (server.getType().equals(HyggLobbyAPI.TYPE)) {
-            this.removeLobby(server.getName());
+            this.removeLobby(server);
         }
     }
 
@@ -95,14 +97,22 @@ public class HyggLobbyBalancer {
                 this.startLobby();
             }
         } else if (lobbiesNumber > neededLobbies && lobbiesNumber > this.minimumLobbies) {
-            for (HyggServer server : this.lobbies) {
-                if (this.getLobbiesNumber() == neededLobbies || this.getLobbiesNumber() <= this.minimumLobbies) {
-                    break;
+            for (String serverName : this.lobbies) {
+                final HyggServer server = this.hyggdrasil.getServerManager().getServerByName(serverName);
+
+                if (server.getState() != HyggServerState.READY) {
+                    continue;
                 }
 
-                if (server.getPlayers().size() <= MIN_PLAYERS) {
-                    this.hyggdrasil.getServerManager().stopServer(server.getName(), 30);
-                    this.hyggdrasil.getAPI().getPacketProcessor().request(HyggChannel.PROXIES, new HyggEvacuatePacket(server.getName(), this.hyggdrasil.getAPI().getLobbyAPI().getBestLobby()));
+                if (server.getPlayers().size() <= MIN_PLAYERS && this.lobbies.size() > 1) {
+                    final String bestLobby = this.hyggdrasil.getAPI().getLobbyAPI().getBestLobby();
+
+                    if (bestLobby.equals(server.getName())) {
+                        return;
+                    }
+
+                    this.hyggdrasil.getServerManager().stopServer(server.getName(), 15);
+                    this.hyggdrasil.getAPI().getPacketProcessor().request(HyggChannel.PROXIES, new HyggEvacuatePacket(serverName, bestLobby)).exec();
                 }
             }
         }
@@ -112,7 +122,7 @@ public class HyggLobbyBalancer {
         final HyggData data = new HyggData();
 
         data.add(HyggServer.MAP_KEY, this.hyggdrasil.getAPI().getLobbyAPI().getCurrentMap());
-        data.add(HyggServer.GAME_TYPE_KEY, "default");
+        data.add(HyggServer.GAME_TYPE_KEY, HyggLobbyAPI.GAME_TYPE);
 
         final HyggServer lobby = this.hyggdrasil.getServerManager().startServer(HyggLobbyAPI.TYPE, new HyggServerOptions(), data, HyggLobbyAPI.MAX_PLAYERS);
 
@@ -126,23 +136,25 @@ public class HyggLobbyBalancer {
     }
 
     public void addLobby(String name) {
-        if (!this.existsLobby(name)) {
-            this.lobbies.add(this.hyggdrasil.getServerManager().getServerByName(name));
+        if (!this.lobbies.contains(name)) {
+            this.lobbies.add(name);
         }
     }
 
-    public void removeLobby(String name) {
-        try (final Jedis jedis = hyggdrasil.getRedis().getJedis()) {
-            jedis.zrem(HyggLobbyAPI.REDIS_KEY, name);
+    public void removeLobby(HyggServer server) {
+        try (final Jedis jedis = this.hyggdrasil.getRedis().getJedis()) {
+            jedis.zrem(HyggLobbyAPI.REDIS_KEY, server.getName());
         }
 
-        this.lobbies.remove(this.hyggdrasil.getServerManager().getServerByName(name));
+        this.lobbies.remove(server.getName());
     }
 
     private int getPlayersOnLobbies() {
         int players = 0;
 
-        for (HyggServer server : this.lobbies) {
+        for (String serverName : this.lobbies) {
+            final HyggServer server = this.hyggdrasil.getServerManager().getServerByName(serverName);
+
             players += server.getPlayers().size();
         }
 
@@ -150,16 +162,7 @@ public class HyggLobbyBalancer {
     }
 
     private int getLobbiesNumber() {
-        return this.lobbies.size() + startedLobbies.size();
-    }
-
-    private boolean existsLobby(String name) {
-        for (HyggServer server : this.lobbies) {
-            if (server.getName().equals(name)) {
-                return true;
-            }
-        }
-        return false;
+        return this.lobbies.size() + this.startedLobbies.size();
     }
 
 }

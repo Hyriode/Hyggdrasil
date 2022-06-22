@@ -32,7 +32,9 @@ public class DockerSwarm {
     }
 
     public void removeService(String serviceName) {
-        this.dockerClient.removeServiceCmd(serviceName).exec();
+        try {
+            this.dockerClient.removeServiceCmd(serviceName).exec();
+        } catch (Exception ignored) {}
 
         this.services.remove(serviceName);
     }

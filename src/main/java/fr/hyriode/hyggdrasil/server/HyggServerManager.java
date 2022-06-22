@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static fr.hyriode.hyggdrasil.api.protocol.response.HyggResponse.Type.SUCCESS;
 import static fr.hyriode.hyggdrasil.api.proxy.packet.HyggProxyServerActionPacket.Action.ADD;
@@ -152,11 +153,12 @@ public class HyggServerManager {
 
         if (server != null) {
             final Runnable action = () -> this.hyggdrasil.getAPI().getScheduler().schedule(() -> {
+                this.eventBus.publish(new HyggServerStoppedEvent(server));
+
                 this.removeServerFromProxies(server);
 
-                this.swarm.removeService(name);
-
                 this.servers.remove(server);
+                this.swarm.removeService(name);
 
                 IOUtil.deleteDirectory(Paths.get(References.SERVERS_FOLDER.toString(), server.getName()));
 
@@ -174,9 +176,9 @@ public class HyggServerManager {
 
             server.setState(HyggServerState.SHUTDOWN);
 
-            this.hyggdrasil.getLobbyBalancer().onStop(server);
+            this.updateServer(server);
 
-            this.eventBus.publish(new HyggServerStoppedEvent(server));
+            this.hyggdrasil.getLobbyBalancer().onStop(server);
 
             this.packetProcessor.request(HyggChannel.SERVERS, new HyggStopServerPacket(name))
                     .withResponseCallback(callback)
@@ -221,8 +223,8 @@ public class HyggServerManager {
     }
 
     private Path getTypeFolder(String type) {
-        try {
-            for (Path path : Files.list(References.SERVERS_TYPES_FOLDER).toList()) {
+        try (Stream<Path> stream = Files.list(References.SERVERS_TYPES_FOLDER)) {
+            for (Path path : stream.toList()) {
                 if (path.getFileName().toString().equals(type)) {
                     return path;
                 }

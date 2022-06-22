@@ -9,20 +9,14 @@ services:
     image: redis:6.2.6-alpine
     networks:
       - hyggdrasil
-    command: redis-server --requirepass p@ssw0rd
+    command: redis-server --requirepass JNF25u8JwzR67u9GNpQn9v7wm28rPQ --save 60 1
+    volumes:
+      - ./redis:/data
 
   hyggdrasil:
     image: hyggdrasil:latest
     networks:
       - hyggdrasil
-    environment:
-      STACK_NAME: hyggdrasil
-      NETWORK_NAME: hyggdrasil
-      REDIS_HOST: redis
-      REDIS_PASS: p@ssw0rd
-      DATA_FOLDER: C:/Users/Corentin/Documents/Hyriode/Hyggdrasil/docker/data
-      STARTING_PROXIES: 2
-      MINIMUM_LOBBIES: 4
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./data/:/usr/app/data

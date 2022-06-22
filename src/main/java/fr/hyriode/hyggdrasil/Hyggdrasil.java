@@ -103,7 +103,7 @@ public class Hyggdrasil {
     }
 
     private void initRules() {
-        final int startingProxies = this.rules.getProxyRule().getMaxProxies();
+        final int startingProxies = this.rules.getProxyRule().getMinProxies();
 
         System.out.println("Starting proxies from rules (" + startingProxies + ").");
 
