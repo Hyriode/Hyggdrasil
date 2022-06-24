@@ -12,6 +12,7 @@ import fr.hyriode.hyggdrasil.api.protocol.response.content.HyggResponseContent;
 import fr.hyriode.hyggdrasil.api.proxy.packet.HyggFetchProxiesPacket;
 import fr.hyriode.hyggdrasil.api.proxy.packet.HyggFetchProxyPacket;
 import fr.hyriode.hyggdrasil.api.proxy.packet.HyggStartProxyPacket;
+import fr.hyriode.hyggdrasil.api.proxy.packet.HyggStopProxyPacket;
 import fr.hyriode.hyggdrasil.api.server.packet.HyggStopServerPacket;
 
 import java.util.List;
@@ -117,7 +118,7 @@ public class HyggProxyRequester {
      * @param onRemoved The {@link Runnable} to run when the proxy will be removed
      */
     public void removeProxy(String proxyName, Runnable onRemoved) {
-        this.query(new HyggStopServerPacket(proxyName))
+        this.query(new HyggStopProxyPacket(proxyName))
                 .withResponseCallback(response -> {
                     final HyggResponse.Type type = response.getType();
 

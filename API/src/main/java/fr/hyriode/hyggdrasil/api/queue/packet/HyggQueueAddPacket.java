@@ -2,6 +2,7 @@ package fr.hyriode.hyggdrasil.api.queue.packet;
 
 import fr.hyriode.hyggdrasil.api.protocol.packet.HyggPacket;
 import fr.hyriode.hyggdrasil.api.protocol.response.content.HyggResponseContent;
+import fr.hyriode.hyggdrasil.api.queue.HyggQueueGroup;
 import fr.hyriode.hyggdrasil.api.queue.HyggQueueInfo;
 
 /**
@@ -36,15 +37,21 @@ public abstract class HyggQueueAddPacket extends HyggPacket {
     public static class Response extends HyggResponseContent {
 
         private final ResponseType type;
+        private final HyggQueueGroup group;
         private final HyggQueueInfo queueInfo;
 
-        public Response(ResponseType type, HyggQueueInfo queueInfo) {
+        public Response(ResponseType type, HyggQueueGroup group, HyggQueueInfo queueInfo) {
             this.type = type;
+            this.group = group;
             this.queueInfo = queueInfo;
         }
 
         public ResponseType getType() {
             return this.type;
+        }
+
+        public HyggQueueGroup getGroup() {
+            return this.group;
         }
 
         public HyggQueueInfo getQueueInfo() {
@@ -57,7 +64,7 @@ public abstract class HyggQueueAddPacket extends HyggPacket {
 
         INVALID_TYPE,
         ALREADY_IN,
-        ADDED;
+        ADDED
 
     }
 

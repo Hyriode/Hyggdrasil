@@ -63,10 +63,10 @@ public class HyggQueueManager {
 
         if (queue.equals(currentQueue)) {
             response.withType(HyggResponse.Type.ERROR)
-                    .withContent(new HyggQueueAddPacket.Response(HyggQueueAddPacket.ResponseType.ALREADY_IN, queue.getInfo()));
+                    .withContent(new HyggQueueAddPacket.Response(HyggQueueAddPacket.ResponseType.ALREADY_IN, group, queue.getInfo()));
         } else if (!this.serverManager.isTypeExisting(packet.getGame())) {
             response.withType(HyggResponse.Type.ERROR)
-                    .withContent(new HyggQueueAddPacket.Response(HyggQueueAddPacket.ResponseType.INVALID_TYPE, queue.getInfo()));
+                    .withContent(new HyggQueueAddPacket.Response(HyggQueueAddPacket.ResponseType.INVALID_TYPE, group, queue.getInfo()));
         } else {
             if (currentQueue != null) {
                 currentQueue.removeGroup(group.getId());
@@ -74,7 +74,7 @@ public class HyggQueueManager {
 
             queue.addGroup(group);
 
-            response.withContent(new HyggQueueAddPacket.Response(HyggQueueAddPacket.ResponseType.ADDED, queue.getInfo()));
+            response.withContent(new HyggQueueAddPacket.Response(HyggQueueAddPacket.ResponseType.ADDED, group, queue.getInfo()));
         }
         return response;
     }
@@ -82,14 +82,17 @@ public class HyggQueueManager {
     public HyggResponse handlePacket(HyggQueueRemovePlayerPacket packet) {
         final UUID playerId = packet.getPlayerId();
         final HyggResponse response = new HyggResponse(HyggResponse.Type.ERROR)
-                .withContent(new HyggQueueRemovePacket.Response(HyggQueueRemovePacket.ResponseType.UNKNOWN, null));
+                .withContent(new HyggQueueRemovePacket.Response(HyggQueueRemovePacket.ResponseType.UNKNOWN, null, null));
         final HyggQueue queue = this.getCurrentPlayerQueue(playerId);
 
         if (queue == null) {
-            response.withContent(new HyggQueueRemovePacket.Response(HyggQueueRemovePacket.ResponseType.NOT_IN_QUEUE, null));
-        } else if (queue.removePlayer(playerId)) {
-            response.withType(HyggResponse.Type.SUCCESS)
-                    .withContent(new HyggQueueRemovePacket.Response(HyggQueueRemovePacket.ResponseType.REMOVED, null));
+            response.withContent(new HyggQueueRemovePacket.Response(HyggQueueRemovePacket.ResponseType.NOT_IN_QUEUE, null, null));
+        } else {
+            final HyggQueueGroup group = queue.getPlayerGroup(playerId);
+
+            if (queue.removePlayer(playerId)) {
+                response.withType(HyggResponse.Type.SUCCESS).withContent(new HyggQueueRemovePacket.Response(HyggQueueRemovePacket.ResponseType.REMOVED, group, null));
+            }
         }
         return response;
     }
@@ -97,14 +100,17 @@ public class HyggQueueManager {
     public HyggResponse handlePacket(HyggQueueRemoveGroupPacket packet) {
         final UUID groupId = packet.getGroupId();
         final HyggResponse response = new HyggResponse(HyggResponse.Type.ERROR)
-                .withContent(new HyggQueueRemovePacket.Response(HyggQueueRemovePacket.ResponseType.UNKNOWN, null));
+                .withContent(new HyggQueueRemovePacket.Response(HyggQueueRemovePacket.ResponseType.UNKNOWN, null, null));
         final HyggQueue queue = this.getCurrentGroupQueue(groupId);
 
         if (queue == null) {
-            response.withContent(new HyggQueueRemovePacket.Response(HyggQueueRemovePacket.ResponseType.NOT_IN_QUEUE, null));
-        } else if (queue.removeGroup(groupId)) {
-            response.withType(HyggResponse.Type.SUCCESS)
-                    .withContent(new HyggQueueRemovePacket.Response(HyggQueueRemovePacket.ResponseType.REMOVED, queue.getInfo()));
+            response.withContent(new HyggQueueRemovePacket.Response(HyggQueueRemovePacket.ResponseType.NOT_IN_QUEUE, null, null));
+        } else {
+            final HyggQueueGroup group = queue.getGroup(groupId);
+
+            if (queue.removeGroup(groupId)) {
+                response.withType(HyggResponse.Type.SUCCESS).withContent(new HyggQueueRemovePacket.Response(HyggQueueRemovePacket.ResponseType.REMOVED, group, null));
+            }
         }
         return response;
     }
