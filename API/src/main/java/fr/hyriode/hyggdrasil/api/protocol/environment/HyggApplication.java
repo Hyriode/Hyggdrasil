@@ -107,11 +107,34 @@ public class HyggApplication {
     public enum Type {
 
         /** The running application is Hyggdrasil */
-        HYGGDRASIL,
+        HYGGDRASIL(false),
         /** The running application is a Minecraft server */
-        SERVER,
+        SERVER(true),
         /** The running application is a Minecraft proxy: a BungeeCord, a Waterfall etc */
-        PROXY,
+        PROXY(true),
+        /** The application is another type */
+        OTHER(false);
+
+        /** Is the type using the heartbeat protocol to communicate with Hyggdrasil */
+        private final boolean usingHeartbeats;
+
+        /**
+        * The constructor of an {@linkplain Type application type}
+         *
+         * @param usingHeartbeats <cdoe>true</cdoe> if the type is using heartbeats
+         */
+        Type(boolean usingHeartbeats) {
+            this.usingHeartbeats = usingHeartbeats;
+        }
+
+        /**
+         * Check if the type is using heartbeat protocol
+         *
+         * @return <code>true</code> if it's using heartbeats
+         */
+        public boolean isUsingHeartbeats() {
+            return this.usingHeartbeats;
+        }
 
     }
 

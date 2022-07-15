@@ -6,6 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Comparator;
+import java.util.stream.Stream;
 
 /**
  * Project: Hyggdrasil
@@ -38,8 +39,8 @@ public class IOUtil {
     }
 
     public static boolean copyContent(Path sourceDirectory, Path targetDirectory) {
-        try {
-            Files.walk(sourceDirectory).forEach(path -> {
+        try (final Stream<Path> stream = Files.walk(sourceDirectory)) {
+            stream.forEach(path -> {
                 if (!path.toString().equals(sourceDirectory.toString())) {
                     copy(path, Paths.get(targetDirectory.toString(), path.toString().substring(sourceDirectory.toString().length())));
                 }
@@ -52,6 +53,10 @@ public class IOUtil {
     }
 
     public static boolean delete(Path path) {
+        if (!Files.exists(path)) {
+            return false;
+        }
+
         try {
             Files.delete(path);
             return true;
@@ -62,8 +67,12 @@ public class IOUtil {
     }
 
     public static boolean deleteDirectory(Path path) {
-        try {
-            Files.walk(path).sorted(Comparator.reverseOrder()).forEach(IOUtil::delete);
+        if (!Files.exists(path)) {
+            return false;
+        }
+
+        try (final Stream<Path> stream = Files.walk(path)) {
+            stream.sorted(Comparator.reverseOrder()).forEach(IOUtil::delete);
             return true;
         } catch (IOException e) {
             e.printStackTrace();
@@ -81,19 +90,20 @@ public class IOUtil {
     }
 
     public static String loadFile(Path path) {
-        final StringBuilder sb = new StringBuilder();
+        final StringBuilder builder = new StringBuilder();
+
         if (Files.exists(path)) {
             try (final BufferedReader reader = Files.newBufferedReader(path)) {
                 String line;
 
                 while ((line = reader.readLine()) != null) {
-                    sb.append(line);
+                    builder.append(line);
                 }
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
-        return sb.toString();
+        return builder.toString();
     }
 
 }

@@ -23,7 +23,7 @@ public class HyggServerRequest {
         this.serverOptions = new HyggServerOptions();
         this.serverData = serverData;
 
-        this.serverData.add(HyggServer.GAME_TYPE_KEY, this.gameType);
+        this.serverData.add(HyggServer.SUB_TYPE_KEY, this.gameType);
         this.serverData.add(HyggServer.MAP_KEY, this.map);
     }
 
@@ -52,7 +52,7 @@ public class HyggServerRequest {
 
     public HyggServerRequest withGameType(String gameType) {
         this.gameType = gameType;
-        this.serverData.add(HyggServer.GAME_TYPE_KEY, this.gameType);
+        this.serverData.add(HyggServer.SUB_TYPE_KEY, this.gameType);
         return this;
     }
 

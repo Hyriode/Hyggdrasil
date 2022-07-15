@@ -29,7 +29,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static fr.hyriode.hyggdrasil.api.protocol.response.HyggResponse.Type.SUCCESS;
@@ -68,8 +67,6 @@ public class HyggServerManager {
         IOUtil.createDirectory(References.SERVERS_TYPES_FOLDER);
 
         this.hyggdrasil.getDocker().getImageManager().buildImage(Paths.get(References.SERVER_IMAGES_FOLDER.toString(), "Dockerfile").toFile(), SERVER_IMAGE.getName());
-
-        this.hyggdrasil.getAPI().getScheduler().schedule(new HyggRemoveServersTask(this.hyggdrasil), 1, 1, TimeUnit.MINUTES);
 
         this.removeOldServers();
     }
@@ -123,7 +120,7 @@ public class HyggServerManager {
 
                     final String map = server.getMap();
 
-                    System.out.println("Started '" + server.getName() + "' (" + server.getType() + "#" + server.getGameType() + (map != null ? " with map: " + map : "") + ").");
+                    System.out.println("Started '" + server.getName() + "' (" + server.getType() + "#" + server.getSubType() + (map != null ? " with map: " + map : "") + ").");
 
                     return server;
                 }
@@ -146,14 +143,13 @@ public class HyggServerManager {
 
     public void updateServer(HyggServer server) {
         this.eventBus.publish(new HyggServerUpdatedEvent(server));
-        this.hyggdrasil.getLobbyBalancer().onUpdate(server);
     }
 
-    public boolean stopServer(String name, long waitingTime) {
+    public boolean stopServer(String name) {
         final HyggServer server = this.getServerByName(name);
 
         if (server != null) {
-            final Runnable action = () -> this.hyggdrasil.getAPI().getScheduler().schedule(() -> {
+            final Runnable action = () -> {
                 this.eventBus.publish(new HyggServerStoppedEvent(server));
 
                 this.removeServerFromProxies(server);
@@ -164,7 +160,7 @@ public class HyggServerManager {
                 IOUtil.deleteDirectory(Paths.get(References.SERVERS_FOLDER.toString(), server.getName()));
 
                 System.out.println("Stopped '" + name + "'.");
-            }, waitingTime, TimeUnit.SECONDS);
+            };
             final HyggResponseCallback callback = response -> {
                 final HyggResponse.Type type = response.getType();
 
@@ -178,8 +174,6 @@ public class HyggServerManager {
             server.setState(HyggServerState.SHUTDOWN);
 
             this.updateServer(server);
-
-            this.hyggdrasil.getLobbyBalancer().onStop(server);
 
             this.packetProcessor.request(HyggChannel.SERVERS, new HyggStopServerPacket(name))
                     .withResponseCallback(callback)
@@ -195,10 +189,6 @@ public class HyggServerManager {
             System.err.println("Couldn't stop a server with the following name: '" + name + "'!");
         }
         return false;
-    }
-
-    public boolean stopServer(String name) {
-       return this.stopServer(name, 0);
     }
 
     public void addServerToProxies(HyggServer server) {
@@ -234,28 +224,6 @@ public class HyggServerManager {
             e.printStackTrace();
         }
         return null;
-    }
-
-    public List<HyggServer> getAvailableServers(String game, String gameType, String map) {
-        final List<HyggServer> servers = new ArrayList<>();
-
-        for (HyggServer server : this.servers) {
-            if (server.getType().equals(game) && server.getGameType().equals(gameType) && server.getMap().equals(map)) {
-                servers.add(server);
-            }
-        }
-        return servers;
-    }
-
-    public List<HyggServer> getAvailableServers(String game, String gameType) {
-        final List<HyggServer> servers = new ArrayList<>();
-
-        for (HyggServer server : this.servers) {
-            if (server.getType().equals(game) && server.getGameType().equals(gameType)) {
-                servers.add(server);
-            }
-        }
-        return servers;
     }
 
     public HyggServer getServerByName(String serverName) {

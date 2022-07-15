@@ -74,7 +74,6 @@ public class HyggKeyLoader {
                 e.printStackTrace();
             }
         }
-
         return new HyggKeys(publicKey, privateKey);
     }
 

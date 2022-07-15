@@ -1,10 +1,10 @@
 # Build Application Jar
-FROM gradle:7.3.0-jdk8 AS build
+FROM gradle:7.4.2-jdk18 AS build
 
 WORKDIR /usr/app/
 
 # Copy Hyggdrasil project files
-COPY . .
+COPY runtime .
 
 # Get username and token used in build.gradle
 ARG USERNAME
@@ -14,7 +14,7 @@ ENV USERNAME=$USERNAME TOKEN=$TOKEN
 RUN gradle shadowJar
 
 # Run Application
-FROM openjdk:16-slim
+FROM openjdk:18.0.1.1-jdk
 
 WORKDIR /usr/app/
 

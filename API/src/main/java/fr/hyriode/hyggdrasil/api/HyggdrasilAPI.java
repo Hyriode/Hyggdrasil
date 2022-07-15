@@ -3,9 +3,8 @@ package fr.hyriode.hyggdrasil.api;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import fr.hyriode.hyggdrasil.api.event.HyggEventBus;
-import fr.hyriode.hyggdrasil.api.lobby.HyggLobbyAPI;
-import fr.hyriode.hyggdrasil.api.protocol.environment.HyggApplication;
 import fr.hyriode.hyggdrasil.api.protocol.environment.HyggEnvironment;
+import fr.hyriode.hyggdrasil.api.protocol.environment.HyggKeys;
 import fr.hyriode.hyggdrasil.api.protocol.heartbeat.HyggHeartbeatTask;
 import fr.hyriode.hyggdrasil.api.protocol.packet.HyggPacketProcessor;
 import fr.hyriode.hyggdrasil.api.protocol.signature.HyggSignatureAlgorithm;
@@ -37,11 +36,11 @@ public class HyggdrasilAPI {
     /** APIs name constant */
     public static final String API_NAME = NAME + "API";
     /** APIs prefix constant. This is used for channels or to print information */
-    public static final String PREFIX = "Hygg";
+    public static final String PREFIX = "hygg";
     /** The algorithm used to sign/verify messages or create keys */
     public static final HyggSignatureAlgorithm ALGORITHM = HyggSignatureAlgorithm.RS256;
     /** The maximum of time to wait before timing out an application */
-    public static final int TIMED_OUT_TIME = 20 * 1000;
+    public static final int TIMED_OUT_TIME = 30 * 1000;
     /** The time before sending a heartbeat */
     public static final int HEARTBEAT_TIME = 10 * 1000;
     /** {@link Gson} instance */
@@ -73,8 +72,6 @@ public class HyggdrasilAPI {
     private final HyggServerRequester serverRequester;
     /** The proxy requester used to query or do action on proxies */
     private final HyggProxyRequester proxyRequester;
-    /** The lobby api instance */
-    private final HyggLobbyAPI lobbyAPI;
 
     /**
      * Constructor of {@link HyggdrasilAPI}
@@ -92,7 +89,6 @@ public class HyggdrasilAPI {
         this.eventBus = new HyggEventBus(this);
         this.serverRequester = new HyggServerRequester(this);
         this.proxyRequester = new HyggProxyRequester(this);
-        this.lobbyAPI = new HyggLobbyAPI(this);
     }
 
     /**
@@ -105,7 +101,9 @@ public class HyggdrasilAPI {
         this.eventBus.start();
         this.environment = this.environmentSupplier.get();
 
-        if (this.environment.getApplication().getType() != HyggApplication.Type.HYGGDRASIL) {
+        log(this.onlyAcceptingHyggdrasilPackets() ? "This application will only accept Hyggdrasil packets." : "This application will accept all incoming packets.");
+
+        if (this.environment.getApplication().getType().isUsingHeartbeats()) {
             this.heartbeatTask = new HyggHeartbeatTask(this);
         }
     }
@@ -254,22 +252,14 @@ public class HyggdrasilAPI {
     }
 
     /**
-     * Get the lobby api.<br>
-     * This api can be used to get the current best lobby
-     *
-     * @return The {@link HyggLobbyAPI} instance
-     */
-    public HyggLobbyAPI getLobbyAPI() {
-        return this.lobbyAPI;
-    }
-
-    /**
      * Check if the API is only accepting packets signed by Hyggdrasil
      *
      * @return <code>true</code> if yes
      */
     public boolean onlyAcceptingHyggdrasilPackets() {
-        return this.environment.getKeys().getPrivate() == null;
+        final HyggKeys keys = this.environment.getKeys();
+
+        return keys != null && keys.getPrivate() == null && keys.getPublic() != null;
     }
 
     /**
@@ -326,7 +316,7 @@ public class HyggdrasilAPI {
          */
         @Override
         public HyggdrasilAPI build() throws BuildException {
-            return new HyggdrasilAPI(this.loggerEntry.get(), this.jedisPoolEntry.get(), this.environmentEntry.getAsSupplier());
+            return new HyggdrasilAPI(this.loggerEntry.get(), this.jedisPoolEntry.get(), this.environmentEntry.asSupplier());
         }
 
     }

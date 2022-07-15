@@ -13,9 +13,7 @@ import fr.hyriode.hyggdrasil.common.HyggHeartbeatsCheck;
 import fr.hyriode.hyggdrasil.common.HyriodeNetwork;
 import fr.hyriode.hyggdrasil.config.HyggConfig;
 import fr.hyriode.hyggdrasil.docker.Docker;
-import fr.hyriode.hyggdrasil.lobby.HyggLobbyBalancer;
 import fr.hyriode.hyggdrasil.proxy.HyggProxyManager;
-import fr.hyriode.hyggdrasil.queue.HyggQueueManager;
 import fr.hyriode.hyggdrasil.receiver.HyggProxiesReceiver;
 import fr.hyriode.hyggdrasil.receiver.HyggQueryReceiver;
 import fr.hyriode.hyggdrasil.receiver.HyggServersReceiver;
@@ -51,8 +49,6 @@ public class Hyggdrasil {
 
     private HyggProxyManager proxyManager;
     private HyggServerManager serverManager;
-    private HyggQueueManager queueManager;
-    private HyggLobbyBalancer lobbyBalancer;
 
     private boolean running;
 
@@ -71,7 +67,7 @@ public class Hyggdrasil {
         }
 
         this.keys = HyggKeyLoader.loadKeys();
-        this.environment = new HyggEnvironment(new HyggApplication(HyggApplication.Type.HYGGDRASIL, "hyggdrasil", System.currentTimeMillis()), this.redis.getCredentials(), this.keys, null);
+        this.environment = new HyggEnvironment(new HyggApplication(HyggApplication.Type.HYGGDRASIL, "hyggdrasil", System.currentTimeMillis()), this.keys, null);
         this.api = new HyggdrasilAPI.Builder()
                 .withJedisPool(this.redis.getJedisPool())
                 .withEnvironment(this.environment)
@@ -83,8 +79,6 @@ public class Hyggdrasil {
         this.docker.getNetworkManager().registerNetwork(new HyriodeNetwork());
         this.proxyManager = new HyggProxyManager(this);
         this.serverManager = new HyggServerManager(this);
-        this.queueManager = new HyggQueueManager(this);
-        this.lobbyBalancer = new HyggLobbyBalancer(this);
         this.running = true;
 
         this.initRules();
@@ -119,7 +113,7 @@ public class Hyggdrasil {
                     for (int i = 0; i < minimum.getValue(); i++) {
                         final HyggData data = new HyggData();
 
-                        data.add(HyggServer.GAME_TYPE_KEY, minimum.getKey());
+                        data.add(HyggServer.SUB_TYPE_KEY, minimum.getKey());
 
                         this.serverManager.startServer(entry.getKey(), new HyggServerOptions(), data, -1);
                     }
@@ -142,8 +136,6 @@ public class Hyggdrasil {
         if (this.running) {
             System.out.println("Stopping " + References.NAME + "...");
 
-            this.queueManager.disable();
-
             this.api.stop(References.NAME + " shutdown called");
             this.redis.disconnect();
 
@@ -154,7 +146,7 @@ public class Hyggdrasil {
     }
 
     public List<String> createEnvsForClient(HyggApplication application, HyggData data) {
-        return new HyggEnvironment(application, this.environment.getRedisCredentials(), new HyggKeys(this.environment.getKeys().getPublic(), null), data).createEnvironmentVariables();
+        return new HyggEnvironment(application, new HyggKeys(this.environment.getKeys().getPublic(), null), data).createEnvironmentVariables();
     }
 
     public static void log(Level level, String message) {
@@ -203,14 +195,6 @@ public class Hyggdrasil {
 
     public HyggServerManager getServerManager() {
         return this.serverManager;
-    }
-
-    public HyggQueueManager getQueueManager() {
-        return this.queueManager;
-    }
-
-    public HyggLobbyBalancer getLobbyBalancer() {
-        return this.lobbyBalancer;
     }
 
     public boolean isRunning() {

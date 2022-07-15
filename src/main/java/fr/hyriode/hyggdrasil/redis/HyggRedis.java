@@ -1,7 +1,6 @@
 package fr.hyriode.hyggdrasil.redis;
 
 import fr.hyriode.hyggdrasil.Hyggdrasil;
-import fr.hyriode.hyggdrasil.api.protocol.environment.HyggRedisCredentials;
 import fr.hyriode.hyggdrasil.config.nested.HyggRedisConfig;
 import fr.hyriode.hyggdrasil.util.References;
 import redis.clients.jedis.Jedis;
@@ -23,16 +22,16 @@ public class HyggRedis {
 
     private boolean connected;
 
-    private final HyggRedisCredentials credentials;
+    private final HyggRedisConfig config;
 
     public HyggRedis(HyggRedisConfig config) {
-        this.credentials = new HyggRedisCredentials(config.getHostname(), config.getPort(), config.getPassword());
+        this.config = config;
     }
 
     public boolean connect() {
-        final String hostname = this.credentials.getHostname();
-        final short port = this.credentials.getPort();
-        final String password = this.credentials.getPassword();
+        final String hostname = this.config.getHostname();
+        final short port = this.config.getPort();
+        final String password = this.config.getPassword();
         final int timeout = 2000;
         final JedisPoolConfig config = new JedisPoolConfig();
 
@@ -105,10 +104,6 @@ public class HyggRedis {
         this.connected = false;
 
         this.jedisPool.close();
-    }
-
-    public HyggRedisCredentials getCredentials() {
-        return this.credentials;
     }
 
     public JedisPool getJedisPool() {

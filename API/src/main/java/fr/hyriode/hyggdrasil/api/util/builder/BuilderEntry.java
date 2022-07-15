@@ -54,7 +54,7 @@ public class BuilderEntry<T> {
      *
      * @return A {@link Supplier}
      */
-    public Supplier<T> getAsSupplier() {
+    public Supplier<T> asSupplier() {
         return this.objectSupplier;
     }
 

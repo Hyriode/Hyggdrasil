@@ -13,7 +13,7 @@ import java.util.UUID;
  */
 public class HyggServer {
 
-    public static final String GAME_TYPE_KEY = "game-type";
+    public static final String SUB_TYPE_KEY = "subtype";
     public static final String MAP_KEY = "map";
 
     /** Server's name */
@@ -112,13 +112,13 @@ public class HyggServer {
     }
 
     /**
-     * Get the type of the game.<br>
-     * It can be null, because not all servers are game servers!
+     * Get the subtype of the server.<br>
+     * It can be null, because not all servers have a subtype!
      *
      * @return A game type. Ex: DEFAULT, FOUR_FOUR, etc.
      */
-    public String getGameType() {
-        return this.data.get(GAME_TYPE_KEY);
+    public String getSubType() {
+        return this.data.get(SUB_TYPE_KEY);
     }
 
     /**

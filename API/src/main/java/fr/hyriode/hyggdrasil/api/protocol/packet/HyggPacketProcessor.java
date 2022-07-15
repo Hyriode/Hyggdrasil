@@ -237,9 +237,8 @@ public class HyggPacketProcessor {
      * @return <code>true</code> if the message is valid
      */
     private boolean isValidSignature(String content, String signature) {
-        final Signature publicSignature;
         try {
-            publicSignature = Signature.getInstance(HyggdrasilAPI.ALGORITHM.getJcaName());
+            final Signature publicSignature = Signature.getInstance(HyggdrasilAPI.ALGORITHM.getJcaName());
 
             publicSignature.initVerify(this.hyggdrasilAPI.getEnvironment().getKeys().getPublic());
             publicSignature.update(content.getBytes(StandardCharsets.UTF_8));

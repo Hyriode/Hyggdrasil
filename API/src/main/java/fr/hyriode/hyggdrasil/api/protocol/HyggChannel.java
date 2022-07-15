@@ -30,7 +30,7 @@ public enum HyggChannel {
      * @param name The name of the channel
      */
     HyggChannel(String name) {
-        this.name = HyggdrasilAPI.PREFIX + name.substring(0, 1).toUpperCase() + name.substring(1);
+        this.name = HyggdrasilAPI.PREFIX + "@" + name;
     }
 
     /**

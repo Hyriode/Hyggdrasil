@@ -26,6 +26,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 
 import static fr.hyriode.hyggdrasil.api.protocol.response.HyggResponse.Type.SUCCESS;
 
@@ -73,8 +74,8 @@ public class HyggProxyManager {
     private void removeOldProxies() {
         this.hyggdrasil.getAPI().getScheduler().schedule(() -> {
             System.out.println("Removing old proxies (after 45 seconds of waiting)...");
-            try {
-                Files.list(References.PROXIES_FOLDER).forEach(path -> {
+            try (final Stream<Path> stream = Files.list(References.PROXIES_FOLDER)) {
+                stream.forEach(path -> {
                     final String pathStr = path.toString();
 
                     if (!pathStr.equals(References.PROXIES_COMMON_FOLDER.toString())) {
@@ -129,11 +130,12 @@ public class HyggProxyManager {
         int availablePort = this.startingPort;
 
         for (int i = this.startingPort; i < this.startingPort + this.maxProxies; i++) {
+            availablePort = i;
+
             for (HyggProxy proxy : this.proxies) {
                 if (proxy.getPort() == i) {
                     availablePort = -1;
-                } else {
-                    availablePort = i;
+                    break;
                 }
             }
         }
@@ -199,23 +201,6 @@ public class HyggProxyManager {
             }
         }
         return null;
-    }
-
-    public HyggProxy getBestProxy() {
-        HyggProxy bestProxy = null;
-        for (HyggProxy proxy : this.proxies) {
-            if (proxy.getState() == HyggProxyState.READY) {
-                if (bestProxy == null) {
-                    bestProxy = proxy;
-                    continue;
-                }
-
-                if (proxy.getPlayers() < bestProxy.getPlayers()) {
-                    bestProxy = proxy;
-                }
-            }
-        }
-        return bestProxy;
     }
 
     public List<HyggProxy> getProxies() {

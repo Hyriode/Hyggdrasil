@@ -4,7 +4,7 @@ plugins {
 
 apply plugin: 'maven-publish'
 
-version = '1.1.2'
+version = '1.2.0'
 archivesBaseName = 'Hyggdrasil-API'
 
 java {
@@ -61,6 +61,6 @@ publishing {
 }
 
 dependencies {
-    api 'redis.clients:jedis:4.2.2'
+    api 'redis.clients:jedis:4.2.3'
     api 'com.google.code.gson:gson:2.9.0'
 }
