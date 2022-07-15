@@ -4,7 +4,7 @@ FROM gradle:7.4.2-jdk18 AS build
 WORKDIR /usr/app/
 
 # Copy Hyggdrasil project files
-COPY runtime .
+COPY . .
 
 # Get username and token used in build.gradle
 ARG USERNAME
