@@ -60,7 +60,7 @@ public class HyggServerRequester {
                     final HyggResponseContent content = response.getContent();
 
                     if (type == SUCCESS && content != null) {
-                        if (content instanceof HyggFetchServersPacket.Response) {
+                        if (content instanceof HyggFetchServersPacket.Response && onFetched != null) {
                             onFetched.accept(((HyggFetchServersPacket.Response) content).getServers());
                         } else {
                             System.err.println("The request to fetch servers was successfully done, but no servers were send back!");
@@ -85,7 +85,7 @@ public class HyggServerRequester {
                     final HyggResponseContent content = response.getContent();
 
                     if (type == SUCCESS && content != null) {
-                        if (content instanceof HyggServerResponse) {
+                        if (content instanceof HyggServerResponse && onFetched != null) {
                             onFetched.accept(((HyggServerResponse) content).getServer());
                         } else {
                             System.err.println("The request to fetch server was successfully done, but no server was send back!");
@@ -110,7 +110,7 @@ public class HyggServerRequester {
                     final HyggResponseContent content = response.getContent();
 
                     if (type == SUCCESS && content != null) {
-                        if (content instanceof HyggServerResponse) {
+                        if (content instanceof HyggServerResponse && onCreated != null) {
                             onCreated.accept(((HyggServerResponse) content).getServer());
                         } else {
                             System.err.println("The request to create server was successfully done, but no server information was send back!");
@@ -132,7 +132,7 @@ public class HyggServerRequester {
                 .withResponseCallback(response -> {
                     final HyggResponse.Type type = response.getType();
 
-                    if (type == SUCCESS) {
+                    if (type == SUCCESS && onRemoved != null) {
                         onRemoved.run();
                     } else {
                         System.err.println("Couldn't remove a server with name: " + serverName + ". Returned message: " + type + ".");

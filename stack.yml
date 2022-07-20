@@ -6,7 +6,7 @@ networks:
 
 services:
   redis:
-    image: redis:6.2.6-alpine
+    image: redis:7.0.4
     networks:
       - hyggdrasil
     command: redis-server --requirepass JNF25u8JwzR67u9GNpQn9v7wm28rPQ --save 60 1

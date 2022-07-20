@@ -51,7 +51,7 @@ public class HyggProxyRequester {
                     final HyggResponseContent content = response.getContent();
 
                     if (type == SUCCESS && content != null) {
-                        if (content instanceof HyggFetchProxiesPacket.Response) {
+                        if (content instanceof HyggFetchProxiesPacket.Response && onFetched != null) {
                             onFetched.accept(((HyggFetchProxiesPacket.Response) content).getProxies());
                         } else {
                             System.err.println("The request to fetch proxies was successfully done, but no proxies were send back!");
@@ -76,7 +76,7 @@ public class HyggProxyRequester {
                     final HyggResponseContent content = response.getContent();
 
                     if (type == SUCCESS && content != null) {
-                        if (content instanceof HyggProxyResponse) {
+                        if (content instanceof HyggProxyResponse && onFetched != null) {
                             onFetched.accept(((HyggProxyResponse) content).getProxy());
                         } else {
                             System.err.println("The request to fetch proxy was successfully done, but no proxy was send back!");
@@ -100,7 +100,7 @@ public class HyggProxyRequester {
                     final HyggResponseContent content = response.getContent();
 
                     if (type == SUCCESS && content != null) {
-                        if (content instanceof HyggProxyResponse) {
+                        if (content instanceof HyggProxyResponse && onCreated != null) {
                             onCreated.accept(((HyggProxyResponse) content).getProxy());
                         } else {
                             System.err.println("The request to create server was successfully done, but no server information was send back!");
@@ -122,7 +122,7 @@ public class HyggProxyRequester {
                 .withResponseCallback(response -> {
                     final HyggResponse.Type type = response.getType();
 
-                    if (type == SUCCESS) {
+                    if (type == SUCCESS && onRemoved != null) {
                         onRemoved.run();
                     } else {
                         System.err.println("Couldn't remove a proxy with name: " + proxyName + ". Returned message: " + type + ".");

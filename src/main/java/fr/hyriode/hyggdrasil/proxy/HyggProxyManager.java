@@ -74,6 +74,7 @@ public class HyggProxyManager {
     private void removeOldProxies() {
         this.hyggdrasil.getAPI().getScheduler().schedule(() -> {
             System.out.println("Removing old proxies (after 45 seconds of waiting)...");
+
             try (final Stream<Path> stream = Files.list(References.PROXIES_FOLDER)) {
                 stream.forEach(path -> {
                     final String pathStr = path.toString();
@@ -129,7 +130,7 @@ public class HyggProxyManager {
     private int getAvailablePort() {
         int availablePort = this.startingPort;
 
-        for (int i = this.startingPort; i < this.startingPort + this.maxProxies; i++) {
+        for (int i = this.startingPort; i <= this.startingPort + this.maxProxies; i++) {
             availablePort = i;
 
             for (HyggProxy proxy : this.proxies) {
