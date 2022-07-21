@@ -62,8 +62,6 @@ public class HyggServerRequester {
                     if (type == SUCCESS && content != null) {
                         if (content instanceof HyggFetchServersPacket.Response && onFetched != null) {
                             onFetched.accept(((HyggFetchServersPacket.Response) content).getServers());
-                        } else {
-                            System.err.println("The request to fetch servers was successfully done, but no servers were send back!");
                         }
                     } else {
                         System.err.println("Couldn't fetch servers with type: " + serversType + ". Returned message: " + type + ".");
@@ -87,8 +85,6 @@ public class HyggServerRequester {
                     if (type == SUCCESS && content != null) {
                         if (content instanceof HyggServerResponse && onFetched != null) {
                             onFetched.accept(((HyggServerResponse) content).getServer());
-                        } else {
-                            System.err.println("The request to fetch server was successfully done, but no server was send back!");
                         }
                     } else {
                         System.err.println("Couldn't fetch a server with name: " + serverName + ". Returned message: " + type + ".");
@@ -112,8 +108,6 @@ public class HyggServerRequester {
                     if (type == SUCCESS && content != null) {
                         if (content instanceof HyggServerResponse && onCreated != null) {
                             onCreated.accept(((HyggServerResponse) content).getServer());
-                        } else {
-                            System.err.println("The request to create server was successfully done, but no server information was send back!");
                         }
                     } else {
                         System.err.println("Couldn't create a server with type: " + request.getServerType() + ". Returned message: " + type + ".");
@@ -134,8 +128,6 @@ public class HyggServerRequester {
 
                     if (type == SUCCESS && onRemoved != null) {
                         onRemoved.run();
-                    } else {
-                        System.err.println("Couldn't remove a server with name: " + serverName + ". Returned message: " + type + ".");
                     }
                 }).exec();
     }
