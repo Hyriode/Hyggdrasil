@@ -16,12 +16,12 @@ import java.util.concurrent.TimeUnit;
  * Created by AstFaster
  * on 22/01/2022 at 21:28
  */
-public class HyggHeartbeatsCheck implements Runnable {
+public class HeartbeatsCheck implements Runnable {
 
     private final HyggProxyManager proxyManager;
     private final HyggServerManager serverManager;
 
-    public HyggHeartbeatsCheck(Hyggdrasil hyggdrasil) {
+    public HeartbeatsCheck(Hyggdrasil hyggdrasil) {
         this.proxyManager = hyggdrasil.getProxyManager();
         this.serverManager = hyggdrasil.getServerManager();
 
@@ -35,9 +35,10 @@ public class HyggHeartbeatsCheck implements Runnable {
         final long currentTime = System.currentTimeMillis();
 
         for (HyggServer server : this.serverManager.getServers()) {
+            final HyggServerState state = server.getState();
             final long lastHeartbeat = server.getLastHeartbeat();
 
-            if (server.getState() == HyggServerState.CREATING || lastHeartbeat == -1 || this.isResponding(currentTime, lastHeartbeat)) {
+            if (state == HyggServerState.CREATING || state == HyggServerState.SHUTDOWN || lastHeartbeat == -1 || this.isResponding(currentTime, lastHeartbeat)) {
                 continue;
             }
 

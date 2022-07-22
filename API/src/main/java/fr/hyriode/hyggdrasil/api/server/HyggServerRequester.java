@@ -126,7 +126,11 @@ public class HyggServerRequester {
                 .withResponseCallback(response -> {
                     final HyggResponse.Type type = response.getType();
 
-                    if (type == SUCCESS && onRemoved != null) {
+                    if (type != SUCCESS) {
+                        System.err.println("Couldn't remove a server with name: " + serverName + ". Returned message: " + type + ".");
+                    }
+
+                    if (onRemoved != null) {
                         onRemoved.run();
                     }
                 }).exec();

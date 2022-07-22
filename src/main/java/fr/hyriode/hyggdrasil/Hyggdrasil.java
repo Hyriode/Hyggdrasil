@@ -7,9 +7,7 @@ import fr.hyriode.hyggdrasil.api.protocol.environment.HyggData;
 import fr.hyriode.hyggdrasil.api.protocol.environment.HyggEnvironment;
 import fr.hyriode.hyggdrasil.api.protocol.environment.HyggKeys;
 import fr.hyriode.hyggdrasil.api.protocol.packet.HyggPacketProcessor;
-import fr.hyriode.hyggdrasil.api.server.HyggServer;
-import fr.hyriode.hyggdrasil.api.server.HyggServerOptions;
-import fr.hyriode.hyggdrasil.common.HyggHeartbeatsCheck;
+import fr.hyriode.hyggdrasil.common.HeartbeatsCheck;
 import fr.hyriode.hyggdrasil.common.HyriodeNetwork;
 import fr.hyriode.hyggdrasil.config.HyggConfig;
 import fr.hyriode.hyggdrasil.docker.Docker;
@@ -18,8 +16,6 @@ import fr.hyriode.hyggdrasil.receiver.HyggProxiesReceiver;
 import fr.hyriode.hyggdrasil.receiver.HyggQueryReceiver;
 import fr.hyriode.hyggdrasil.receiver.HyggServersReceiver;
 import fr.hyriode.hyggdrasil.redis.HyggRedis;
-import fr.hyriode.hyggdrasil.rule.HyggRules;
-import fr.hyriode.hyggdrasil.rule.HyggServerRule;
 import fr.hyriode.hyggdrasil.server.HyggServerManager;
 import fr.hyriode.hyggdrasil.util.IOUtil;
 import fr.hyriode.hyggdrasil.util.References;
@@ -27,8 +23,6 @@ import fr.hyriode.hyggdrasil.util.key.HyggKeyLoader;
 import fr.hyriode.hyggdrasil.util.logger.HyggLogger;
 
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
 /**
@@ -43,7 +37,6 @@ public class Hyggdrasil {
     private HyggKeys keys;
     private HyggEnvironment environment;
     private HyggdrasilAPI api;
-    private HyggRules rules;
 
     private Docker docker;
 
@@ -74,16 +67,13 @@ public class Hyggdrasil {
                 .withLogger(logger)
                 .build();
         this.api.start();
-        this.rules = HyggRules.load();
         this.docker = new Docker();
         this.docker.getNetworkManager().registerNetwork(new HyriodeNetwork());
         this.proxyManager = new HyggProxyManager(this);
         this.serverManager = new HyggServerManager(this);
         this.running = true;
 
-        this.initRules();
-
-        new HyggHeartbeatsCheck(this);
+        new HeartbeatsCheck(this);
 
         this.registerReceivers();
 
@@ -94,32 +84,6 @@ public class Hyggdrasil {
         IOUtil.createDirectory(References.LOG_FOLDER);
 
         logger = new HyggLogger(References.NAME, References.LOG_FILE.toString());
-    }
-
-    private void initRules() {
-        final int startingProxies = this.rules.getProxyRule().getMinProxies();
-
-        System.out.println("Starting proxies from rules (" + startingProxies + ").");
-
-        for (int i = 0; i < startingProxies; i++) {
-            this.proxyManager.startProxy();
-        }
-
-        this.api.getScheduler().schedule(() -> {
-            System.out.println("Starting servers from rules (" + this.rules.getServerRules().size() + ").");
-
-            for (Map.Entry<String, HyggServerRule> entry : this.rules.getServerRules().entrySet()) {
-                for (Map.Entry<String, Integer> minimum : entry.getValue().getMinimums().entrySet()) {
-                    for (int i = 0; i < minimum.getValue(); i++) {
-                        final HyggData data = new HyggData();
-
-                        data.add(HyggServer.SUB_TYPE_KEY, minimum.getKey());
-
-                        this.serverManager.startServer(entry.getKey(), new HyggServerOptions(), data, -1);
-                    }
-                }
-            }
-        }, 10, TimeUnit.SECONDS);
     }
 
     private void registerReceivers() {
@@ -179,10 +143,6 @@ public class Hyggdrasil {
 
     public HyggdrasilAPI getAPI() {
         return this.api;
-    }
-
-    public HyggRules getRules() {
-        return this.rules;
     }
 
     public Docker getDocker() {

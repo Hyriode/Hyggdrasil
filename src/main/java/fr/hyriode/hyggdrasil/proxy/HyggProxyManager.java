@@ -13,9 +13,9 @@ import fr.hyriode.hyggdrasil.api.proxy.HyggProxy;
 import fr.hyriode.hyggdrasil.api.proxy.HyggProxyState;
 import fr.hyriode.hyggdrasil.api.proxy.packet.HyggProxyInfoPacket;
 import fr.hyriode.hyggdrasil.api.proxy.packet.HyggStopProxyPacket;
+import fr.hyriode.hyggdrasil.config.nested.HyggProxiesConfig;
 import fr.hyriode.hyggdrasil.docker.image.DockerImage;
 import fr.hyriode.hyggdrasil.docker.swarm.DockerSwarm;
-import fr.hyriode.hyggdrasil.rule.HyggProxyRule;
 import fr.hyriode.hyggdrasil.util.IOUtil;
 import fr.hyriode.hyggdrasil.util.References;
 
@@ -57,12 +57,10 @@ public class HyggProxyManager {
         this.eventBus = this.hyggdrasil.getAPI().getEventBus();
         this.proxies = new ArrayList<>();
 
-        final HyggProxyRule proxyRule = this.hyggdrasil.getRules().getProxyRule();
+        final HyggProxiesConfig config = Hyggdrasil.getConfig().getProxies();
 
-        this.maxProxies = proxyRule.getMaxProxies();
-        this.startingPort = proxyRule.getStartingPort();
-
-        new HyggProxyBalancer(this.hyggdrasil, this);
+        this.maxProxies = config.getMaxProxies();
+        this.startingPort = config.getStartingPort();
 
         IOUtil.createDirectory(References.PROXIES_COMMON_FOLDER);
 
@@ -73,7 +71,7 @@ public class HyggProxyManager {
 
     private void removeOldProxies() {
         this.hyggdrasil.getAPI().getScheduler().schedule(() -> {
-            System.out.println("Removing old proxies (after 45 seconds of waiting)...");
+            System.out.println("Removing old proxies (after 15 seconds of waiting)...");
 
             try (final Stream<Path> stream = Files.list(References.PROXIES_FOLDER)) {
                 stream.forEach(path -> {
@@ -93,7 +91,7 @@ public class HyggProxyManager {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        }, 45, TimeUnit.SECONDS);
+        }, 15, TimeUnit.SECONDS);
     }
 
     public HyggProxy startProxy() {
@@ -130,7 +128,7 @@ public class HyggProxyManager {
     private int getAvailablePort() {
         int availablePort = this.startingPort;
 
-        for (int i = this.startingPort; i <= this.startingPort + this.maxProxies; i++) {
+        for (int i = this.startingPort; i < this.startingPort + this.maxProxies; i++) {
             availablePort = i;
 
             for (HyggProxy proxy : this.proxies) {
@@ -138,6 +136,10 @@ public class HyggProxyManager {
                     availablePort = -1;
                     break;
                 }
+            }
+
+            if (availablePort != -1) {
+                break;
             }
         }
         return availablePort;

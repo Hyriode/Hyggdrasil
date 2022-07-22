@@ -9,6 +9,7 @@ import fr.hyriode.hyggdrasil.api.protocol.request.HyggRequestHeader;
 import fr.hyriode.hyggdrasil.api.protocol.response.HyggResponse;
 import fr.hyriode.hyggdrasil.api.protocol.response.IHyggResponse;
 import fr.hyriode.hyggdrasil.api.server.HyggServer;
+import fr.hyriode.hyggdrasil.api.server.HyggServerState;
 import fr.hyriode.hyggdrasil.api.server.packet.HyggServerInfoPacket;
 import fr.hyriode.hyggdrasil.server.HyggServerManager;
 
@@ -37,6 +38,10 @@ public class HyggServersReceiver implements IHyggPacketReceiver {
             if (packet instanceof final HyggServerInfoPacket info) {
                 if (server == null) {
                     server = new HyggServer(serverName, info.getState(), info.getPlayers(), info.getPlayersPlaying(), info.getStartedTime(), info.getOptions(), info.getData());
+
+                    if (server.getState() == HyggServerState.SHUTDOWN) {
+                        return HyggResponse.Type.SUCCESS;
+                    }
 
                     serverManager.getServers().add(server);
                     serverManager.addServerToProxies(server);

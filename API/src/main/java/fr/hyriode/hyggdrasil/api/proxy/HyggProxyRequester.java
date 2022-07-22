@@ -13,7 +13,6 @@ import fr.hyriode.hyggdrasil.api.proxy.packet.HyggFetchProxiesPacket;
 import fr.hyriode.hyggdrasil.api.proxy.packet.HyggFetchProxyPacket;
 import fr.hyriode.hyggdrasil.api.proxy.packet.HyggStartProxyPacket;
 import fr.hyriode.hyggdrasil.api.proxy.packet.HyggStopProxyPacket;
-import fr.hyriode.hyggdrasil.api.server.packet.HyggStopServerPacket;
 
 import java.util.List;
 import java.util.function.Consumer;

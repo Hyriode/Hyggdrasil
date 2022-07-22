@@ -73,7 +73,7 @@ public class HyggServerManager {
 
     private void removeOldServers() {
         this.hyggdrasil.getAPI().getScheduler().schedule(() -> {
-            System.out.println("Removing old servers (after 45 seconds of waiting)...");
+            System.out.println("Removing old servers (after 15 seconds of waiting)...");
 
             try (final Stream<Path> stream = Files.list(References.SERVERS_FOLDER)) {
                 stream.forEach(path -> {
@@ -93,7 +93,7 @@ public class HyggServerManager {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        }, 45, TimeUnit.SECONDS);
+        }, 15, TimeUnit.SECONDS);
     }
 
     public HyggServer startServer(String type, HyggServerOptions options, HyggData data, int slots) {
@@ -183,7 +183,6 @@ public class HyggServerManager {
                         action.run();
                     })
                     .exec();
-
             return true;
         } else {
             System.err.println("Couldn't stop a server with the following name: '" + name + "'!");
@@ -192,6 +191,10 @@ public class HyggServerManager {
     }
 
     public void addServerToProxies(HyggServer server) {
+        if (server.getState() == HyggServerState.SHUTDOWN) {
+            return;
+        }
+
         this.actionOnProxies(ADD, server);
     }
 

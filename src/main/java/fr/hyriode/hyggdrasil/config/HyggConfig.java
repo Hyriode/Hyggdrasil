@@ -3,6 +3,7 @@ package fr.hyriode.hyggdrasil.config;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import fr.hyriode.hyggdrasil.config.nested.HyggDockerConfig;
+import fr.hyriode.hyggdrasil.config.nested.HyggProxiesConfig;
 import fr.hyriode.hyggdrasil.config.nested.HyggRedisConfig;
 import fr.hyriode.hyggdrasil.util.IOUtil;
 import fr.hyriode.hyggdrasil.util.References;
@@ -21,12 +22,12 @@ public class HyggConfig {
 
     private final HyggRedisConfig redis;
     private final HyggDockerConfig docker;
-    private final boolean development;
+    private final HyggProxiesConfig proxies;
 
-    public HyggConfig(HyggRedisConfig redis, HyggDockerConfig docker, boolean development) {
+    public HyggConfig(HyggRedisConfig redis, HyggDockerConfig docker, HyggProxiesConfig proxies) {
         this.redis = redis;
         this.docker = docker;
-        this.development = development;
+        this.proxies = proxies;
     }
 
     public HyggRedisConfig getRedis() {
@@ -37,8 +38,8 @@ public class HyggConfig {
         return this.docker;
     }
 
-    public boolean isDevelopment() {
-        return this.development;
+    public HyggProxiesConfig getProxies() {
+        return this.proxies;
     }
 
     public static HyggConfig load() {
@@ -54,7 +55,7 @@ public class HyggConfig {
         if (!json.equals("")) {
             return gson.fromJson(json, HyggConfig.class);
         } else {
-            final HyggConfig config = new HyggConfig(new HyggRedisConfig(), new HyggDockerConfig(), false);
+            final HyggConfig config = new HyggConfig(new HyggRedisConfig(), new HyggDockerConfig(), new HyggProxiesConfig());
 
             IOUtil.save(CONFIG_FILE, gson.toJson(config));
 
