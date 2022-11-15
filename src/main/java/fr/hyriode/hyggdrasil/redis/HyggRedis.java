@@ -1,7 +1,7 @@
 package fr.hyriode.hyggdrasil.redis;
 
 import fr.hyriode.hyggdrasil.Hyggdrasil;
-import fr.hyriode.hyggdrasil.config.nested.HyggRedisConfig;
+import fr.hyriode.hyggdrasil.config.nested.RedisConfig;
 import fr.hyriode.hyggdrasil.util.References;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
@@ -22,9 +22,9 @@ public class HyggRedis {
 
     private boolean connected;
 
-    private final HyggRedisConfig config;
+    private final RedisConfig config;
 
-    public HyggRedis(HyggRedisConfig config) {
+    public HyggRedis(RedisConfig config) {
         this.config = config;
     }
 
@@ -52,7 +52,6 @@ public class HyggRedis {
             System.out.println(References.NAME + " is now connected with Redis database.");
 
             this.startReconnectTask();
-
             return true;
         } catch (Exception e) {
             Hyggdrasil.log(Level.SEVERE, "Couldn't connect to Redis database !");

@@ -2,26 +2,19 @@ package fr.hyriode.hyggdrasil.receiver;
 
 import fr.hyriode.hyggdrasil.Hyggdrasil;
 import fr.hyriode.hyggdrasil.api.protocol.packet.HyggPacket;
+import fr.hyriode.hyggdrasil.api.protocol.packet.HyggPacketHeader;
 import fr.hyriode.hyggdrasil.api.protocol.receiver.IHyggPacketReceiver;
-import fr.hyriode.hyggdrasil.api.protocol.request.HyggRequestHeader;
 import fr.hyriode.hyggdrasil.api.protocol.response.HyggResponse;
-import fr.hyriode.hyggdrasil.api.protocol.response.IHyggResponse;
-import fr.hyriode.hyggdrasil.api.protocol.response.content.HyggProxyResponse;
-import fr.hyriode.hyggdrasil.api.protocol.response.content.HyggServerResponse;
+import fr.hyriode.hyggdrasil.api.protocol.response.content.HyggProxyContent;
+import fr.hyriode.hyggdrasil.api.protocol.response.content.HyggServerContent;
 import fr.hyriode.hyggdrasil.api.proxy.HyggProxy;
-import fr.hyriode.hyggdrasil.api.proxy.packet.HyggFetchProxiesPacket;
-import fr.hyriode.hyggdrasil.api.proxy.packet.HyggFetchProxyPacket;
 import fr.hyriode.hyggdrasil.api.proxy.packet.HyggStartProxyPacket;
 import fr.hyriode.hyggdrasil.api.proxy.packet.HyggStopProxyPacket;
 import fr.hyriode.hyggdrasil.api.server.HyggServer;
-import fr.hyriode.hyggdrasil.api.server.packet.HyggFetchServerPacket;
-import fr.hyriode.hyggdrasil.api.server.packet.HyggFetchServersPacket;
 import fr.hyriode.hyggdrasil.api.server.packet.HyggStartServerPacket;
 import fr.hyriode.hyggdrasil.api.server.packet.HyggStopServerPacket;
 import fr.hyriode.hyggdrasil.proxy.HyggProxyManager;
 import fr.hyriode.hyggdrasil.server.HyggServerManager;
-
-import java.util.ArrayList;
 
 import static fr.hyriode.hyggdrasil.api.protocol.response.HyggResponse.Type.*;
 
@@ -41,39 +34,25 @@ public class HyggQueryReceiver implements IHyggPacketReceiver {
     }
 
     @Override
-    public IHyggResponse receive(String channel, HyggPacket packet, HyggRequestHeader packetHeader) {
-        if (packet instanceof HyggStartProxyPacket) {
-            final HyggProxy proxy = this.proxyManager.startProxy();
+    public HyggResponse receive(String channel, HyggPacketHeader packetHeader, HyggPacket packet) {
+        // Proxies
+        if (packet instanceof final HyggStartProxyPacket query) {
+            final HyggProxy proxy = this.proxyManager.startProxy(query.getData());
 
-            return proxy != null ? new HyggResponse(SUCCESS, new HyggProxyResponse(proxy)) : ERROR;
+            return proxy != null ? new HyggResponse(SUCCESS, new HyggProxyContent(proxy)) : ERROR.toResponse();
         } else if (packet instanceof final HyggStopProxyPacket query) {
-            return this.proxyManager.stopProxy(query.getProxyName()) ? SUCCESS : ERROR;
-        } else if (packet instanceof final HyggStartServerPacket query) {
-            final HyggServer server = this.serverManager.startServer(query.getServerType(), query.getServerOptions(), query.getServerData(), -1);
-
-            return server != null ? new HyggResponse(SUCCESS, new HyggServerResponse(server)) : ERROR;
-        } else if (packet instanceof final HyggStopServerPacket query) {
-            return this.serverManager.stopServer(query.getServerName()) ? SUCCESS : ERROR;
-        } else if (packet instanceof final HyggFetchServerPacket query) {
-            final HyggServer server = this.serverManager.getServerByName(query.getServerName());
-
-            return server != null ? new HyggResponse(SUCCESS, new HyggServerResponse(server)) : ERROR;
-        } else if (packet instanceof final HyggFetchProxyPacket query) {
-            final HyggProxy proxy = this.proxyManager.getProxyByName(query.getProxyName());
-
-            return proxy != null ? new HyggResponse(SUCCESS, new HyggProxyResponse(proxy)) : ERROR;
-        } else if (packet instanceof final HyggFetchServersPacket query) {
-            final String serversType = query.getServersType();
-
-            if (serversType == null || serversType.isEmpty()) {
-                return new HyggResponse(SUCCESS, new HyggFetchServersPacket.Response(new ArrayList<>(this.serverManager.getServers())));
-            } else {
-                return new HyggResponse(SUCCESS, new HyggFetchServersPacket.Response(this.serverManager.getServersByType(serversType)));
-            }
-        } else if (packet instanceof HyggFetchProxiesPacket) {
-            return new HyggResponse(SUCCESS, new HyggFetchProxiesPacket.Response(new ArrayList<>(this.proxyManager.getProxies())));
+            return (this.proxyManager.stopProxy(query.getProxyName()) ? SUCCESS : ERROR).toResponse();
         }
-        return NONE;
+
+        // Servers
+        else if (packet instanceof final HyggStartServerPacket query) {
+            final HyggServer server = this.serverManager.startServer(query.getServerInfo());
+
+            return server != null ? new HyggResponse(SUCCESS, new HyggServerContent(server)) : ERROR.toResponse();
+        } else if (packet instanceof final HyggStopServerPacket query) {
+            return (this.serverManager.stopServer(query.getServerName()) ? SUCCESS : ERROR).toResponse();
+        }
+        return NONE.toResponse();
     }
 
 }

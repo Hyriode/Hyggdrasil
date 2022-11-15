@@ -106,4 +106,19 @@ public class IOUtil {
         return builder.toString();
     }
 
+    public static String toHexString(byte[] bytes) {
+        final StringBuilder result = new StringBuilder();
+
+        for (byte value : bytes) {
+            final String hex = Integer.toHexString(0xFF & value);
+
+            if (hex.length() == 1) {
+                result.append('0');
+            }
+
+            result.append(hex);
+        }
+        return result.toString();
+    }
+
 }

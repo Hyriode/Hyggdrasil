@@ -1,21 +1,24 @@
 package fr.hyriode.hyggdrasil.api.protocol.response;
 
 import fr.hyriode.hyggdrasil.api.protocol.response.content.HyggResponseContent;
+import fr.hyriode.hyggdrasil.api.util.serializer.HyggSerializable;
 
 /**
  * Project: Hyggdrasil
  * Created by AstFaster
- * on 25/12/2021 at 12:48
+ * on 25/12/2021 at 12:48.<br>
+ *
+ * The response sent after a packet is received.
  */
-public class HyggResponse implements IHyggResponse {
+public class HyggResponse {
 
-    /** Response's type */
+    /** The type of the response */
     private Type type;
-    /** Response's custom content */
+    /** The content of the response */
     private HyggResponseContent content;
 
     /**
-     * Constructor of {@link HyggResponse}
+     * Constructor of a {@link HyggResponse}
      *
      * @param type Response's type
      * @param content Response's content
@@ -44,10 +47,10 @@ public class HyggResponse implements IHyggResponse {
     }
 
     /**
-     * Set the response's type
+     * Set the type of the response
      *
      * @param type New {@link Type}
-     * @return {@link HyggResponse}
+     * @return This {@link HyggResponse}
      */
     public HyggResponse withType(Type type) {
         this.type = type;
@@ -55,38 +58,39 @@ public class HyggResponse implements IHyggResponse {
     }
 
     /**
-     * Get the response's custom content
+     * Get the content of the response
      *
-     * @return A {@link HyggResponseContent}
+     * @return The content of the response
+     * @param <T> The type of the content
      */
-    public HyggResponseContent getContent() {
-        return this.content;
+    @SuppressWarnings("unchecked")
+    public <T extends HyggResponseContent> T getContent() {
+        return (T) this.content;
     }
 
     /**
-     * Set the custom response's content
+     * Set the custom content of the response
      *
-     * @param content A {@link HyggResponseContent}
-     * @return {@link HyggResponse}
+     * @param content A {@link HyggSerializable}
+     * @return This {@link HyggResponse}
      */
     public HyggResponse withContent(HyggResponseContent content) {
         this.content = content;
         return this;
     }
 
-    public enum Type implements IHyggResponse {
+    public enum Type {
 
         /** No response to send back */
         NONE,
-
         /** The request was successfully taken */
         SUCCESS,
-
         /** An error occurred while taking the request */
         ERROR,
-
         /** The request need to be canceled */
-        ABORT;
+        ABORT,
+
+        ;
 
         public HyggResponse toResponse() {
             return new HyggResponse(this);

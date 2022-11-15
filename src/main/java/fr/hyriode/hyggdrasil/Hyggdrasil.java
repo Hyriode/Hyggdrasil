@@ -2,27 +2,23 @@ package fr.hyriode.hyggdrasil;
 
 import fr.hyriode.hyggdrasil.api.HyggdrasilAPI;
 import fr.hyriode.hyggdrasil.api.protocol.HyggChannel;
-import fr.hyriode.hyggdrasil.api.protocol.environment.HyggApplication;
-import fr.hyriode.hyggdrasil.api.protocol.environment.HyggData;
-import fr.hyriode.hyggdrasil.api.protocol.environment.HyggEnvironment;
-import fr.hyriode.hyggdrasil.api.protocol.environment.HyggKeys;
+import fr.hyriode.hyggdrasil.api.protocol.data.HyggApplication;
+import fr.hyriode.hyggdrasil.api.protocol.data.HyggEnv;
 import fr.hyriode.hyggdrasil.api.protocol.packet.HyggPacketProcessor;
-import fr.hyriode.hyggdrasil.common.HeartbeatsCheck;
-import fr.hyriode.hyggdrasil.common.HyriodeNetwork;
 import fr.hyriode.hyggdrasil.config.HyggConfig;
 import fr.hyriode.hyggdrasil.docker.Docker;
+import fr.hyriode.hyggdrasil.heartbeat.HeartbeatsCheck;
 import fr.hyriode.hyggdrasil.proxy.HyggProxyManager;
 import fr.hyriode.hyggdrasil.receiver.HyggProxiesReceiver;
 import fr.hyriode.hyggdrasil.receiver.HyggQueryReceiver;
 import fr.hyriode.hyggdrasil.receiver.HyggServersReceiver;
 import fr.hyriode.hyggdrasil.redis.HyggRedis;
 import fr.hyriode.hyggdrasil.server.HyggServerManager;
+import fr.hyriode.hyggdrasil.template.HyggTemplateManager;
 import fr.hyriode.hyggdrasil.util.IOUtil;
 import fr.hyriode.hyggdrasil.util.References;
-import fr.hyriode.hyggdrasil.util.key.HyggKeyLoader;
-import fr.hyriode.hyggdrasil.util.logger.HyggLogger;
+import fr.hyriode.hyggdrasil.util.logger.ColoredLogger;
 
-import java.util.List;
 import java.util.logging.Level;
 
 /**
@@ -33,34 +29,35 @@ import java.util.logging.Level;
 public class Hyggdrasil {
 
     private static HyggConfig config;
+
     private HyggRedis redis;
-    private HyggKeys keys;
-    private HyggEnvironment environment;
+    private HyggEnv environment;
     private HyggdrasilAPI api;
 
     private Docker docker;
 
+    private HyggTemplateManager templateManager;
     private HyggProxyManager proxyManager;
     private HyggServerManager serverManager;
 
     private boolean running;
 
-    private static HyggLogger logger;
+    private static ColoredLogger logger;
 
     public void start() {
-        HyggLogger.printHeaderMessage();
+        ColoredLogger.printHeaderMessage();
 
         this.setupLogger();
 
         config = HyggConfig.load();
+        this.running = true;
         this.redis = new HyggRedis(config.getRedis());
 
         if (!this.redis.connect()) {
             System.exit(-1);
         }
 
-        this.keys = HyggKeyLoader.loadKeys();
-        this.environment = new HyggEnvironment(new HyggApplication(HyggApplication.Type.HYGGDRASIL, "hyggdrasil", System.currentTimeMillis()), this.keys, null);
+        this.environment = new HyggEnv(new HyggApplication(HyggApplication.Type.HYGGDRASIL, "hyggdrasil", System.currentTimeMillis()));
         this.api = new HyggdrasilAPI.Builder()
                 .withJedisPool(this.redis.getJedisPool())
                 .withEnvironment(this.environment)
@@ -68,10 +65,10 @@ public class Hyggdrasil {
                 .build();
         this.api.start();
         this.docker = new Docker();
-        this.docker.getNetworkManager().registerNetwork(new HyriodeNetwork());
+        this.docker.getNetworkManager().registerNetwork(References.NETWORK.get());
+        this.templateManager = new HyggTemplateManager(this);
         this.proxyManager = new HyggProxyManager(this);
         this.serverManager = new HyggServerManager(this);
-        this.running = true;
 
         new HeartbeatsCheck(this);
 
@@ -83,7 +80,7 @@ public class Hyggdrasil {
     private void setupLogger() {
         IOUtil.createDirectory(References.LOG_FOLDER);
 
-        logger = new HyggLogger(References.NAME, References.LOG_FILE.toString());
+        logger = new ColoredLogger(References.NAME, References.LOG_FILE);
     }
 
     private void registerReceivers() {
@@ -109,10 +106,6 @@ public class Hyggdrasil {
         }
     }
 
-    public List<String> createEnvsForClient(HyggApplication application, HyggData data) {
-        return new HyggEnvironment(application, new HyggKeys(this.environment.getKeys().getPublic(), null), data).createEnvironmentVariables();
-    }
-
     public static void log(Level level, String message) {
         logger.log(level, message);
     }
@@ -121,7 +114,7 @@ public class Hyggdrasil {
         log(Level.INFO, message);
     }
 
-    public static HyggLogger getLogger() {
+    public static ColoredLogger getLogger() {
         return logger;
     }
 
@@ -133,11 +126,7 @@ public class Hyggdrasil {
         return this.redis;
     }
 
-    public HyggKeys getKeys() {
-        return this.keys;
-    }
-
-    public HyggEnvironment getEnvironment() {
+    public HyggEnv getEnvironment() {
         return this.environment;
     }
 
@@ -147,6 +136,10 @@ public class Hyggdrasil {
 
     public Docker getDocker() {
         return this.docker;
+    }
+
+    public HyggTemplateManager getTemplateManager() {
+        return this.templateManager;
     }
 
     public HyggProxyManager getProxyManager() {

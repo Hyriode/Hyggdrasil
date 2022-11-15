@@ -1,124 +1,111 @@
 package fr.hyriode.hyggdrasil.api.server;
 
-import fr.hyriode.hyggdrasil.api.protocol.environment.HyggData;
+import fr.hyriode.hyggdrasil.api.protocol.data.HyggData;
+import fr.hyriode.hyggdrasil.api.util.serializer.HyggSerializable;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * Project: Hyggdrasil
  * Created by AstFaster
- * on 16/10/2021 at 13:48
+ * on 16/10/2021 at 13:48.<br>
+ *
+ * The main object of what a server is.
  */
-public class HyggServer {
+public class HyggServer implements HyggSerializable {
 
-    public static final String SUB_TYPE_KEY = "subtype";
-    public static final String MAP_KEY = "map";
-
-    /** Server's name */
+    /** The name of the server */
     protected final String name;
-    /** Server's type */
+    /** The type of the server */
     protected final String type;
 
-    /** Current server's state */
-    protected HyggServerState state;
-    /** Server's options (pvp, nether, etc.) */
+    /** The type of the game running on the server. Might be <code>null</code> if the server is not running a game. */
+    protected @Nullable String gameType;
+    /** The map used by the server. */
+    protected String map;
+
+    /** The accessibility of the server. */
+    protected Accessibility accessibility;
+    /** The type of process running on the server */
+    protected Process process;
+
+    /** The current state of the server */
+    protected State state;
+    /** The options of the server (pvp, nether, etc.) */
     protected HyggServerOptions options;
     /** The data provided to the server */
     protected HyggData data;
 
     /** Current players on the server */
-    protected List<UUID> players;
+    protected Set<UUID> players;
     /** The players playing on the server (not the moderators, spectators, etc) */
-    protected List<UUID> playingPlayers;
-    /** The available slots on the network */
-    protected int slots = -1;
+    protected Set<UUID> playingPlayers;
+    /** The available slots of the server */
+    protected int slots;
 
-    /** Server's started time (timestamp) */
+    /** The timestamp of when the server started (in milliseconds) */
     protected final long startedTime;
-    /** The last time that the server send a heartbeat */
+    /** The last time the server sent a heartbeat */
     protected long lastHeartbeat = -1;
 
-    /** Is the server accessible to normal players (not moderators) */
-    protected boolean accessible;
-
     /**
-     * Constructor of {@link HyggServer}
+     * Default constructor of a {@link HyggServer}
      *
-     * @param type Server's type (for example: lobby, nexus, etc.)
-     * @param options Server's options (pvp, nether, etc.)
-     * @param data Server's data
+     * @param type The type of the server
+     * @param gameType The type of the game running on the server
+     * @param map The map used by the server
+     * @param accessibility The accessibility of the server
+     * @param process The type of process the server is running
+     * @param options The options of the server
+     * @param data The data of the server
+     * @param slots The slots of the server
      */
-    public HyggServer(String type, HyggServerOptions options, HyggData data) {
+    public HyggServer(String type, @Nullable String gameType, String map, Accessibility accessibility, Process process, HyggServerOptions options, HyggData data, int slots) {
         this.name = type + "-" + UUID.randomUUID().toString().substring(0, 5);
         this.type = type;
-        this.state = HyggServerState.CREATING;
+        this.gameType = gameType;
+        this.map = map;
+        this.accessibility = accessibility;
+        this.process = process;
+        this.state = State.CREATING;
         this.options = options;
         this.data = data;
+        this.players = new HashSet<>();
+        this.playingPlayers = new HashSet<>();
+        this.slots = slots;
         this.startedTime = System.currentTimeMillis();
-        this.players = new ArrayList<>();
-        this.playingPlayers = new ArrayList<>();
     }
 
-    /**
-     * Full constructor of {@link HyggServer}
-     *
-     * @param name The name of the server
-     * @param state The current state of the server
-     * @param players The current of players on the server
-     * @param playersPlaying The current of players playing on the server
-     * @param startedTime The time when the server started
-     * @param options Server's options (pvp, nether, etc.)
-     * @param data Server's data
-     */
-    public HyggServer(String name, HyggServerState state, List<UUID> players, List<UUID> playersPlaying, long startedTime, HyggServerOptions options, HyggData data) {
-        this.name = name;
-        this.type = getTypeFromName(name);
-        this.state = state;
-        this.options = options;
-        this.data = data;
-        this.players = players;
-        this.playingPlayers = playersPlaying;
-        this.startedTime = startedTime;
-    }
 
     /**
-     * Get the server type from its name
+     * Get the name of the server (ex: lobby-5sqf4)
      *
-     * @param serverName The name of the server
-     * @return The type of the provided server
-     */
-    public static String getTypeFromName(String serverName) {
-        return serverName.split("-")[0];
-    }
-
-    /**
-     * Get server's name (ex: lobby-5sqf4)
-     *
-     * @return Server's name
+     * @return A server name
      */
     public String getName() {
         return this.name;
     }
 
     /**
-     * Get server's type (ex: nexus, rtf, lobby)
+     * Get the type of the server (ex: rtf, lobby)
      *
-     * @return Server's type
+     * @return A server type
      */
     public String getType() {
         return this.type;
     }
 
     /**
-     * Get the subtype of the server.<br>
-     * It can be null, because not all servers have a subtype!
+     * Get the type of the game running on the server.<br>
+     * It can be <code>null</code>, because not all servers run a game!
      *
      * @return A game type. Ex: DEFAULT, FOUR_FOUR, etc.
      */
-    public String getSubType() {
-        return this.data.get(SUB_TYPE_KEY);
+    @Nullable
+    public String getGameType() {
+        return this.gameType;
     }
 
     /**
@@ -126,25 +113,73 @@ public class HyggServer {
      *
      * @return A map name
      */
+    @Nullable
     public String getMap() {
-        return this.data.get(MAP_KEY);
+        return this.map;
     }
 
     /**
-     * Get current server's state
+     * Set the name of the map used on the server
      *
-     * @return {@link HyggServerState}
+     * @param map The new map
      */
-    public HyggServerState getState() {
+    public void setMap(String map) {
+        this.map = map;
+    }
+
+    /**
+     * Get the current accessibility of the server.
+     *
+     * @return A {@link Accessibility}
+     */
+    @NotNull
+    public Accessibility getAccessibility() {
+        return this.accessibility;
+    }
+
+    /**
+     * Set the current accessibility of the server.
+     *
+     * @param accessibility The new {@link Accessibility} of the server
+     */
+    public void setAccessibility(@NotNull Accessibility accessibility) {
+        this.accessibility = accessibility;
+    }
+
+    /**
+     * Get the type of process the server is running.
+     *
+     * @return A {@link Process}
+     */
+    @NotNull
+    public Process getProcess() {
+        return this.process;
+    }
+
+    /**
+     * Set the type of process the server is running.
+     *
+     * @param process The new {@link Process} of the server
+     */
+    public void setProcess(@NotNull Process process) {
+        this.process = process;
+    }
+
+    /**
+     * Get the current state of the server
+     *
+     * @return A {@link State}
+     */
+    public State getState() {
         return this.state;
     }
 
     /**
-     * Set current server's state
+     * Set the new state of the server
      *
-     * @param state New server's state
+     * @param state The new state of the server
      */
-    public void setState(HyggServerState state) {
+    public void setState(State state) {
         this.state = state;
     }
 
@@ -189,16 +224,16 @@ public class HyggServer {
      *
      * @return The list of players
      */
-    public List<UUID> getPlayers() {
+    public Set<UUID> getPlayers() {
         return this.players;
     }
 
     /**
      * Set all the players that are on the server
      *
-     * @param players A list of players
+     * @param players A set of players
      */
-    public void setPlayers(List<UUID> players) {
+    public void setPlayers(Set<UUID> players) {
         this.players = players;
     }
 
@@ -207,16 +242,16 @@ public class HyggServer {
      *
      * @return The list of players playing
      */
-    public List<UUID> getPlayingPlayers() {
+    public Set<UUID> getPlayingPlayers() {
         return this.playingPlayers;
     }
 
     /**
      * Set all the players playing on the server
      *
-     * @param playingPlayers A list of players playing
+     * @param playingPlayers A set of players playing
      */
-    public void setPlayingPlayers(List<UUID> playingPlayers) {
+    public void setPlayingPlayers(Set<UUID> playingPlayers) {
         this.playingPlayers = playingPlayers;
     }
 
@@ -255,9 +290,10 @@ public class HyggServer {
     public boolean heartbeat() {
         final long oldHeartbeat = this.lastHeartbeat;
 
-        if (this.state == HyggServerState.CREATING) {
-            this.state = HyggServerState.STARTING;
+        if (oldHeartbeat == -1) {
+            this.state = State.STARTING;
         }
+
         this.lastHeartbeat = System.currentTimeMillis();
 
         return oldHeartbeat == -1;
@@ -272,27 +308,68 @@ public class HyggServer {
         return this.lastHeartbeat;
     }
 
-    /**
-     * Set if the server is accessible or not
-     *
-     * @param accessible The accessibility value of the server
-     */
-    public void setAccessible(boolean accessible) {
-        this.accessible = accessible;
-    }
-
-    /**
-     * Check if the server is accessible
-     *
-     * @return <code>true</code> if yes
-     */
-    public boolean isAccessible() {
-        return this.accessible;
-    }
-
     @Override
     public String toString() {
         return this.name;
+    }
+
+    /** This enum represents the accessibility of the server across network. */
+    public enum Accessibility {
+
+        /** The server is public: everyone can access it. */
+        PUBLIC,
+        /** The server is a host: only whitelisted players and the owner can access it. */
+        HOST
+
+    }
+
+    /** This enum represents the type of process a server is running. */
+    public enum Process {
+
+        /** The server is running a "permanent" process. The server doesn't stop by itself. E.g. a lobby or FFA server */
+        PERMANENT,
+        /** The server is running a "temporary" process. The server stops by itself. E.g. a basic game server */
+        TEMPORARY
+
+    }
+
+    /** This enum represents the different states a server can have. */
+    public enum State {
+
+        /** Server is in creation (Docker just created it) */
+        CREATING(0),
+        /** Server is starting (onEnable in plugin) */
+        STARTING(1),
+        /** Server is ready to host players */
+        READY(2),
+        /** Server is playing a game */
+        PLAYING(3),
+        /** Server is stopping (onDisable in plugin) */
+        SHUTDOWN(4),
+        /** Server is idling (an error occurred or just freezing) */
+        IDLE(5);
+
+        /** The identifier of the state */
+        private final int id;
+
+        /**
+         * The constructor of a {@link State}
+         *
+         * @param id An id
+         */
+        State(int id) {
+            this.id = id;
+        }
+
+        /**
+         * Get the identifier of the state
+         *
+         * @return An id
+         */
+        public int getId() {
+            return this.id;
+        }
+
     }
 
 }

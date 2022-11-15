@@ -1,15 +1,13 @@
 package fr.hyriode.hyggdrasil.receiver;
 
 import fr.hyriode.hyggdrasil.Hyggdrasil;
-import fr.hyriode.hyggdrasil.api.protocol.environment.HyggApplication;
-import fr.hyriode.hyggdrasil.api.protocol.packet.HyggHeartbeatPacket;
+import fr.hyriode.hyggdrasil.api.protocol.data.HyggApplication;
+import fr.hyriode.hyggdrasil.api.protocol.heartbeat.HyggHeartbeatPacket;
 import fr.hyriode.hyggdrasil.api.protocol.packet.HyggPacket;
 import fr.hyriode.hyggdrasil.api.protocol.receiver.IHyggPacketReceiver;
-import fr.hyriode.hyggdrasil.api.protocol.request.HyggRequestHeader;
+import fr.hyriode.hyggdrasil.api.protocol.packet.HyggPacketHeader;
 import fr.hyriode.hyggdrasil.api.protocol.response.HyggResponse;
-import fr.hyriode.hyggdrasil.api.protocol.response.IHyggResponse;
 import fr.hyriode.hyggdrasil.api.server.HyggServer;
-import fr.hyriode.hyggdrasil.api.server.HyggServerState;
 import fr.hyriode.hyggdrasil.api.server.packet.HyggServerInfoPacket;
 import fr.hyriode.hyggdrasil.server.HyggServerManager;
 
@@ -27,37 +25,27 @@ public class HyggServersReceiver implements IHyggPacketReceiver {
     }
 
     @Override
-    public IHyggResponse receive(String channel, HyggPacket packet, HyggRequestHeader packetHeader) {
+    public HyggResponse receive(String channel, HyggPacketHeader packetHeader, HyggPacket packet) {
         final HyggApplication sender = packetHeader.getSender();
 
         if (sender.getType() == HyggApplication.Type.SERVER) {
-            final String serverName = sender.getName();
             final HyggServerManager serverManager = this.hyggdrasil.getServerManager();
-            HyggServer server = serverManager.getServerByName(serverName);
+            final HyggServer server = serverManager.getServerByName(sender.getName());
+
+            if (server == null) {
+                return HyggResponse.Type.ERROR.toResponse();
+            }
 
             if (packet instanceof final HyggServerInfoPacket info) {
-                if (server == null) {
-                    server = new HyggServer(serverName, info.getState(), info.getPlayers(), info.getPlayersPlaying(), info.getStartedTime(), info.getOptions(), info.getData());
-
-                    if (server.getState() == HyggServerState.SHUTDOWN) {
-                        return HyggResponse.Type.SUCCESS;
-                    }
-
-                    serverManager.getServers().add(server);
-                    serverManager.addServerToProxies(server);
-                }
-
                 serverManager.updateServerInfo(server, info);
             }
 
-            if (server != null) {
-                if (packet instanceof HyggHeartbeatPacket) {
-                    server.heartbeat();
-                }
+            if (packet instanceof HyggHeartbeatPacket && server.heartbeat()) {
+                serverManager.updateServer(server);
             }
-            return HyggResponse.Type.SUCCESS;
+            return HyggResponse.Type.SUCCESS.toResponse();
         }
-        return HyggResponse.Type.NONE;
+        return HyggResponse.Type.NONE.toResponse();
     }
 
 }

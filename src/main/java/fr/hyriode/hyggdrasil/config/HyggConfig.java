@@ -2,9 +2,10 @@ package fr.hyriode.hyggdrasil.config;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import fr.hyriode.hyggdrasil.config.nested.HyggDockerConfig;
-import fr.hyriode.hyggdrasil.config.nested.HyggProxiesConfig;
-import fr.hyriode.hyggdrasil.config.nested.HyggRedisConfig;
+import fr.hyriode.hyggdrasil.config.nested.AzureConfig;
+import fr.hyriode.hyggdrasil.config.nested.DockerConfig;
+import fr.hyriode.hyggdrasil.config.nested.ProxiesConfig;
+import fr.hyriode.hyggdrasil.config.nested.RedisConfig;
 import fr.hyriode.hyggdrasil.util.IOUtil;
 import fr.hyriode.hyggdrasil.util.References;
 
@@ -20,26 +21,32 @@ public class HyggConfig {
 
     public static final Path CONFIG_FILE = Paths.get(References.DATA_FOLDER.toString(), "config.json");
 
-    private final HyggRedisConfig redis;
-    private final HyggDockerConfig docker;
-    private final HyggProxiesConfig proxies;
+    private final RedisConfig redis;
+    private final DockerConfig docker;
+    private final ProxiesConfig proxies;
+    private final AzureConfig azure;
 
-    public HyggConfig(HyggRedisConfig redis, HyggDockerConfig docker, HyggProxiesConfig proxies) {
+    public HyggConfig(RedisConfig redis, DockerConfig docker, ProxiesConfig proxies, AzureConfig azure) {
         this.redis = redis;
         this.docker = docker;
         this.proxies = proxies;
+        this.azure = azure;
     }
 
-    public HyggRedisConfig getRedis() {
+    public RedisConfig getRedis() {
         return this.redis;
     }
 
-    public HyggDockerConfig getDocker() {
+    public DockerConfig getDocker() {
         return this.docker;
     }
 
-    public HyggProxiesConfig getProxies() {
+    public ProxiesConfig getProxies() {
         return this.proxies;
+    }
+
+    public AzureConfig getAzure() {
+        return this.azure;
     }
 
     public static HyggConfig load() {
@@ -55,7 +62,7 @@ public class HyggConfig {
         if (!json.equals("")) {
             return gson.fromJson(json, HyggConfig.class);
         } else {
-            final HyggConfig config = new HyggConfig(new HyggRedisConfig(), new HyggDockerConfig(), new HyggProxiesConfig());
+            final HyggConfig config = new HyggConfig(new RedisConfig(), new DockerConfig(), new ProxiesConfig(), new AzureConfig("", "", null));
 
             IOUtil.save(CONFIG_FILE, gson.toJson(config));
 

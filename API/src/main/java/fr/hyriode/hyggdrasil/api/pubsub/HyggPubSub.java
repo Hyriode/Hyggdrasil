@@ -10,7 +10,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Level;
 
 /**
@@ -23,10 +22,6 @@ public class HyggPubSub extends JedisPubSub {
     /** PubSub state */
     private boolean running;
 
-    /** The sender that send messages */
-    private final Sender sender;
-    /** Sender thread */
-    private Thread senderThread;
     /** Subscriber thread */
     private Thread subscriberThread;
 
@@ -44,7 +39,6 @@ public class HyggPubSub extends JedisPubSub {
     public HyggPubSub(HyggdrasilAPI hyggdrasilAPI) {
         this.hyggdrasilAPI = hyggdrasilAPI;
         this.receivers = new HashMap<>();
-        this.sender = new Sender();
     }
 
     /**
@@ -55,19 +49,15 @@ public class HyggPubSub extends JedisPubSub {
 
         this.running = true;
 
-        this.senderThread = new Thread(this.sender, "PubSub Sender");
-        this.senderThread.start();
-
         this.subscriberThread = new Thread(() -> {
             while (this.running) {
-                try (final Jedis jedis = this.hyggdrasilAPI.getJedis()) {
-                    if (jedis != null) {
-                        jedis.psubscribe(this, HyggdrasilAPI.PREFIX + "*");
-                    }
+                this.hyggdrasilAPI.redisProcess(jedis -> {
+                    jedis.psubscribe(this, HyggdrasilAPI.PREFIX + "*");
 
                     HyggdrasilAPI.log(Level.SEVERE, "Redis is no longer responding to the PubSub subscriber!");
+
                     this.stop();
-                }
+                });
             }
         }, "PubSub Subscriber");
         this.subscriberThread.start();
@@ -80,35 +70,22 @@ public class HyggPubSub extends JedisPubSub {
         HyggdrasilAPI.log("Stopping PubSub...");
 
         this.running = false;
-        this.sender.running = false;
 
         if (this.isSubscribed()) {
             this.unsubscribe();
         }
 
         this.subscriberThread.interrupt();
-        this.senderThread.interrupt();
     }
 
     /**
-     * Send a message on a channel
+     * Send a message on a given channel.
      *
-     * @param channel Channel that will be used to send message
-     * @param message Message to send
-     * @param callback Callback to fire after sending message
-     */
-    public void send(HyggChannel channel, String message, Runnable callback) {
-        this.sender.messages.add(new HyggPubSubMessage(channel.toString(), message, callback));
-    }
-
-    /**
-     * Send a message on a channel
-     *
-     * @param channel Channel that will be used to send message
-     * @param message Message to send
+     * @param channel The channel that will be used to send message
+     * @param message The message to send
      */
     public void send(HyggChannel channel, String message) {
-        this.send(channel, message, null);
+        this.hyggdrasilAPI.redisProcess(jedis -> jedis.publish(channel.getName(), message));
     }
 
     /**
@@ -157,64 +134,6 @@ public class HyggPubSub extends JedisPubSub {
         if (receivers != null) {
             receivers.forEach(receiver -> receiver.receive(channel, message));
         }
-    }
-
-    /**
-     * PubSub sender class
-     */
-    private class Sender implements Runnable {
-
-        /** Queue of all messages to send */
-        private final LinkedBlockingQueue<HyggPubSubMessage> messages = new LinkedBlockingQueue<>();
-
-        /** {@link Jedis} instance */
-        private Jedis jedis;
-        /** Sender state */
-        private boolean running = true;
-
-        @Override
-        public void run() {
-            this.checkRedis();
-
-            while (this.running) {
-                try {
-                    final HyggPubSubMessage message = this.messages.take();
-                    final Runnable callback = message.getCallback();
-
-                    boolean published = false;
-
-                    while (!published) {
-                        try {
-                            this.jedis.publish(message.getChannel(), message.getContent());
-
-                            published = true;
-
-                            if (callback != null) {
-                                callback.run();
-                            }
-                        } catch (Exception e) {
-                            this.checkRedis();
-                        }
-                    }
-                } catch (InterruptedException e) {
-                    this.jedis.close();
-                    e.printStackTrace();
-                    return;
-                }
-            }
-        }
-
-        /**
-         * Check if Redis connection is fine
-         */
-        private void checkRedis() {
-            try {
-                this.jedis = hyggdrasilAPI.getJedis();
-            } catch (Exception e) {
-                HyggdrasilAPI.log(Level.SEVERE, "An error occurred in Redis connection! The PubSub can no longer send messages!");
-            }
-        }
-
     }
 
 }

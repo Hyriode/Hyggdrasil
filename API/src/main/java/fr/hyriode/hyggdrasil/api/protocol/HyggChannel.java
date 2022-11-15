@@ -1,7 +1,7 @@
 package fr.hyriode.hyggdrasil.api.protocol;
 
 import fr.hyriode.hyggdrasil.api.HyggdrasilAPI;
-import fr.hyriode.hyggdrasil.api.protocol.environment.HyggApplication;
+import fr.hyriode.hyggdrasil.api.protocol.data.HyggApplication;
 
 /**
  * Project: Hyggdrasil

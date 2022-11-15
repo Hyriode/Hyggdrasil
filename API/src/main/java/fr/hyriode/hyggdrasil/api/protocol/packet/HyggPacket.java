@@ -12,7 +12,7 @@ import java.util.UUID;
 public abstract class HyggPacket {
 
     /** Packet's {@link UUID} */
-    private final UUID uniqueId;
+    protected final UUID uniqueId;
 
     /**
      * Constructor of {@link HyggPacket}

@@ -2,7 +2,6 @@ package fr.hyriode.hyggdrasil.api.protocol.heartbeat;
 
 import fr.hyriode.hyggdrasil.api.HyggdrasilAPI;
 import fr.hyriode.hyggdrasil.api.protocol.HyggChannel;
-import fr.hyriode.hyggdrasil.api.protocol.packet.HyggHeartbeatPacket;
 
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -34,7 +33,7 @@ public class HyggHeartbeatTask implements Runnable {
 
         HyggdrasilAPI.log("Starting heartbeat task...");
 
-        this.hyggdrasilAPI.getScheduler().schedule(this, 0, HyggdrasilAPI.HEARTBEAT_TIME, TimeUnit.MILLISECONDS);
+        this.hyggdrasilAPI.getExecutorService().scheduleAtFixedRate(this, 0, HyggdrasilAPI.HEARTBEAT_TIME, TimeUnit.MILLISECONDS);
     }
 
     @Override
@@ -55,6 +54,7 @@ public class HyggHeartbeatTask implements Runnable {
                         HyggdrasilAPI.log(Level.SEVERE, "Hyggdrasil is no longer responding! Waiting for a response...");
                         this.timedOut = true;
                     }
+
                     this.responding = false;
                 })
                 .exec();

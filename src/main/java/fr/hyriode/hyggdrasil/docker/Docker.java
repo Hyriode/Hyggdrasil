@@ -5,7 +5,6 @@ import com.github.dockerjava.core.DefaultDockerClientConfig;
 import com.github.dockerjava.core.DockerClientConfig;
 import com.github.dockerjava.core.DockerClientImpl;
 import com.github.dockerjava.httpclient5.ApacheDockerHttpClient;
-import fr.hyriode.hyggdrasil.docker.container.DockerContainerManager;
 import fr.hyriode.hyggdrasil.docker.image.DockerImageManager;
 import fr.hyriode.hyggdrasil.docker.network.DockerNetworkManager;
 import fr.hyriode.hyggdrasil.docker.swarm.DockerSwarm;
@@ -14,7 +13,6 @@ import fr.hyriode.hyggdrasil.util.References;
 public class Docker {
 
     /** Manager */
-    private final DockerContainerManager containerManager;
     private final DockerImageManager imageManager;
     private final DockerNetworkManager networkManager;
     private final DockerSwarm swarm;
@@ -30,7 +28,6 @@ public class Docker {
         this.config = DefaultDockerClientConfig.createDefaultConfigBuilder().withDockerHost(url).build();
         this.httpClient = new ApacheDockerHttpClient.Builder().dockerHost(this.config.getDockerHost()).sslConfig(this.config.getSSLConfig()).build();
         this.dockerClient = DockerClientImpl.getInstance(this.config, this.httpClient);
-        this.containerManager = new DockerContainerManager(this);
         this.imageManager = new DockerImageManager(this);
         this.networkManager = new DockerNetworkManager(this);
         this.swarm = new DockerSwarm(this);
@@ -48,10 +45,6 @@ public class Docker {
 
     public DockerClient getDockerClient() {
         return this.dockerClient;
-    }
-
-    public DockerContainerManager getContainerManager() {
-        return this.containerManager;
     }
 
     public DockerImageManager getImageManager() {

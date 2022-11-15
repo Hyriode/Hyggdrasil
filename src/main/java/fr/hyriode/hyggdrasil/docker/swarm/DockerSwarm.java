@@ -47,8 +47,4 @@ public class DockerSwarm {
         return this.services;
     }
 
-    public List<SwarmNode> listSwarmNodes() {
-        return this.dockerClient.listSwarmNodesCmd().exec();
-    }
-
 }

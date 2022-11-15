@@ -7,4 +7,10 @@ import fr.hyriode.hyggdrasil.api.util.serializer.HyggSerializable;
  * Created by AstFaster
  * on 11/02/2022 at 10:54
  */
-public abstract class HyggResponseContent implements HyggSerializable {}
+public abstract class HyggResponseContent implements HyggSerializable {
+
+    public <T> T as(Class<T> outputClass) {
+        return outputClass.cast(this);
+    }
+
+}

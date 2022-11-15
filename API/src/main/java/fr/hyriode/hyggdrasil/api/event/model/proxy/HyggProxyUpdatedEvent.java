@@ -1,12 +1,16 @@
 package fr.hyriode.hyggdrasil.api.event.model.proxy;
 
 import fr.hyriode.hyggdrasil.api.proxy.HyggProxy;
-import fr.hyriode.hyggdrasil.api.proxy.HyggProxyState;
+
+import java.util.Set;
+import java.util.UUID;
 
 /**
  * Project: Hyggdrasil
  * Created by AstFaster
- * on 14/02/2022 at 15:53
+ * on 14/02/2022 at 15:53.<br>
+ *
+ * Event triggered each time a proxy is updated.
  */
 public class HyggProxyUpdatedEvent extends HyggProxyEvent {
 
@@ -22,18 +26,18 @@ public class HyggProxyUpdatedEvent extends HyggProxyEvent {
     /**
      * Get the current state of the proxy that just updated
      *
-     * @return A {@link HyggProxyState}
+     * @return A {@link HyggProxy.State}
      */
-    public HyggProxyState getProxyState() {
+    public HyggProxy.State getProxyState() {
         return this.proxy.getState();
     }
 
     /**
-     * Get the current amount of players that are on the proxy
+     * Get the current players connected through the proxy
      *
-     * @return An amount of players
+     * @return A list of player {@link UUID}
      */
-    public int getProxyPlayers() {
+    public Set<UUID> getProxyPlayers() {
         return this.proxy.getPlayers();
     }
 

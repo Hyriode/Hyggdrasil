@@ -1,10 +1,10 @@
 package fr.hyriode.hyggdrasil.proxy;
 
 import fr.hyriode.hyggdrasil.Hyggdrasil;
-import fr.hyriode.hyggdrasil.api.protocol.environment.HyggApplication;
-import fr.hyriode.hyggdrasil.api.protocol.environment.HyggData;
+import fr.hyriode.hyggdrasil.api.protocol.data.HyggApplication;
+import fr.hyriode.hyggdrasil.api.protocol.data.HyggData;
+import fr.hyriode.hyggdrasil.api.protocol.data.HyggEnv;
 import fr.hyriode.hyggdrasil.api.proxy.HyggProxy;
-import fr.hyriode.hyggdrasil.common.HyriodeNetwork;
 import fr.hyriode.hyggdrasil.docker.swarm.DockerService;
 import fr.hyriode.hyggdrasil.util.References;
 
@@ -15,19 +15,13 @@ import fr.hyriode.hyggdrasil.util.References;
  */
 public class HyggProxyService extends DockerService {
 
-    public HyggProxyService(Hyggdrasil hyggdrasil, HyggProxy proxy, boolean first) {
-        super(proxy.getName(), HyggProxyManager.PROXY_IMAGE, HyriodeNetwork.get());
+    public HyggProxyService(HyggProxy proxy) {
+        super(proxy.getName(), HyggProxyManager.PROXY_IMAGE, References.NETWORK.get());
         this.hostname = proxy.getName();
         this.publishedPort = proxy.getPort();
         this.targetPort = 25577;
 
-        final HyggData data = new HyggData();
-
-        if (first) {
-            data.add("first-proxy", "true");
-        }
-
-        this.envs.addAll(hyggdrasil.createEnvsForClient(new HyggApplication(HyggApplication.Type.PROXY, proxy.getName(), System.currentTimeMillis()), data));
+        this.envs.addAll(new HyggEnv(new HyggApplication(HyggApplication.Type.PROXY, proxy.getName(), System.currentTimeMillis())).createEnvironmentVariables());
 
         this.addLabel(References.STACK_NAME_LABEL, Hyggdrasil.getConfig().getDocker().getStackName());
 

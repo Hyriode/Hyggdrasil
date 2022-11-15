@@ -1,7 +1,12 @@
 package fr.hyriode.hyggdrasil.util;
 
+import fr.hyriode.hyggdrasil.Hyggdrasil;
+import fr.hyriode.hyggdrasil.docker.network.DockerNetwork;
+import fr.hyriode.hyggdrasil.docker.network.DockerNetworkDriver;
+
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.function.Supplier;
 
 public class References {
 
@@ -16,14 +21,12 @@ public class References {
     /** Files - Data */
     public static final Path DATA_FOLDER = Paths.get(USER_DIR, "data");
 
-    public static final Path SERVERS_FOLDER = Paths.get(DATA_FOLDER.toString(), "servers");
-    public static final Path SERVERS_COMMON_FOLDER = Paths.get(SERVERS_FOLDER.toString(), "common");
-    public static final Path SERVERS_TYPES_FOLDER = Paths.get(SERVERS_FOLDER.toString(), "types");
+    public static final Path CACHE_FOLDER = Paths.get(USER_DIR, ".cache");
 
-    public static final Path PROXIES_FOLDER = Paths.get(DATA_FOLDER.toString(), "proxies");
-    public static final Path PROXIES_COMMON_FOLDER = Paths.get(PROXIES_FOLDER.toString(), "common");
+    public static final Path TEMPLATES_FOLDER = Paths.get(DATA_FOLDER.toString(), "templates");
 
-    public static final Path PRIVATE_KEY_FILE = Paths.get(DATA_FOLDER.toString(), "private.key");
+    public static final Path SERVERS_FOLDER = Paths.get(USER_DIR, "servers");
+    public static final Path PROXIES_FOLDER = Paths.get(USER_DIR, "proxies");
 
     /** Files - Images */
     public static final Path IMAGES_FOLDER = Paths.get(USER_DIR, "images");
@@ -32,5 +35,13 @@ public class References {
 
     /** Docker */
     public static final String STACK_NAME_LABEL = "com.docker.stack.namespace";
+    public static final Supplier<DockerNetwork> NETWORK = new Supplier<>() {
+        private DockerNetwork network;
+
+        @Override
+        public DockerNetwork get() {
+            return this.network == null ? this.network = new DockerNetwork(Hyggdrasil.getConfig().getDocker().getStackName() + "_" + Hyggdrasil.getConfig().getDocker().getNetworkName(), DockerNetworkDriver.OVERLAY) : this.network;
+        }
+    };
 
 }

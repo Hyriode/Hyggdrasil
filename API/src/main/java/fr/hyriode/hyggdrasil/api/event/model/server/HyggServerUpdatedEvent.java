@@ -1,9 +1,9 @@
 package fr.hyriode.hyggdrasil.api.event.model.server;
 
 import fr.hyriode.hyggdrasil.api.server.HyggServer;
-import fr.hyriode.hyggdrasil.api.server.HyggServerState;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -25,9 +25,9 @@ public class HyggServerUpdatedEvent extends HyggServerEvent {
     /**
      * Get the current state of the server that just updated
      *
-     * @return A {@link HyggServerState}
+     * @return A {@link HyggServer.State}
      */
-    public HyggServerState getServerState() {
+    public HyggServer.State getServerState() {
         return this.server.getState();
     }
 
@@ -36,7 +36,7 @@ public class HyggServerUpdatedEvent extends HyggServerEvent {
      *
      * @return A list of players
      */
-    public List<UUID> getServerPlayers() {
+    public Set<UUID> getServerPlayers() {
         return this.server.getPlayers();
     }
 

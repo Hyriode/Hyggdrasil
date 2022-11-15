@@ -3,15 +3,12 @@ package fr.hyriode.hyggdrasil.api;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import fr.hyriode.hyggdrasil.api.event.HyggEventBus;
-import fr.hyriode.hyggdrasil.api.protocol.environment.HyggEnvironment;
-import fr.hyriode.hyggdrasil.api.protocol.environment.HyggKeys;
+import fr.hyriode.hyggdrasil.api.protocol.data.HyggEnv;
 import fr.hyriode.hyggdrasil.api.protocol.heartbeat.HyggHeartbeatTask;
 import fr.hyriode.hyggdrasil.api.protocol.packet.HyggPacketProcessor;
-import fr.hyriode.hyggdrasil.api.protocol.signature.HyggSignatureAlgorithm;
-import fr.hyriode.hyggdrasil.api.proxy.HyggProxyRequester;
+import fr.hyriode.hyggdrasil.api.proxy.HyggProxiesRequester;
 import fr.hyriode.hyggdrasil.api.pubsub.HyggPubSub;
-import fr.hyriode.hyggdrasil.api.scheduler.HyggScheduler;
-import fr.hyriode.hyggdrasil.api.server.HyggServerRequester;
+import fr.hyriode.hyggdrasil.api.server.HyggServersRequester;
 import fr.hyriode.hyggdrasil.api.util.builder.BuildException;
 import fr.hyriode.hyggdrasil.api.util.builder.BuilderEntry;
 import fr.hyriode.hyggdrasil.api.util.builder.IBuilder;
@@ -20,6 +17,10 @@ import fr.hyriode.hyggdrasil.api.util.serializer.HyggSerializer;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -37,8 +38,8 @@ public class HyggdrasilAPI {
     public static final String API_NAME = NAME + "API";
     /** APIs prefix constant. This is used for channels or to print information */
     public static final String PREFIX = "hygg";
-    /** The algorithm used to sign/verify messages or create keys */
-    public static final HyggSignatureAlgorithm ALGORITHM = HyggSignatureAlgorithm.RS256;
+    /** The Redis key prefix used by the API */
+    public static final String REDIS_KEY = "hyggdrasil:";
     /** The maximum of time to wait before timing out an application */
     public static final int TIMED_OUT_TIME = 30 * 1000;
     /** The time before sending a heartbeat */
@@ -52,16 +53,16 @@ public class HyggdrasilAPI {
 
     /** Static instance of the logger */
     private static Logger logger;
-    /** {@link JedisPool} object */
+    /** The  {@link JedisPool} instance */
     private final JedisPool jedisPool;
     /** The supplier of the running application environment */
-    private final Supplier<HyggEnvironment> environmentSupplier;
+    private final Supplier<HyggEnv> environmentSupplier;
+    /** The {@link ScheduledExecutorService} instance */
+    private ScheduledExecutorService executorService;
     /** The running application environment */
-    private HyggEnvironment environment;
+    private HyggEnv environment;
     /** The task that handles heartbeats with Hyggdrasil */
     private HyggHeartbeatTask heartbeatTask;
-    /** The Hyggdrasil scheduler instance */
-    private final HyggScheduler scheduler;
     /** The Hyggdrasil PubSub instance */
     private final HyggPubSub pubSub;
     /** The packet processor used to send/receive packets */
@@ -69,9 +70,9 @@ public class HyggdrasilAPI {
     /** The event bus used to receive/call events */
     private final HyggEventBus eventBus;
     /** The server requester used to query or do action on servers */
-    private final HyggServerRequester serverRequester;
+    private final HyggServersRequester serversRequester;
     /** The proxy requester used to query or do action on proxies */
-    private final HyggProxyRequester proxyRequester;
+    private final HyggProxiesRequester proxiesRequester;
 
     /**
      * Constructor of {@link HyggdrasilAPI}
@@ -79,16 +80,15 @@ public class HyggdrasilAPI {
      * @param jedisPool {@link JedisPool} used for all Redis actions
      * @param environmentSupplier The supplier of the running application environment
      */
-    public HyggdrasilAPI(Logger logger, JedisPool jedisPool, Supplier<HyggEnvironment> environmentSupplier) {
+    public HyggdrasilAPI(Logger logger, JedisPool jedisPool, Supplier<HyggEnv> environmentSupplier) {
         HyggdrasilAPI.logger = logger;
         this.jedisPool = jedisPool;
         this.environmentSupplier = environmentSupplier;
-        this.scheduler = new HyggScheduler();
         this.pubSub = new HyggPubSub(this);
         this.packetProcessor = new HyggPacketProcessor(this);
         this.eventBus = new HyggEventBus(this);
-        this.serverRequester = new HyggServerRequester(this);
-        this.proxyRequester = new HyggProxyRequester(this);
+        this.serversRequester = new HyggServersRequester(this);
+        this.proxiesRequester = new HyggProxiesRequester(this);
     }
 
     /**
@@ -97,11 +97,10 @@ public class HyggdrasilAPI {
     public void start() {
         log("Starting " + API_NAME + "...");
 
+        this.executorService = Executors.newScheduledThreadPool(6);
         this.pubSub.start();
         this.eventBus.start();
         this.environment = this.environmentSupplier.get();
-
-        log(this.onlyAcceptingHyggdrasilPackets() ? "This application will only accept Hyggdrasil packets." : "This application will accept all incoming packets.");
 
         if (this.environment.getApplication().getType().isUsingHeartbeats()) {
             this.heartbeatTask = new HyggHeartbeatTask(this);
@@ -117,7 +116,6 @@ public class HyggdrasilAPI {
         log("Stopping " + API_NAME + (reason != null ? " (reason: " + reason + ")" : "") + "...");
 
         this.pubSub.stop();
-        this.scheduler.stop();
     }
 
     /**
@@ -125,6 +123,35 @@ public class HyggdrasilAPI {
      */
     public void stop() {
         this.stop(null);
+    }
+
+    /**
+     * Process an action in Redis cache
+     *
+     * @param jedisConsumer The action to process
+     */
+    public void redisProcess(Consumer<Jedis> jedisConsumer) {
+        try (final Jedis jedis = this.getJedis()) {
+            if (jedis != null) {
+                jedisConsumer.accept(jedis);
+            }
+        }
+    }
+
+    /**
+     * Process an action in Redis cache
+     *
+     * @param jedisFunction The action to process
+     * @return The result of the process
+     * @param <R> The type of the result
+     */
+    public <R> R redisGet(Function<Jedis, R> jedisFunction) {
+        try (final Jedis jedis = this.getJedis()) {
+            if (jedis != null) {
+                return jedisFunction.apply(jedis);
+            }
+        }
+        return null;
     }
 
     /**
@@ -173,11 +200,20 @@ public class HyggdrasilAPI {
     }
 
     /**
+     * Get the executor service instance
+     *
+     * @return The {@link ScheduledExecutorService} instance
+     */
+    public ScheduledExecutorService getExecutorService() {
+        return this.executorService;
+    }
+
+    /**
      * Get the running application environment
      *
-     * @return {@link HyggEnvironment} object
+     * @return {@link HyggEnv} object
      */
-    public HyggEnvironment getEnvironment() {
+    public HyggEnv getEnvironment() {
         return this.environment;
     }
 
@@ -191,15 +227,6 @@ public class HyggdrasilAPI {
             return this.heartbeatTask;
         }
         throw new HyggException("Cannot get the heartbeat task instance if you are not a client that can handle the heartbeat protocol!");
-    }
-
-    /**
-     * Get Hyggdrasil scheduler instance
-     *
-     * @return {@link HyggScheduler} instance
-     */
-    public HyggScheduler getScheduler() {
-        return this.scheduler;
     }
 
     /**
@@ -235,31 +262,20 @@ public class HyggdrasilAPI {
      * Get the server requester.<br>
      * This class is used to do actions on servers. Like create or remove one, wait for a state, etc.
      *
-     * @return {@link HyggServerRequester} instance
+     * @return {@link HyggServersRequester} instance
      */
-    public HyggServerRequester getServerRequester() {
-        return this.serverRequester;
+    public HyggServersRequester getServersRequester() {
+        return this.serversRequester;
     }
 
     /**
      * Get the proxy requester.<br>
      * This class is used to do actions on proxies. Like create or remove one, wait for a state, etc.
      *
-     * @return {@link HyggProxyRequester} instance
+     * @return {@link HyggProxiesRequester} instance
      */
-    public HyggProxyRequester getProxyRequester() {
-        return this.proxyRequester;
-    }
-
-    /**
-     * Check if the API is only accepting packets signed by Hyggdrasil
-     *
-     * @return <code>true</code> if yes
-     */
-    public boolean onlyAcceptingHyggdrasilPackets() {
-        final HyggKeys keys = this.environment.getKeys();
-
-        return keys != null && keys.getPrivate() == null && keys.getPublic() != null;
+    public HyggProxiesRequester getProxiesRequester() {
+        return this.proxiesRequester;
     }
 
     /**
@@ -271,8 +287,8 @@ public class HyggdrasilAPI {
         private final BuilderEntry<Logger> loggerEntry = new BuilderEntry<>("Logger", () -> Logger.getLogger(HyggdrasilAPI.class.getName())).optional();
         /** Jedis pool builder option */
         private final BuilderEntry<JedisPool> jedisPoolEntry = new BuilderEntry<JedisPool>("Jedis Pool").required();
-        /** {@link HyggEnvironment} builder option */
-        private final BuilderEntry<HyggEnvironment> environmentEntry = new BuilderEntry<>("Application environment", HyggEnvironment::loadFromEnvironmentVariables).required();
+        /** {@link HyggEnv} builder option */
+        private final BuilderEntry<HyggEnv> environmentEntry = new BuilderEntry<>("Application environment", HyggEnv::loadFromEnvironmentVariables).required();
 
         /**
          * Set logger to provide to {@link HyggdrasilAPI}
@@ -300,10 +316,10 @@ public class HyggdrasilAPI {
          * Set the application environment to provide to {@link HyggdrasilAPI}.<br>
          * If this method is not called, the builder with automatically load them from environment variables.
          *
-         * @param environment {@link HyggEnvironment} object
+         * @param environment {@link HyggEnv} object
          * @return {@link Builder}
          */
-        public Builder withEnvironment(HyggEnvironment environment) {
+        public Builder withEnvironment(HyggEnv environment) {
             this.environmentEntry.set(() -> environment);
             return this;
         }

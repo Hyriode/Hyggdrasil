@@ -10,8 +10,8 @@ import fr.hyriode.hyggdrasil.util.References;
 public class HyggBootstrap {
 
     public static void main(String[] args) {
-        if (Float.parseFloat(System.getProperty("java.class.version")) < 60.0D) {
-            System.err.println("*** ERROR *** " + References.NAME + " requires Java >= 16 to function!");
+        if (Float.parseFloat(System.getProperty("java.class.version")) < 62.0F) {
+            System.err.println("*** ERROR *** " + References.NAME + " requires Java >= 18 to work!");
             return;
         }
 

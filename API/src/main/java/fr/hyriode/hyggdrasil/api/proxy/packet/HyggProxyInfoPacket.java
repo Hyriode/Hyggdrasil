@@ -1,59 +1,40 @@
 package fr.hyriode.hyggdrasil.api.proxy.packet;
 
 import fr.hyriode.hyggdrasil.api.protocol.packet.HyggPacket;
-import fr.hyriode.hyggdrasil.api.proxy.HyggProxyState;
+import fr.hyriode.hyggdrasil.api.proxy.HyggProxy;
+import fr.hyriode.hyggdrasil.api.server.packet.HyggServerInfoPacket;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Project: Hyggdrasil
  * Created by AstFaster
- * on 11/02/2022 at 11:28
+ * on 11/02/2022 at 11:28.<br>
+ *
+ * Packet sent to update the information of a proxy.
  */
 public class HyggProxyInfoPacket extends HyggPacket {
 
-    /** The current state of the proxy */
-    private final HyggProxyState state;
-    /** The current amount of players on the proxy */
-    private final int players;
-    /** The time when the proxy started */
-    private final long startedTime;
+    /** The representation of the proxy's information */
+    private final HyggProxy proxy;
 
     /**
-     * Constructor of {@link HyggProxyInfoPacket}
-     *  @param state The current state of the proxy
-     * @param players The amount of players on the proxy
-     * @param startedTime The time when the proxy started
-     */
-    public HyggProxyInfoPacket(HyggProxyState state, int players, long startedTime) {
-        this.state = state;
-        this.players = players;
-        this.startedTime = startedTime;
-    }
-
-    /**
-     * Get the current state of the proxy
+     * Create a {@link HyggServerInfoPacket}
      *
-     * @return A {@link HyggProxyState}
+     * @param proxy The proxy
      */
-    public HyggProxyState getState() {
-        return this.state;
+    public HyggProxyInfoPacket(@NotNull HyggProxy proxy) {
+        this.proxy = proxy;
     }
 
     /**
-     * Get the current amount of players that are on the proxy
+     * Get the proxy containing useful information
      *
-     * @return An amount of players
+     * @return The {@link HyggProxy} object
      */
-    public int getPlayers() {
-        return this.players;
+    @NotNull
+    public HyggProxy getProxy() {
+        return this.proxy;
     }
 
-    /**
-     * Get the time when the proxy started (a timestamp in millis)
-     *
-     * @return A timestamp
-     */
-    public long getStartedTime() {
-        return this.startedTime;
-    }
 
 }
