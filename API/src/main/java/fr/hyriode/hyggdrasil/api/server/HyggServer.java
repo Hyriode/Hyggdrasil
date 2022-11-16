@@ -53,6 +53,7 @@ public class HyggServer implements HyggSerializable {
     /**
      * Default constructor of a {@link HyggServer}
      *
+     * @param name The name of the server
      * @param type The type of the server
      * @param gameType The type of the game running on the server
      * @param map The map used by the server
@@ -62,8 +63,8 @@ public class HyggServer implements HyggSerializable {
      * @param data The data of the server
      * @param slots The slots of the server
      */
-    public HyggServer(String type, @Nullable String gameType, String map, Accessibility accessibility, Process process, HyggServerOptions options, HyggData data, int slots) {
-        this.name = type + "-" + UUID.randomUUID().toString().substring(0, 5);
+    public HyggServer(String name, String type, @Nullable String gameType, String map, Accessibility accessibility, Process process, HyggServerOptions options, HyggData data, int slots) {
+        this.name = name;
         this.type = type;
         this.gameType = gameType;
         this.map = map;
@@ -78,6 +79,21 @@ public class HyggServer implements HyggSerializable {
         this.startedTime = System.currentTimeMillis();
     }
 
+    /**
+     * Secondary constructor of a {@link HyggServer}
+     *
+     * @param type The type of the server
+     * @param gameType The type of the game running on the server
+     * @param map The map used by the server
+     * @param accessibility The accessibility of the server
+     * @param process The type of process the server is running
+     * @param options The options of the server
+     * @param data The data of the server
+     * @param slots The slots of the server
+     */
+    public HyggServer(String type, @Nullable String gameType, String map, Accessibility accessibility, Process process, HyggServerOptions options, HyggData data, int slots) {
+        this(type + "-" + UUID.randomUUID().toString().substring(0, 5), type, gameType, map, accessibility, process, options, data, slots);
+    }
 
     /**
      * Get the name of the server (ex: lobby-5sqf4)
