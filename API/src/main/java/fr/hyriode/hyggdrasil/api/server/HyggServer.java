@@ -51,9 +51,8 @@ public class HyggServer implements HyggSerializable {
     protected long lastHeartbeat = -1;
 
     /**
-     * Default constructor of a {@link HyggServer}
+     * Simple constructor of a {@link HyggServer}
      *
-     * @param name The name of the server
      * @param type The type of the server
      * @param gameType The type of the game running on the server
      * @param map The map used by the server
@@ -63,8 +62,8 @@ public class HyggServer implements HyggSerializable {
      * @param data The data of the server
      * @param slots The slots of the server
      */
-    public HyggServer(String name, String type, @Nullable String gameType, String map, Accessibility accessibility, Process process, HyggServerOptions options, HyggData data, int slots) {
-        this.name = name;
+    public HyggServer(String type, @Nullable String gameType, String map, Accessibility accessibility, Process process, HyggServerOptions options, HyggData data, int slots) {
+        this.name = type + "-" + UUID.randomUUID().toString().substring(0, 5);
         this.type = type;
         this.gameType = gameType;
         this.map = map;
@@ -80,19 +79,38 @@ public class HyggServer implements HyggSerializable {
     }
 
     /**
-     * Secondary constructor of a {@link HyggServer}
+     * Full constructor of a {@link HyggServer}
      *
+     * @param name The name of the server
      * @param type The type of the server
      * @param gameType The type of the game running on the server
      * @param map The map used by the server
      * @param accessibility The accessibility of the server
      * @param process The type of process the server is running
+     * @param state The state of the server
      * @param options The options of the server
      * @param data The data of the server
+     * @param players The players connected on the server
+     * @param playingPlayers The players playing on the server
      * @param slots The slots of the server
+     * @param startedTime The time when the server started
      */
-    public HyggServer(String type, @Nullable String gameType, String map, Accessibility accessibility, Process process, HyggServerOptions options, HyggData data, int slots) {
-        this(type + "-" + UUID.randomUUID().toString().substring(0, 5), type, gameType, map, accessibility, process, options, data, slots);
+    public HyggServer(String name, String type, @Nullable String gameType, String map,
+                      Accessibility accessibility, Process process, State state, HyggServerOptions options,
+                      HyggData data, Set<UUID> players, Set<UUID> playingPlayers, int slots, long startedTime) {
+        this.name = name;
+        this.type = type;
+        this.gameType = gameType;
+        this.map = map;
+        this.accessibility = accessibility;
+        this.process = process;
+        this.state = state;
+        this.options = options;
+        this.data = data;
+        this.players = players;
+        this.playingPlayers = playingPlayers;
+        this.slots = slots;
+        this.startedTime = startedTime;
     }
 
     /**
