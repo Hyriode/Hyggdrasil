@@ -1,5 +1,5 @@
 # Build Application Jar
-FROM gradle:jdk16 AS build
+FROM gradle:7.6.0 AS build
 
 WORKDIR /usr/app/
 
@@ -16,12 +16,16 @@ RUN gradle shadowJar
 # Run Application
 FROM openjdk:18.0.1.1-jdk
 
-WORKDIR /usr/app/
-
-# Get all environments variables
-ENV MEMORY="1G"
+VOLUME ["/hyggdrasil"]
+WORKDIR /hyggdrasil
 
 # Copy previous builded Jar
 COPY --from=build /usr/app/build/libs/Hyggdrasil-all.jar /usr/app/Hyggdrasil.jar
+# Copy entrypoint script
+COPY --from=build /usr/app/docker-entrypoint.sh /usr/app/docker-entrypoint.sh
 
-ENTRYPOINT java -Xmx${MEMORY} -jar Hyggdrasil.jar
+# Add permission to file
+RUN chmod +x /usr/app/docker-entrypoint.sh
+
+# Start application
+CMD "/usr/app/docker-entrypoint.sh"
