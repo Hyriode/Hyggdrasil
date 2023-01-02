@@ -80,15 +80,6 @@ public class IOUtil {
         return false;
     }
 
-    public static void save(Path path, String content) {
-        try {
-            Files.createFile(path);
-            Files.writeString(path, content);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
     public static String loadFile(Path path) {
         final StringBuilder builder = new StringBuilder();
 

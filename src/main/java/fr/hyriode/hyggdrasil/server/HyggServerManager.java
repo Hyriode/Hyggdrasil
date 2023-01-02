@@ -7,13 +7,11 @@ import fr.hyriode.hyggdrasil.api.event.model.server.HyggServerStartedEvent;
 import fr.hyriode.hyggdrasil.api.event.model.server.HyggServerStoppedEvent;
 import fr.hyriode.hyggdrasil.api.event.model.server.HyggServerUpdatedEvent;
 import fr.hyriode.hyggdrasil.api.protocol.HyggChannel;
-import fr.hyriode.hyggdrasil.api.protocol.data.HyggData;
 import fr.hyriode.hyggdrasil.api.protocol.packet.HyggPacketProcessor;
 import fr.hyriode.hyggdrasil.api.protocol.response.HyggResponse;
 import fr.hyriode.hyggdrasil.api.protocol.response.HyggResponseCallback;
 import fr.hyriode.hyggdrasil.api.server.HyggServer;
 import fr.hyriode.hyggdrasil.api.server.HyggServerCreationInfo;
-import fr.hyriode.hyggdrasil.api.server.HyggServerOptions;
 import fr.hyriode.hyggdrasil.api.server.HyggServersRequester;
 import fr.hyriode.hyggdrasil.api.server.packet.HyggServerInfoPacket;
 import fr.hyriode.hyggdrasil.api.server.packet.HyggStopServerPacket;
@@ -25,7 +23,11 @@ import fr.hyriode.hyggdrasil.util.References;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static fr.hyriode.hyggdrasil.api.protocol.response.HyggResponse.Type.SUCCESS;
 
@@ -36,9 +38,9 @@ import static fr.hyriode.hyggdrasil.api.protocol.response.HyggResponse.Type.SUCC
  */
 public class HyggServerManager {
 
-    public static final DockerImage SERVER_IMAGE = new DockerImage("hygg-server", "latest");
+    private final Map<String, HyggServer> servers = new ConcurrentHashMap<>();
 
-    private final Map<String, HyggServer> servers;
+    private final DockerImage proxyImage;
 
     private final DockerSwarm swarm;
     private final HyggPacketProcessor packetProcessor;
@@ -51,8 +53,7 @@ public class HyggServerManager {
         this.swarm = this.hyggdrasil.getDocker().getSwarm();
         this.packetProcessor = this.hyggdrasil.getAPI().getPacketProcessor();
         this.eventBus = this.hyggdrasil.getAPI().getEventBus();
-        this.servers = new HashMap<>();
-        this.hyggdrasil.getDocker().getImageManager().buildImage(Paths.get(References.SERVER_IMAGES_FOLDER.toString(), "Dockerfile").toFile(), SERVER_IMAGE.getName());
+        this.proxyImage = this.hyggdrasil.getDocker().getImageManager().getImage(Hyggdrasil.getConfig().getServers().getImage());
 
         for (HyggServer server : this.hyggdrasil.getAPI().getServersRequester().fetchServers()) {
             this.servers.put(server.getName(), server);
@@ -64,19 +65,19 @@ public class HyggServerManager {
         final HyggTemplate template = this.hyggdrasil.getTemplateManager().getTemplate(type);
 
         if (template != null) {
-            final HyggServer server = new HyggServer(type, info.getGameType(), info.getMap(), info.getAccessibility(), info.getProcess(), info.getOptions(), info.getData(), info.getSlots());
+            final HyggServer server = new HyggServer(type, info.getGameType(), info.getMap(), info.getAccessibility(), info.getProcess(), info.getData(), info.getSlots());
             final String serverName = server.getName();
-            final Path serverFolder = Paths.get(References.SERVERS_FOLDER.toString(), serverName);
+            final Path pluginsFolder = Paths.get(References.SERVERS_FOLDER.toString(), serverName, "plugins");
 
-            if (!IOUtil.createDirectory(serverFolder)) {
+            if (!IOUtil.createDirectory(pluginsFolder)) {
                 return null;
             }
 
             for (Path plugin : this.hyggdrasil.getTemplateManager().getDownloader().getPluginsFiles(template)) {
-                IOUtil.copy(plugin, Paths.get(serverFolder.toString(), plugin.getFileName().toString()));
+                IOUtil.copy(plugin, Paths.get(pluginsFolder.toString(), plugin.getFileName().toString()));
             }
 
-            this.swarm.runService(new HyggServerService(server));
+            this.swarm.runService(new HyggServerService(server, this.proxyImage));
             this.servers.put(serverName, server);
             this.hyggdrasil.getAPI().redisProcess(jedis -> jedis.set(HyggServersRequester.REDIS_KEY + server.getName(), HyggdrasilAPI.GSON.toJson(server))); // Save server in Redis cache
             this.eventBus.publish(new HyggServerStartedEvent(server));
@@ -95,7 +96,6 @@ public class HyggServerManager {
         server.setAccessibility(info.getAccessibility());
         server.setProcess(info.getProcess());
         server.setState(info.getState());
-        server.setOptions(info.getOptions());
         server.setData(info.getData());
         server.setPlayers(info.getPlayers());
         server.setPlayingPlayers(info.getPlayingPlayers());
@@ -110,7 +110,7 @@ public class HyggServerManager {
     }
 
     public boolean stopServer(String name) {
-        final HyggServer server = this.getServerByName(name);
+        final HyggServer server = this.getServer(name);
 
         if (server != null) {
             final Runnable action = () -> {
@@ -152,13 +152,8 @@ public class HyggServerManager {
         return false;
     }
 
-    public HyggServer getServerByName(String serverName) {
-        for (HyggServer server : this.servers.values()) {
-            if (server.getName().equals(serverName)) {
-                return server;
-            }
-        }
-        return null;
+    public HyggServer getServer(String serverName) {
+        return this.servers.get(serverName);
     }
 
     public Set<HyggServer> getServersByType(String serverType) {

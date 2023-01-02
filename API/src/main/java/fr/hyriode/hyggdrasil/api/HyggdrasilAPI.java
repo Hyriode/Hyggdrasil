@@ -3,6 +3,7 @@ package fr.hyriode.hyggdrasil.api;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import fr.hyriode.hyggdrasil.api.event.HyggEventBus;
+import fr.hyriode.hyggdrasil.api.limbo.HyggLimbosRequester;
 import fr.hyriode.hyggdrasil.api.protocol.data.HyggEnv;
 import fr.hyriode.hyggdrasil.api.protocol.heartbeat.HyggHeartbeatTask;
 import fr.hyriode.hyggdrasil.api.protocol.packet.HyggPacketProcessor;
@@ -73,6 +74,8 @@ public class HyggdrasilAPI {
     private final HyggServersRequester serversRequester;
     /** The proxy requester used to query or do action on proxies */
     private final HyggProxiesRequester proxiesRequester;
+    /** The limbo requester used to query or do action on limbos */
+    private final HyggLimbosRequester limbosRequester;
 
     /**
      * Constructor of {@link HyggdrasilAPI}
@@ -89,6 +92,7 @@ public class HyggdrasilAPI {
         this.eventBus = new HyggEventBus(this);
         this.serversRequester = new HyggServersRequester(this);
         this.proxiesRequester = new HyggProxiesRequester(this);
+        this.limbosRequester = new HyggLimbosRequester(this);
     }
 
     /**
@@ -277,6 +281,17 @@ public class HyggdrasilAPI {
     public HyggProxiesRequester getProxiesRequester() {
         return this.proxiesRequester;
     }
+
+    /**
+     * Get the limbo requester.<br>
+     * This class is used to do actions on limbos. Like create or remove one.
+     *
+     * @return {@link HyggLimbosRequester} instance
+     */
+    public HyggLimbosRequester getLimbosRequester() {
+        return this.limbosRequester;
+    }
+
 
     /**
      * {@link HyggdrasilAPI} builder class

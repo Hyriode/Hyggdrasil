@@ -1,14 +1,21 @@
 package fr.hyriode.hyggdrasil;
 
 import fr.hyriode.hyggdrasil.api.HyggdrasilAPI;
+import fr.hyriode.hyggdrasil.api.limbo.HyggLimbo;
 import fr.hyriode.hyggdrasil.api.protocol.HyggChannel;
 import fr.hyriode.hyggdrasil.api.protocol.data.HyggApplication;
+import fr.hyriode.hyggdrasil.api.protocol.data.HyggData;
 import fr.hyriode.hyggdrasil.api.protocol.data.HyggEnv;
 import fr.hyriode.hyggdrasil.api.protocol.packet.HyggPacketProcessor;
+import fr.hyriode.hyggdrasil.api.proxy.HyggProxy;
+import fr.hyriode.hyggdrasil.api.server.HyggServer;
+import fr.hyriode.hyggdrasil.api.server.HyggServerCreationInfo;
 import fr.hyriode.hyggdrasil.config.HyggConfig;
 import fr.hyriode.hyggdrasil.docker.Docker;
 import fr.hyriode.hyggdrasil.heartbeat.HeartbeatsCheck;
+import fr.hyriode.hyggdrasil.limbo.HyggLimboManager;
 import fr.hyriode.hyggdrasil.proxy.HyggProxyManager;
+import fr.hyriode.hyggdrasil.receiver.HyggLimbosReceiver;
 import fr.hyriode.hyggdrasil.receiver.HyggProxiesReceiver;
 import fr.hyriode.hyggdrasil.receiver.HyggQueryReceiver;
 import fr.hyriode.hyggdrasil.receiver.HyggServersReceiver;
@@ -39,6 +46,7 @@ public class Hyggdrasil {
     private HyggTemplateManager templateManager;
     private HyggProxyManager proxyManager;
     private HyggServerManager serverManager;
+    private HyggLimboManager limboManager;
 
     private boolean running;
 
@@ -64,15 +72,18 @@ public class Hyggdrasil {
                 .withLogger(logger)
                 .build();
         this.api.start();
-        this.docker = new Docker();
+        this.docker = new Docker(this);
         this.docker.getNetworkManager().registerNetwork(References.NETWORK.get());
         this.templateManager = new HyggTemplateManager(this);
         this.proxyManager = new HyggProxyManager(this);
         this.serverManager = new HyggServerManager(this);
+        this.limboManager = new HyggLimboManager(this);
 
         new HeartbeatsCheck(this);
 
         this.registerReceivers();
+
+        this.serverManager.startServer(new HyggServerCreationInfo("lobby").withAccessibility(HyggServer.Accessibility.PUBLIC).withProcess(HyggServer.Process.PERMANENT).withSlots(1000));
 
         Runtime.getRuntime().addShutdownHook(new Thread(this::shutdown));
     }
@@ -90,7 +101,8 @@ public class Hyggdrasil {
 
         processor.registerReceiver(HyggChannel.SERVERS, new HyggServersReceiver(this));
         processor.registerReceiver(HyggChannel.PROXIES, new HyggProxiesReceiver(this));
-        processor.registerReceiver(HyggChannel.QUERY, new HyggQueryReceiver(this));
+        processor.registerReceiver(HyggChannel.LIMBOS, new HyggLimbosReceiver(this));
+        processor.registerReceiver(HyggChannel.QUERY, new HyggQueryReceiver(this, limboManager));
     }
 
     public void shutdown() {
@@ -99,7 +111,6 @@ public class Hyggdrasil {
 
             this.api.stop(References.NAME + " shutdown called");
             this.redis.disconnect();
-
             this.running = false;
 
             System.out.println(References.NAME + " is now down. See you soon!");
@@ -148,6 +159,10 @@ public class Hyggdrasil {
 
     public HyggServerManager getServerManager() {
         return this.serverManager;
+    }
+
+    public HyggLimboManager getLimboManager() {
+        return this.limboManager;
     }
 
     public boolean isRunning() {

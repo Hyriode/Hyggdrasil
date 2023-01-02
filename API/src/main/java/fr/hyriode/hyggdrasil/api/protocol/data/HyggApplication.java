@@ -114,6 +114,8 @@ public class HyggApplication {
         SERVER(true),
         /** The running application is a Minecraft proxy: a BungeeCord, a Waterfall etc */
         PROXY(true),
+        /** The running application is a Minecraft limbo */
+        LIMBO(true),
         /** The application is another type */
         OTHER(false);
 

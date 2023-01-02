@@ -97,10 +97,7 @@ public class ColoredLogger extends Logger {
         public String format(LogRecord record) {
             final StringBuilder formatted = new StringBuilder();
 
-            formatted.append("[")
-                    .append(this.logger.getName())
-                    .append("] ")
-                    .append("[");
+            formatted.append("[");
             this.appendLevel(formatted, record.getLevel());
             formatted.append("] ")
                     .append(this.formatMessage(record))
@@ -195,13 +192,13 @@ public class ColoredLogger extends Logger {
         public void close() throws SecurityException {}
     }
 
-    public class Dispatcher extends Thread {
+    public static class Dispatcher extends Thread {
 
         private final ColoredLogger logger;
         private final BlockingQueue<LogRecord> queue = new LinkedBlockingQueue<>();
 
         public Dispatcher(ColoredLogger logger) {
-            super("Hylios Logger Thread");
+            super("Hyggdrasil Logger Thread");
             this.logger = logger;
         }
 
@@ -225,8 +222,9 @@ public class ColoredLogger extends Logger {
         }
 
         public void queue(LogRecord record) {
-            if (!this.isInterrupted())
+            if (!this.isInterrupted()) {
                 this.queue.add(record);
+            }
         }
 
         public BlockingQueue<LogRecord> getQueue() {
@@ -246,7 +244,7 @@ public class ColoredLogger extends Logger {
 
         @Override
         public void flush() throws IOException {
-            final String contents = this.toString(StandardCharsets.UTF_8.name());
+            final String contents = this.toString(StandardCharsets.UTF_8);
 
             super.reset();
 

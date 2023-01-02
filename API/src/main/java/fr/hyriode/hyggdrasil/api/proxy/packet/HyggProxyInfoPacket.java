@@ -2,7 +2,6 @@ package fr.hyriode.hyggdrasil.api.proxy.packet;
 
 import fr.hyriode.hyggdrasil.api.protocol.packet.HyggPacket;
 import fr.hyriode.hyggdrasil.api.proxy.HyggProxy;
-import fr.hyriode.hyggdrasil.api.server.packet.HyggServerInfoPacket;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -18,7 +17,7 @@ public class HyggProxyInfoPacket extends HyggPacket {
     private final HyggProxy proxy;
 
     /**
-     * Create a {@link HyggServerInfoPacket}
+     * Create a {@link HyggProxyInfoPacket}
      *
      * @param proxy The proxy
      */

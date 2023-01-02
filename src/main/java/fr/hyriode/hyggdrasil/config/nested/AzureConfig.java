@@ -7,25 +7,17 @@ package fr.hyriode.hyggdrasil.config.nested;
 public class AzureConfig {
 
     private final String connectionString;
-    private final String blobsContainer;
-    private final String blobsPrefix;
 
-    public AzureConfig(String connectionString, String blobsContainer, String blobsPrefix) {
+    public AzureConfig(String connectionString) {
         this.connectionString = connectionString;
-        this.blobsContainer = blobsContainer;
-        this.blobsPrefix = blobsPrefix;
+    }
+
+    public AzureConfig() {
+        this("");
     }
 
     public String getConnectionString() {
         return this.connectionString;
-    }
-
-    public String getBlobsContainer() {
-        return this.blobsContainer;
-    }
-
-    public String getBlobsPrefix() {
-        return this.blobsPrefix;
     }
 
 }

@@ -12,24 +12,20 @@ public class References {
 
     /** Global */
     public static final String NAME = "Hyggdrasil";
-    public static final String USER_DIR = System.getProperty("user.dir");
 
     /** Files */
-    public static final Path LOG_FOLDER = Paths.get(USER_DIR, "logs");
+    public static final Path LOG_FOLDER = Paths.get("logs");
     public static final Path LOG_FILE = Paths.get(LOG_FOLDER.toString(), "hyggdrasil.log");
 
-    /** Files - Data */
-    public static final Path DATA_FOLDER = Paths.get(USER_DIR, "data");
+    public static final Path TMP_FOLDER = Paths.get("tmp");
 
-    public static final Path CACHE_FOLDER = Paths.get(USER_DIR, ".cache");
+    public static final Path TEMPLATES_FOLDER = Paths.get("templates");
 
-    public static final Path TEMPLATES_FOLDER = Paths.get(DATA_FOLDER.toString(), "templates");
-
-    public static final Path SERVERS_FOLDER = Paths.get(USER_DIR, "servers");
-    public static final Path PROXIES_FOLDER = Paths.get(USER_DIR, "proxies");
+    public static final Path SERVERS_FOLDER = Paths.get("servers");
+    public static final Path PROXIES_FOLDER = Paths.get("proxies");
 
     /** Files - Images */
-    public static final Path IMAGES_FOLDER = Paths.get(USER_DIR, "images");
+    public static final Path IMAGES_FOLDER = Paths.get("images");
     public static final Path SERVER_IMAGES_FOLDER = Paths.get(IMAGES_FOLDER.toString(), "server");
     public static final Path PROXY_IMAGES_FOLDER = Paths.get(IMAGES_FOLDER.toString(), "proxy");
 

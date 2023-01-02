@@ -1,7 +1,6 @@
 package fr.hyriode.hyggdrasil.api.event.model.proxy;
 
 import fr.hyriode.hyggdrasil.api.event.HyggEvent;
-import fr.hyriode.hyggdrasil.api.event.model.server.HyggServerStartedEvent;
 import fr.hyriode.hyggdrasil.api.proxy.HyggProxy;
 
 /**
@@ -15,7 +14,7 @@ public abstract class HyggProxyEvent extends HyggEvent {
     protected final HyggProxy proxy;
 
     /**
-     * Constructor of {@link HyggServerStartedEvent}
+     * Constructor of {@link HyggProxyEvent}
      *
      * @param proxy The concerned proxy
      */

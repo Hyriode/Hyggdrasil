@@ -20,7 +20,6 @@ public class HyggServerCreationInfo {
     private HyggServer.Accessibility accessibility = HyggServer.Accessibility.PUBLIC;
     private HyggServer.Process process = HyggServer.Process.PERMANENT;
 
-    private HyggServerOptions options = new HyggServerOptions();
     private HyggData data = new HyggData();
 
     private int slots = -1;
@@ -76,16 +75,6 @@ public class HyggServerCreationInfo {
 
     public HyggServerCreationInfo withProcess(@NotNull HyggServer.Process process) {
         this.process = process;
-        return this;
-    }
-
-    @NotNull
-    public HyggServerOptions getOptions() {
-        return this.options;
-    }
-
-    public HyggServerCreationInfo withOptions(@NotNull HyggServerOptions options) {
-        this.options = options;
         return this;
     }
 

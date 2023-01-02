@@ -3,7 +3,6 @@ package fr.hyriode.hyggdrasil.api.pubsub;
 import fr.hyriode.hyggdrasil.api.HyggdrasilAPI;
 import fr.hyriode.hyggdrasil.api.protocol.HyggChannel;
 import fr.hyriode.hyggdrasil.api.protocol.receiver.IHyggReceiver;
-import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPubSub;
 
 import java.util.HashMap;
@@ -132,7 +131,7 @@ public class HyggPubSub extends JedisPubSub {
         final Set<IHyggReceiver> receivers = this.receivers.get(channel);
 
         if (receivers != null) {
-            receivers.forEach(receiver -> receiver.receive(channel, message));
+            this.hyggdrasilAPI.getExecutorService().execute(() -> receivers.forEach(receiver -> receiver.receive(channel, message)));
         }
     }
 

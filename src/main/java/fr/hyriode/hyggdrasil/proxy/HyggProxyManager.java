@@ -11,11 +11,10 @@ import fr.hyriode.hyggdrasil.api.protocol.data.HyggData;
 import fr.hyriode.hyggdrasil.api.protocol.packet.HyggPacketProcessor;
 import fr.hyriode.hyggdrasil.api.protocol.response.HyggResponse;
 import fr.hyriode.hyggdrasil.api.protocol.response.HyggResponseCallback;
+import fr.hyriode.hyggdrasil.api.proxy.HyggProxiesRequester;
 import fr.hyriode.hyggdrasil.api.proxy.HyggProxy;
 import fr.hyriode.hyggdrasil.api.proxy.packet.HyggProxyInfoPacket;
 import fr.hyriode.hyggdrasil.api.proxy.packet.HyggStopProxyPacket;
-import fr.hyriode.hyggdrasil.api.server.HyggServersRequester;
-import fr.hyriode.hyggdrasil.config.nested.ProxiesConfig;
 import fr.hyriode.hyggdrasil.docker.image.DockerImage;
 import fr.hyriode.hyggdrasil.docker.swarm.DockerSwarm;
 import fr.hyriode.hyggdrasil.template.HyggTemplate;
@@ -24,7 +23,9 @@ import fr.hyriode.hyggdrasil.util.References;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static fr.hyriode.hyggdrasil.api.protocol.response.HyggResponse.Type.SUCCESS;
 
@@ -35,14 +36,13 @@ import static fr.hyriode.hyggdrasil.api.protocol.response.HyggResponse.Type.SUCC
  */
 public class HyggProxyManager {
 
-    public static final DockerImage PROXY_IMAGE = new DockerImage("hygg-proxy", "latest");
+    private final int maxProxies = Hyggdrasil.getConfig().getProxies().getMaxProxies();
+    private final int startingPort = Hyggdrasil.getConfig().getProxies().getStartingPort();
 
-    private final int maxProxies;
-    private final int startingPort;
-
-    private final Map<String, HyggProxy> proxies;
+    private final Map<String, HyggProxy> proxies = new ConcurrentHashMap<>();
 
     private final HyggTemplate proxyTemplate;
+    private final DockerImage proxyImage;
 
     private final DockerSwarm swarm;
     private final HyggPacketProcessor packetProcessor;
@@ -55,14 +55,8 @@ public class HyggProxyManager {
         this.swarm = this.hyggdrasil.getDocker().getSwarm();
         this.packetProcessor = this.hyggdrasil.getAPI().getPacketProcessor();
         this.eventBus = this.hyggdrasil.getAPI().getEventBus();
-        this.proxies = new HashMap<>();
-
-        final ProxiesConfig config = Hyggdrasil.getConfig().getProxies();
-
-        this.proxyTemplate = this.hyggdrasil.getTemplateManager().getTemplate(config.getTemplate());
-        this.maxProxies = config.getMaxProxies();
-        this.startingPort = config.getStartingPort();
-        this.hyggdrasil.getDocker().getImageManager().buildImage(Paths.get(References.PROXY_IMAGES_FOLDER.toString(), "Dockerfile").toFile(), PROXY_IMAGE.getName());
+        this.proxyTemplate = this.hyggdrasil.getTemplateManager().getTemplate(Hyggdrasil.getConfig().getProxies().getTemplate());
+        this.proxyImage = this.hyggdrasil.getDocker().getImageManager().getImage(Hyggdrasil.getConfig().getProxies().getImage());
 
         for (HyggProxy proxy : this.hyggdrasil.getAPI().getProxiesRequester().fetchProxies()) {
             this.proxies.put(proxy.getName(), proxy);
@@ -80,21 +74,21 @@ public class HyggProxyManager {
         if (availablePort != -1) {
             final HyggProxy proxy = new HyggProxy(data);
             final String proxyName = proxy.getName();
-            final Path proxyFolder = Paths.get(References.PROXIES_FOLDER.toString(), proxyName);
+            final Path pluginsFolder = Paths.get(References.PROXIES_FOLDER.toString(), proxyName, "plugins");
 
-            if (!IOUtil.createDirectory(proxyFolder)) {
+            if (!IOUtil.createDirectory(pluginsFolder)) {
                 return null;
             }
 
             for (Path plugin : this.hyggdrasil.getTemplateManager().getDownloader().getPluginsFiles(this.proxyTemplate)) {
-                IOUtil.copy(plugin, Paths.get(proxyFolder.toString(), plugin.getFileName().toString()));
+                IOUtil.copy(plugin, Paths.get(pluginsFolder.toString(), plugin.getFileName().toString()));
             }
 
             proxy.setPort(availablePort);
 
-            this.swarm.runService(new HyggProxyService(proxy));
+            this.swarm.runService(new HyggProxyService(proxy, this.proxyImage));
             this.proxies.put(proxyName, proxy);
-            this.hyggdrasil.getAPI().redisProcess(jedis -> jedis.set(HyggServersRequester.REDIS_KEY + proxy.getName(), HyggdrasilAPI.GSON.toJson(proxy))); // Save proxy in Redis cache
+            this.hyggdrasil.getAPI().redisProcess(jedis -> jedis.set(HyggProxiesRequester.REDIS_KEY + proxy.getName(), HyggdrasilAPI.GSON.toJson(proxy))); // Save proxy in Redis cache
             this.eventBus.publish(new HyggProxyStartedEvent(proxy));
 
             System.out.println("Started '" + proxyName + "' (port: " + proxy.getPort() + ") [" + this.proxies.size() + "/" + this.maxProxies + "].");
@@ -136,18 +130,18 @@ public class HyggProxyManager {
     }
 
     public void updateProxy(HyggProxy proxy) {
-        this.hyggdrasil.getAPI().redisProcess(jedis -> jedis.set(HyggServersRequester.REDIS_KEY + proxy.getName(), HyggdrasilAPI.GSON.toJson(proxy))); // Save proxy in Redis cache
+        this.hyggdrasil.getAPI().redisProcess(jedis -> jedis.set(HyggProxiesRequester.REDIS_KEY + proxy.getName(), HyggdrasilAPI.GSON.toJson(proxy))); // Save proxy in Redis cache
         this.eventBus.publish(new HyggProxyUpdatedEvent(proxy)); // Keep applications aware of the update
     }
 
     public boolean stopProxy(String name) {
-        final HyggProxy proxy = this.getProxyByName(name);
+        final HyggProxy proxy = this.getProxy(name);
 
         if (proxy != null) {
             final Runnable action = () -> {
                 this.eventBus.publish(new HyggProxyStoppedEvent(proxy));
                 this.swarm.removeService(name);
-                this.hyggdrasil.getAPI().redisProcess(jedis -> jedis.del(HyggServersRequester.REDIS_KEY + proxy.getName()));
+                this.hyggdrasil.getAPI().redisProcess(jedis -> jedis.del(HyggProxiesRequester.REDIS_KEY + proxy.getName()));
 
                 IOUtil.deleteDirectory(Paths.get(References.PROXIES_FOLDER.toString(), proxy.getName()));
 
@@ -181,13 +175,8 @@ public class HyggProxyManager {
         return false;
     }
 
-    public HyggProxy getProxyByName(String proxyName) {
-        for (HyggProxy proxy : this.proxies.values()) {
-            if (proxy.getName().equals(proxyName)) {
-                return proxy;
-            }
-        }
-        return null;
+    public HyggProxy getProxy(String proxyName) {
+        return this.proxies.get(proxyName);
     }
 
     public Set<HyggProxy> getProxies() {

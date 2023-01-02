@@ -1,13 +1,13 @@
 package fr.hyriode.hyggdrasil.template;
 
 import fr.hyriode.hyggdrasil.Hyggdrasil;
+import fr.hyriode.hyggdrasil.util.IOUtil;
 import fr.hyriode.hyggdrasil.util.References;
-import org.yaml.snakeyaml.Yaml;
-import org.yaml.snakeyaml.introspector.BeanAccess;
+import fr.hyriode.hyggdrasil.util.YamlLoader;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -23,37 +23,52 @@ public class HyggTemplateManager {
     private final HyggTemplateDownloader downloader;
 
     public HyggTemplateManager(Hyggdrasil hyggdrasil) {
-        this.downloader = new HyggTemplateDownloader(hyggdrasil, this);
-
         this.loadTemplates();
 
+        this.downloader = new HyggTemplateDownloader(hyggdrasil, this);
         this.downloader.start();
     }
 
     private void loadTemplates() {
-        final Yaml yaml = new Yaml();
-
-        yaml.setBeanAccess(BeanAccess.FIELD);
+        IOUtil.createDirectory(References.TEMPLATES_FOLDER);
 
         try (final Stream<Path> stream = Files.list(References.TEMPLATES_FOLDER)) {
-            stream.forEach(path -> {
-                try {
-                    if (path.endsWith(".yml") || path.endsWith(".yaml")) {
-                        final HyggTemplate template = yaml.loadAs(Files.newInputStream(path), HyggTemplate.class);
-
-                        this.templates.put(template.getName(), template);
-                    }
-                } catch (IOException e) {
-                    System.err.println("Invalid yaml file in templates directory! Error:" + e.getMessage());
-                }
-            });
+            stream.forEach(this::loadTemplate);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
+    private HyggTemplate loadTemplate(Path path) {
+        if (path.toString().endsWith(".yml") || path.toString().endsWith(".yaml")) {
+            final HyggTemplate template = YamlLoader.load(path, HyggTemplate.class);
+
+            if (template != null) {
+                this.templates.put(template.getName(), template);
+
+                if (this.downloader != null) {
+                    this.downloader.process(template);
+                }
+
+                System.out.println("Loaded '" + template.getName() + "' template.");
+            }
+            return template;
+        }
+        return null;
+    }
+
     public HyggTemplate getTemplate(String name) {
-        return this.templates.get(name);
+        final HyggTemplate template = this.templates.get(name);
+
+        if (template == null) { // Try to load it from file
+            Path path = Paths.get(References.TEMPLATES_FOLDER.toString(), name + ".yaml");
+
+            if (!Files.exists(path)) {
+                path = Paths.get(References.TEMPLATES_FOLDER.toString(), name + ".yml");
+            }
+            return this.loadTemplate(path);
+        }
+        return template;
     }
 
     public HyggTemplateDownloader getDownloader() {

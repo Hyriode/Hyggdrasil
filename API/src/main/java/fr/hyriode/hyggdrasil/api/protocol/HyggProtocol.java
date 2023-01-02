@@ -1,10 +1,17 @@
 package fr.hyriode.hyggdrasil.api.protocol;
 
+import fr.hyriode.hyggdrasil.api.limbo.packet.HyggLimboInfoPacket;
+import fr.hyriode.hyggdrasil.api.limbo.packet.HyggStartLimboPacket;
+import fr.hyriode.hyggdrasil.api.limbo.packet.HyggStopLimboPacket;
 import fr.hyriode.hyggdrasil.api.protocol.heartbeat.HyggHeartbeatPacket;
 import fr.hyriode.hyggdrasil.api.protocol.packet.HyggPacket;
 import fr.hyriode.hyggdrasil.api.protocol.response.HyggResponsePacket;
-import fr.hyriode.hyggdrasil.api.proxy.packet.*;
-import fr.hyriode.hyggdrasil.api.server.packet.*;
+import fr.hyriode.hyggdrasil.api.proxy.packet.HyggProxyInfoPacket;
+import fr.hyriode.hyggdrasil.api.proxy.packet.HyggStartProxyPacket;
+import fr.hyriode.hyggdrasil.api.proxy.packet.HyggStopProxyPacket;
+import fr.hyriode.hyggdrasil.api.server.packet.HyggServerInfoPacket;
+import fr.hyriode.hyggdrasil.api.server.packet.HyggStartServerPacket;
+import fr.hyriode.hyggdrasil.api.server.packet.HyggStopServerPacket;
 
 /**
  * Project: Hyggdrasil
@@ -27,6 +34,11 @@ public enum HyggProtocol {
     SERVER_START(50, HyggStartServerPacket.class),
     SERVER_STOP(51, HyggStopServerPacket.class),
     SERVER_INFO(52, HyggServerInfoPacket.class),
+
+    /** Limbos packets section */
+    LIMBO_START(70, HyggStartLimboPacket.class),
+    LIMBO_STOP(71, HyggStopLimboPacket.class),
+    LIMBO_INFO(72, HyggLimboInfoPacket.class),
 
     ;
 

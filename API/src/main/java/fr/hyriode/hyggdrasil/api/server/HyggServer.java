@@ -5,7 +5,9 @@ import fr.hyriode.hyggdrasil.api.util.serializer.HyggSerializable;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
 
 /**
  * Project: Hyggdrasil
@@ -33,8 +35,6 @@ public class HyggServer implements HyggSerializable {
 
     /** The current state of the server */
     protected State state;
-    /** The options of the server (pvp, nether, etc.) */
-    protected HyggServerOptions options;
     /** The data provided to the server */
     protected HyggData data;
 
@@ -58,11 +58,10 @@ public class HyggServer implements HyggSerializable {
      * @param map The map used by the server
      * @param accessibility The accessibility of the server
      * @param process The type of process the server is running
-     * @param options The options of the server
      * @param data The data of the server
      * @param slots The slots of the server
      */
-    public HyggServer(String type, @Nullable String gameType, String map, Accessibility accessibility, Process process, HyggServerOptions options, HyggData data, int slots) {
+    public HyggServer(String type, @Nullable String gameType, String map, Accessibility accessibility, Process process, HyggData data, int slots) {
         this.name = type + "-" + UUID.randomUUID().toString().substring(0, 5);
         this.type = type;
         this.gameType = gameType;
@@ -70,7 +69,6 @@ public class HyggServer implements HyggSerializable {
         this.accessibility = accessibility;
         this.process = process;
         this.state = State.CREATING;
-        this.options = options;
         this.data = data;
         this.players = new HashSet<>();
         this.playingPlayers = new HashSet<>();
@@ -88,7 +86,6 @@ public class HyggServer implements HyggSerializable {
      * @param accessibility The accessibility of the server
      * @param process The type of process the server is running
      * @param state The state of the server
-     * @param options The options of the server
      * @param data The data of the server
      * @param players The players connected on the server
      * @param playingPlayers The players playing on the server
@@ -96,8 +93,8 @@ public class HyggServer implements HyggSerializable {
      * @param startedTime The time when the server started
      */
     public HyggServer(String name, String type, @Nullable String gameType, String map,
-                      Accessibility accessibility, Process process, State state, HyggServerOptions options,
-                      HyggData data, Set<UUID> players, Set<UUID> playingPlayers, int slots, long startedTime) {
+                      Accessibility accessibility, Process process, State state, HyggData data,
+                      Set<UUID> players, Set<UUID> playingPlayers, int slots, long startedTime) {
         this.name = name;
         this.type = type;
         this.gameType = gameType;
@@ -105,7 +102,6 @@ public class HyggServer implements HyggSerializable {
         this.accessibility = accessibility;
         this.process = process;
         this.state = state;
-        this.options = options;
         this.data = data;
         this.players = players;
         this.playingPlayers = playingPlayers;
@@ -215,24 +211,6 @@ public class HyggServer implements HyggSerializable {
      */
     public void setState(State state) {
         this.state = state;
-    }
-
-    /**
-     * Get server's options
-     *
-     * @return {@link HyggServerOptions}
-     */
-    public HyggServerOptions getOptions() {
-        return this.options;
-    }
-
-    /**
-     * Set the server's options
-     *
-     * @param options New {@link HyggServerOptions}
-     */
-    public void setOptions(HyggServerOptions options) {
-        this.options = options;
     }
 
     /**

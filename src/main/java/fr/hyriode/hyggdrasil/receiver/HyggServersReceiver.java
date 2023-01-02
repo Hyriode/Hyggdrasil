@@ -4,8 +4,8 @@ import fr.hyriode.hyggdrasil.Hyggdrasil;
 import fr.hyriode.hyggdrasil.api.protocol.data.HyggApplication;
 import fr.hyriode.hyggdrasil.api.protocol.heartbeat.HyggHeartbeatPacket;
 import fr.hyriode.hyggdrasil.api.protocol.packet.HyggPacket;
-import fr.hyriode.hyggdrasil.api.protocol.receiver.IHyggPacketReceiver;
 import fr.hyriode.hyggdrasil.api.protocol.packet.HyggPacketHeader;
+import fr.hyriode.hyggdrasil.api.protocol.receiver.IHyggPacketReceiver;
 import fr.hyriode.hyggdrasil.api.protocol.response.HyggResponse;
 import fr.hyriode.hyggdrasil.api.server.HyggServer;
 import fr.hyriode.hyggdrasil.api.server.packet.HyggServerInfoPacket;
@@ -30,7 +30,7 @@ public class HyggServersReceiver implements IHyggPacketReceiver {
 
         if (sender.getType() == HyggApplication.Type.SERVER) {
             final HyggServerManager serverManager = this.hyggdrasil.getServerManager();
-            final HyggServer server = serverManager.getServerByName(sender.getName());
+            final HyggServer server = serverManager.getServer(sender.getName());
 
             if (server == null) {
                 return HyggResponse.Type.ERROR.toResponse();

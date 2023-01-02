@@ -1,14 +1,9 @@
 package fr.hyriode.hyggdrasil.config;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import fr.hyriode.hyggdrasil.config.nested.AzureConfig;
-import fr.hyriode.hyggdrasil.config.nested.DockerConfig;
-import fr.hyriode.hyggdrasil.config.nested.ProxiesConfig;
-import fr.hyriode.hyggdrasil.config.nested.RedisConfig;
-import fr.hyriode.hyggdrasil.util.IOUtil;
-import fr.hyriode.hyggdrasil.util.References;
+import fr.hyriode.hyggdrasil.config.nested.*;
+import fr.hyriode.hyggdrasil.util.YamlLoader;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -19,19 +14,25 @@ import java.nio.file.Paths;
  */
 public class HyggConfig {
 
-    public static final Path CONFIG_FILE = Paths.get(References.DATA_FOLDER.toString(), "config.json");
+    public static final Path CONFIG_FILE = Paths.get("config.yml");
 
-    private final RedisConfig redis;
-    private final DockerConfig docker;
-    private final ProxiesConfig proxies;
-    private final AzureConfig azure;
+    private RedisConfig redis;
+    private DockerConfig docker;
+    private ProxiesConfig proxies;
+    private ServersConfig servers;
+    private LimbosConfig limbos;
+    private AzureConfig azure;
 
-    public HyggConfig(RedisConfig redis, DockerConfig docker, ProxiesConfig proxies, AzureConfig azure) {
+    public HyggConfig(RedisConfig redis, DockerConfig docker, ProxiesConfig proxies, ServersConfig servers, LimbosConfig limbos, AzureConfig azure) {
         this.redis = redis;
         this.docker = docker;
         this.proxies = proxies;
+        this.servers = servers;
+        this.limbos = limbos;
         this.azure = azure;
     }
+
+    private HyggConfig() {}
 
     public RedisConfig getRedis() {
         return this.redis;
@@ -41,8 +42,16 @@ public class HyggConfig {
         return this.docker;
     }
 
+    public ServersConfig getServers() {
+        return this.servers;
+    }
+
     public ProxiesConfig getProxies() {
         return this.proxies;
+    }
+
+    public LimbosConfig getLimbos() {
+        return this.limbos;
     }
 
     public AzureConfig getAzure() {
@@ -52,19 +61,12 @@ public class HyggConfig {
     public static HyggConfig load() {
         System.out.println("Loading configuration...");
 
-        final Gson gson = new GsonBuilder()
-                .setPrettyPrinting()
-                .serializeNulls()
-                .create();
-
-        final String json = IOUtil.loadFile(CONFIG_FILE);
-
-        if (!json.equals("")) {
-            return gson.fromJson(json, HyggConfig.class);
+        if (Files.exists(CONFIG_FILE)) {
+            return YamlLoader.load(CONFIG_FILE, HyggConfig.class);
         } else {
-            final HyggConfig config = new HyggConfig(new RedisConfig(), new DockerConfig(), new ProxiesConfig(), new AzureConfig("", "", null));
+            final HyggConfig config = new HyggConfig(new RedisConfig(), new DockerConfig(), new ProxiesConfig(), new ServersConfig(), new LimbosConfig(), new AzureConfig());
 
-            IOUtil.save(CONFIG_FILE, gson.toJson(config));
+            YamlLoader.save(CONFIG_FILE, config);
 
             System.err.println("Please fill configuration file before continue!");
             System.exit(0);

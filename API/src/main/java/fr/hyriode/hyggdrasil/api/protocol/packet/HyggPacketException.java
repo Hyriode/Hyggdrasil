@@ -2,8 +2,6 @@ package fr.hyriode.hyggdrasil.api.protocol.packet;
 
 import fr.hyriode.hyggdrasil.api.HyggException;
 
-import java.util.function.Function;
-
 /**
  * Project: Hyggdrasil
  * Created by AstFaster

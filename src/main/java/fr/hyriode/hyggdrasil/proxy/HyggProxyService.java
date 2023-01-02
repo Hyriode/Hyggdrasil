@@ -2,11 +2,13 @@ package fr.hyriode.hyggdrasil.proxy;
 
 import fr.hyriode.hyggdrasil.Hyggdrasil;
 import fr.hyriode.hyggdrasil.api.protocol.data.HyggApplication;
-import fr.hyriode.hyggdrasil.api.protocol.data.HyggData;
 import fr.hyriode.hyggdrasil.api.protocol.data.HyggEnv;
 import fr.hyriode.hyggdrasil.api.proxy.HyggProxy;
+import fr.hyriode.hyggdrasil.docker.image.DockerImage;
 import fr.hyriode.hyggdrasil.docker.swarm.DockerService;
 import fr.hyriode.hyggdrasil.util.References;
+
+import java.nio.file.Paths;
 
 /**
  * Project: Hyggdrasil
@@ -15,8 +17,8 @@ import fr.hyriode.hyggdrasil.util.References;
  */
 public class HyggProxyService extends DockerService {
 
-    public HyggProxyService(HyggProxy proxy) {
-        super(proxy.getName(), HyggProxyManager.PROXY_IMAGE, References.NETWORK.get());
+    public HyggProxyService(HyggProxy proxy, DockerImage image) {
+        super(proxy.getName(), image, References.NETWORK.get());
         this.hostname = proxy.getName();
         this.publishedPort = proxy.getPort();
         this.targetPort = 25577;
@@ -25,9 +27,8 @@ public class HyggProxyService extends DockerService {
 
         this.addLabel(References.STACK_NAME_LABEL, Hyggdrasil.getConfig().getDocker().getStackName());
 
-        final String proxyFolder = Hyggdrasil.getConfig().getDocker().getDataFolder() + "/proxies/" + proxy.getName();
+        final String proxyFolder = Paths.get("proxies", proxy.getName()).toAbsolutePath().toString();
 
-        this.addMount(proxyFolder, "/config");
         this.addMount(proxyFolder, "/server");
     }
 

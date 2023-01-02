@@ -2,6 +2,7 @@ package fr.hyriode.hyggdrasil.api.proxy;
 
 import fr.hyriode.hyggdrasil.api.protocol.data.HyggData;
 import fr.hyriode.hyggdrasil.api.protocol.packet.HyggPacketException;
+import fr.hyriode.hyggdrasil.api.util.serializer.HyggSerializable;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashSet;
@@ -15,7 +16,7 @@ import java.util.UUID;
  *
  * The main object of what a proxy is.
  */
-public class HyggProxy {
+public class HyggProxy implements HyggSerializable {
 
     /** The maximum amount of players that can handle a proxy */
     public static final int MAX_PLAYERS = 750;

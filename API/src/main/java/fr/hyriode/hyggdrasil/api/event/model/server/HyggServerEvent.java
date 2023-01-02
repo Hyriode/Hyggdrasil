@@ -14,7 +14,7 @@ public abstract class HyggServerEvent extends HyggEvent {
     protected final HyggServer server;
 
     /**
-     * Constructor of {@link HyggServerStartedEvent}
+     * Constructor of {@link HyggServerEvent}
      *
      * @param server The concerned server
      */

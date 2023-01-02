@@ -18,6 +18,8 @@ public enum HyggChannel {
     SERVERS("servers"),
     /** The channel used by proxies to send information to Hyggdrasil */
     PROXIES("proxies"),
+    /** The channel used by limbos to send information to Hyggdrasil */
+    LIMBOS("limbos"),
     /** The channel used to interact with queues */
     QUEUE("queue");
 
@@ -45,6 +47,8 @@ public enum HyggChannel {
                 return SERVERS;
             case PROXY:
                 return PROXIES;
+            case LIMBO:
+                return LIMBOS;
             default:
                 return null;
         }

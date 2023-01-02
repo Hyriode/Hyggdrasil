@@ -2,7 +2,6 @@ package fr.hyriode.hyggdrasil.api.event.model.server;
 
 import fr.hyriode.hyggdrasil.api.server.HyggServer;
 
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 

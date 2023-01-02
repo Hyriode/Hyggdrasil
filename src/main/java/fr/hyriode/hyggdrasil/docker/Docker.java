@@ -5,6 +5,7 @@ import com.github.dockerjava.core.DefaultDockerClientConfig;
 import com.github.dockerjava.core.DockerClientConfig;
 import com.github.dockerjava.core.DockerClientImpl;
 import com.github.dockerjava.httpclient5.ApacheDockerHttpClient;
+import fr.hyriode.hyggdrasil.Hyggdrasil;
 import fr.hyriode.hyggdrasil.docker.image.DockerImageManager;
 import fr.hyriode.hyggdrasil.docker.network.DockerNetworkManager;
 import fr.hyriode.hyggdrasil.docker.swarm.DockerSwarm;
@@ -22,17 +23,18 @@ public class Docker {
     private final ApacheDockerHttpClient httpClient;
     private final DockerClient dockerClient;
 
-    public Docker() {
+    public Docker(Hyggdrasil hyggdrasil) {
         final String url = DockerUrl.get().getUrl();
 
         this.config = DefaultDockerClientConfig.createDefaultConfigBuilder().withDockerHost(url).build();
         this.httpClient = new ApacheDockerHttpClient.Builder().dockerHost(this.config.getDockerHost()).sslConfig(this.config.getSSLConfig()).build();
         this.dockerClient = DockerClientImpl.getInstance(this.config, this.httpClient);
-        this.imageManager = new DockerImageManager(this);
-        this.networkManager = new DockerNetworkManager(this);
-        this.swarm = new DockerSwarm(this);
 
         System.out.println(References.NAME + " is now connected to Docker (url: " + url + ").");
+
+        this.imageManager = new DockerImageManager(hyggdrasil, this);
+        this.networkManager = new DockerNetworkManager(this);
+        this.swarm = new DockerSwarm(this);
     }
 
     public DockerClientConfig getConfig() {

@@ -28,12 +28,24 @@ public class HyggTemplate {
 
     public static class Plugin {
 
+        private String name;
+        private String container;
         private String blob;
 
         private Plugin() {}
 
-        public Plugin(String blob) {
+        public Plugin(String name, String container, String blob) {
+            this.name = name;
+            this.container = container;
             this.blob = blob;
+        }
+
+        public String getName() {
+            return this.name;
+        }
+
+        public String getContainer() {
+            return this.container;
         }
 
         public String getBlob() {
