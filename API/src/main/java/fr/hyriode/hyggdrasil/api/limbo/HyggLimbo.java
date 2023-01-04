@@ -23,7 +23,9 @@ public class HyggLimbo implements HyggSerializable {
     /** The data of the limbo */
     protected HyggData data;
     /** The current state of the limbo */
-    protected HyggLimbo.State state;
+    protected State state;
+    /** The type of the limbo */
+    protected Type type;
     /** The current players handled by the limbo */
     protected Set<UUID> players;
 
@@ -35,11 +37,13 @@ public class HyggLimbo implements HyggSerializable {
     /**
      * Default constructor of a {@link HyggLimbo}
      *
+     * @param type The type of the limbo
      * @param data The data of the limbo
      */
-    public HyggLimbo(HyggData data) {
+    public HyggLimbo(Type type, HyggData data) {
         this.name = "limbo-" + UUID.randomUUID().toString().substring(0, 5);
         this.data = data;
+        this.type = type;
         this.state = State.CREATING;
         this.players = new HashSet<>();
         this.startedTime = System.currentTimeMillis();
@@ -54,9 +58,10 @@ public class HyggLimbo implements HyggSerializable {
      * @param players The players connected through the limbo
      * @param startedTime The time when the limbo started (in milliseconds)
      */
-    public HyggLimbo(String name, HyggData data, HyggLimbo.State state, Set<UUID> players, long startedTime) {
+    public HyggLimbo(String name, HyggData data, Type type, State state, Set<UUID> players, long startedTime) {
         this.name = name;
         this.data = data;
+        this.type = type;
         this.state = state;
         this.players = players;
         this.startedTime = startedTime;
@@ -89,6 +94,25 @@ public class HyggLimbo implements HyggSerializable {
      */
     public void setData(@NotNull HyggData data) {
         this.data = data;
+    }
+
+    /**
+     * Get the type of the limbo
+     *
+     * @return A {@link Type}
+     */
+    @NotNull
+    public Type getType() {
+        return this.type;
+    }
+
+    /**
+     * Set the type of the limbo
+     *
+     * @param type A new {@link Type}
+     */
+    public void setType(@NotNull Type type) {
+        this.type = type;
     }
 
     /**
@@ -164,6 +188,17 @@ public class HyggLimbo implements HyggSerializable {
         return this.lastHeartbeat;
     }
 
+    /** The different types of limbo that could exist */
+    public enum Type {
+
+        /** The limbo is used to handle afk players */
+        AFK,
+        /** The limbo is used to handle the login of the players */
+        LOGIN
+
+    }
+
+    /** The available states a limbo could have */
     public enum State {
 
         /** The limbo is in creation (Docker just created it) */
