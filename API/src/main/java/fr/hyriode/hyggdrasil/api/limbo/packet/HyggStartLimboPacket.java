@@ -1,7 +1,10 @@
 package fr.hyriode.hyggdrasil.api.limbo.packet;
 
+import fr.hyriode.hyggdrasil.api.limbo.HyggLimbo;
 import fr.hyriode.hyggdrasil.api.protocol.data.HyggData;
 import fr.hyriode.hyggdrasil.api.protocol.packet.HyggPacket;
+
+import static fr.hyriode.hyggdrasil.api.limbo.HyggLimbo.*;
 
 /**
  * Project: Hyggdrasil
@@ -13,16 +16,29 @@ import fr.hyriode.hyggdrasil.api.protocol.packet.HyggPacket;
  */
 public class HyggStartLimboPacket extends HyggPacket {
 
+    /** The type of the limbo to create */
+    private final Type type;
     /** The data of the limbo to create */
     private final HyggData data;
 
     /**
      * Create a {@link HyggStartLimboPacket}
      *
+     * @param type The type of the limbo
      * @param data The data of the limbo
      */
-    public HyggStartLimboPacket(HyggData data) {
+    public HyggStartLimboPacket(Type type, HyggData data) {
+        this.type = type;
         this.data = data;
+    }
+
+    /**
+     * Get the type of the limbo to create
+     *
+     * @return A {@link Type}
+     */
+    public Type getType() {
+        return this.type;
     }
 
     /**

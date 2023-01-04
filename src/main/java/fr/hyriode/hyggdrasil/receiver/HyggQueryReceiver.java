@@ -62,7 +62,7 @@ public class HyggQueryReceiver implements IHyggPacketReceiver {
 
         // Limbos
         else if (packet instanceof final HyggStartLimboPacket query) {
-            final HyggLimbo limbo = this.limboManager.startLimbo(query.getData());
+            final HyggLimbo limbo = this.limboManager.startLimbo(query.getType(), query.getData());
 
             return limbo != null ? new HyggResponse(SUCCESS, new HyggLimboContent(limbo)) : ERROR.toResponse();
         } else if (packet instanceof final HyggStopLimboPacket query) {

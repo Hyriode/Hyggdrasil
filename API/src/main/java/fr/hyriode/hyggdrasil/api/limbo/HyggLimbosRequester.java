@@ -73,11 +73,12 @@ public class HyggLimbosRequester {
     /**
      * Create a limbo by asking Hyggdrasil.
      *
-     * @param onCreated The {@link Consumer} to call when the limbo will be created
+     * @param limboType The type of the limbo to create
      * @param limboData The data of the limbo to create
+     * @param onCreated The {@link Consumer} to call when the limbo will be created
      */
-    public void createLimbo(Consumer<HyggLimbo> onCreated, @NotNull HyggData limboData) {
-        this.query(new HyggStartLimboPacket(limboData))
+    public void createLimbo(@NotNull HyggLimbo.Type limboType, @NotNull HyggData limboData, Consumer<HyggLimbo> onCreated) {
+        this.query(new HyggStartLimboPacket(limboType, limboData))
                 .withResponseCallback(response -> {
                     final HyggResponse.Type type = response.getType();
                     final HyggResponseContent content = response.getContent();
@@ -93,10 +94,11 @@ public class HyggLimbosRequester {
     /**
      * Create a limbo by asking Hyggdrasil (but without any data).
      *
+     * @param type The type of the limbo to create
      * @param onCreated The {@link Consumer} to call when the limbo will be created
      */
-    public void createLimbo(Consumer<HyggLimbo> onCreated) {
-        this.createLimbo(onCreated, new HyggData());
+    public void createLimbo(@NotNull HyggLimbo.Type type, Consumer<HyggLimbo> onCreated) {
+        this.createLimbo(type, new HyggData(), onCreated);
     }
 
     /**

@@ -52,8 +52,8 @@ public class HyggLimboManager {
         }
     }
 
-    public HyggLimbo startLimbo(HyggData data) {
-        final HyggLimbo limbo = new HyggLimbo(data);
+    public HyggLimbo startLimbo(HyggLimbo.Type type, HyggData data) {
+        final HyggLimbo limbo = new HyggLimbo(type, data);
         final String limboName = limbo.getName();
 
         this.swarm.runService(new HyggLimboService(limbo, this.limboImage));
