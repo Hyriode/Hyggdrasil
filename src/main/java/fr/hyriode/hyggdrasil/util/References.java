@@ -23,11 +23,10 @@ public class References {
 
     public static final Path SERVERS_FOLDER = Paths.get("servers");
     public static final Path PROXIES_FOLDER = Paths.get("proxies");
+    public static final Path LIMBOS_FOLDER = Paths.get("limbos");
 
     /** Files - Images */
     public static final Path IMAGES_FOLDER = Paths.get("images");
-    public static final Path SERVER_IMAGES_FOLDER = Paths.get(IMAGES_FOLDER.toString(), "server");
-    public static final Path PROXY_IMAGES_FOLDER = Paths.get(IMAGES_FOLDER.toString(), "proxy");
 
     /** Docker */
     public static final String STACK_NAME_LABEL = "com.docker.stack.namespace";

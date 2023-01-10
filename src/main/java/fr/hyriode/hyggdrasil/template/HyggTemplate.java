@@ -9,35 +9,37 @@ import java.util.Map;
 public class HyggTemplate {
 
     private String name;
-    private Map<String, Plugin> plugins;
+    private Map<String, File> files;
 
     private HyggTemplate() {}
 
-    public HyggTemplate(String name, Map<String, Plugin> plugins) {
+    public HyggTemplate(String name, Map<String, File> files) {
         this.name = name;
-        this.plugins = plugins;
+        this.files = files;
     }
 
     public String getName() {
         return this.name;
     }
 
-    public Map<String, Plugin> getPlugins() {
-        return this.plugins;
+    public Map<String, File> getFiles() {
+        return this.files;
     }
 
-    public static class Plugin {
+    public static class File {
 
         private String name;
         private String container;
         private String blob;
+        private String destination;
 
-        private Plugin() {}
+        private File() {}
 
-        public Plugin(String name, String container, String blob) {
+        public File(String name, String container, String blob, String destination) {
             this.name = name;
             this.container = container;
             this.blob = blob;
+            this.destination = destination;
         }
 
         public String getName() {
@@ -50,6 +52,10 @@ public class HyggTemplate {
 
         public String getBlob() {
             return this.blob;
+        }
+
+        public String getDestination() {
+            return this.destination;
         }
 
     }

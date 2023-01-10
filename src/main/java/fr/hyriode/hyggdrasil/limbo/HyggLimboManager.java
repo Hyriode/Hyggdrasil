@@ -17,7 +17,10 @@ import fr.hyriode.hyggdrasil.api.protocol.response.HyggResponse;
 import fr.hyriode.hyggdrasil.api.protocol.response.HyggResponseCallback;
 import fr.hyriode.hyggdrasil.docker.image.DockerImage;
 import fr.hyriode.hyggdrasil.docker.swarm.DockerSwarm;
+import fr.hyriode.hyggdrasil.template.HyggTemplate;
+import fr.hyriode.hyggdrasil.util.References;
 
+import java.nio.file.Paths;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -32,6 +35,7 @@ public class HyggLimboManager {
 
     private final Map<String, HyggLimbo> limbos = new ConcurrentHashMap<>();
 
+    private final HyggTemplate limboTemplate;
     private final DockerImage limboImage;
 
     private final DockerSwarm swarm;
@@ -45,6 +49,7 @@ public class HyggLimboManager {
         this.swarm = this.hyggdrasil.getDocker().getSwarm();
         this.packetProcessor = this.hyggdrasil.getAPI().getPacketProcessor();
         this.eventBus = this.hyggdrasil.getAPI().getEventBus();
+        this.limboTemplate = this.hyggdrasil.getTemplateManager().getTemplate(Hyggdrasil.getConfig().getLimbos().getTemplate());
         this.limboImage = this.hyggdrasil.getDocker().getImageManager().getImage(Hyggdrasil.getConfig().getLimbos().getImage());
 
         for (HyggLimbo limbo : this.hyggdrasil.getAPI().getLimbosRequester().fetchLimbos()) {
@@ -56,6 +61,7 @@ public class HyggLimboManager {
         final HyggLimbo limbo = new HyggLimbo(type, data);
         final String limboName = limbo.getName();
 
+        this.hyggdrasil.getTemplateManager().getDownloader().copyFiles(this.limboTemplate, Paths.get(References.LIMBOS_FOLDER.toString(), limboName));
         this.swarm.runService(new HyggLimboService(limbo, this.limboImage));
         this.limbos.put(limboName, limbo);
         this.hyggdrasil.getAPI().redisProcess(jedis -> jedis.set(HyggLimbosRequester.REDIS_KEY + limbo.getName(), HyggdrasilAPI.GSON.toJson(limbo))); // Save limbo in Redis cache

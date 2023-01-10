@@ -83,8 +83,6 @@ public class Hyggdrasil {
 
         this.registerReceivers();
 
-        this.serverManager.startServer(new HyggServerCreationInfo("lobby").withAccessibility(HyggServer.Accessibility.PUBLIC).withProcess(HyggServer.Process.PERMANENT).withSlots(1000));
-
         Runtime.getRuntime().addShutdownHook(new Thread(this::shutdown));
     }
 

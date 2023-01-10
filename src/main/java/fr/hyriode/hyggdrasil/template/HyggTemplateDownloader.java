@@ -9,6 +9,7 @@ import fr.hyriode.hyggdrasil.Hyggdrasil;
 import fr.hyriode.hyggdrasil.util.IOUtil;
 import fr.hyriode.hyggdrasil.util.References;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -41,25 +42,30 @@ public class HyggTemplateDownloader {
     public void start() {
         IOUtil.createDirectory(References.TMP_FOLDER);
 
+        // First, download files synchronously
+        for (HyggTemplate template : this.templateManager.getTemplates().values()) {
+            this.process(template);
+        }
+
         this.hyggdrasil.getAPI().getExecutorService().scheduleAtFixedRate(() -> {
             for (HyggTemplate template : this.templateManager.getTemplates().values()) {
                 this.process(template);
             }
-        }, 0, 10, TimeUnit.SECONDS);
+        }, 10, 10, TimeUnit.SECONDS);
     }
 
     public void process(HyggTemplate template) {
-        for (Map.Entry<String, HyggTemplate.Plugin> entry : template.getPlugins().entrySet()) {
+        for (Map.Entry<String, HyggTemplate.File> entry : template.getFiles().entrySet()) {
             final String name = entry.getKey();
-            final HyggTemplate.Plugin plugin = entry.getValue();
-            final BlobContainerClient container = this.azureContainers.getOrDefault(plugin.getContainer(), this.azureService.getBlobContainerClient(plugin.getContainer()));
+            final HyggTemplate.File file = entry.getValue();
+            final BlobContainerClient container = this.azureContainers.getOrDefault(file.getContainer(), this.azureService.getBlobContainerClient(file.getContainer()));
 
-            this.azureContainers.put(plugin.getContainer(), container);
+            this.azureContainers.put(file.getContainer(), container);
 
             for (BlobItem blobItem : container.listBlobs()) {
                 final String blobName = blobItem.getName();
 
-                if (blobName.matches(plugin.getBlob())) {
+                if (blobName.matches(file.getBlob())) {
                     final String hash = IOUtil.toHexString(blobItem.getProperties().getContentMd5());
                     final String oldHash = this.filesHashes.get(name);
 
@@ -69,7 +75,7 @@ public class HyggTemplateDownloader {
 
                     final BlobClient blobClient = container.getBlobClient(blobName);
 
-                    blobClient.downloadToFile(Paths.get(References.TMP_FOLDER.toString(), plugin.getName() + ".jar").toString(), true);
+                    blobClient.downloadToFile(Paths.get(References.TMP_FOLDER.toString(), file.getName()).toString(), true);
 
                     this.filesHashes.put(name, hash);
                     break;
@@ -78,11 +84,28 @@ public class HyggTemplateDownloader {
         }
     }
 
-    public List<Path> getPluginsFiles(HyggTemplate template) {
-        final List<Path> files = new ArrayList<>();
+    public void copyFiles(HyggTemplate template, Path destination) {
+        IOUtil.createDirectory(destination);
 
-        for (HyggTemplate.Plugin plugin : template.getPlugins().values()) {
-            files.add(Paths.get(References.TMP_FOLDER.toString(), plugin.getName() + ".jar"));
+        for (Map.Entry<HyggTemplate.File, Path> entry : this.getCachedFiles(template).entrySet()) {
+            final HyggTemplate.File file = entry.getKey();
+            final Path path = entry.getValue();
+            final Path destinationFolder = Paths.get(destination.toString(), file.getDestination());
+
+            IOUtil.createDirectory(destinationFolder);
+            IOUtil.copy(path, Paths.get(destinationFolder.toString(), path.getFileName().toString()));
+        }
+    }
+
+    private Map<HyggTemplate.File, Path> getCachedFiles(HyggTemplate template) {
+        final Map<HyggTemplate.File, Path> files = new HashMap<>();
+
+        for (HyggTemplate.File file : template.getFiles().values()) {
+            final Path path = Paths.get(References.TMP_FOLDER.toString(), file.getName());
+
+            if (Files.exists(path)) {
+                files.put(file, path);
+            }
         }
         return files;
     }

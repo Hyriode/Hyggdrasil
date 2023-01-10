@@ -74,18 +74,10 @@ public class HyggProxyManager {
         if (availablePort != -1) {
             final HyggProxy proxy = new HyggProxy(data);
             final String proxyName = proxy.getName();
-            final Path pluginsFolder = Paths.get(References.PROXIES_FOLDER.toString(), proxyName, "plugins");
-
-            if (!IOUtil.createDirectory(pluginsFolder)) {
-                return null;
-            }
-
-            for (Path plugin : this.hyggdrasil.getTemplateManager().getDownloader().getPluginsFiles(this.proxyTemplate)) {
-                IOUtil.copy(plugin, Paths.get(pluginsFolder.toString(), plugin.getFileName().toString()));
-            }
 
             proxy.setPort(availablePort);
 
+            this.hyggdrasil.getTemplateManager().getDownloader().copyFiles(this.proxyTemplate, Paths.get(References.PROXIES_FOLDER.toString(), proxyName));
             this.swarm.runService(new HyggProxyService(proxy, this.proxyImage));
             this.proxies.put(proxyName, proxy);
             this.hyggdrasil.getAPI().redisProcess(jedis -> jedis.set(HyggProxiesRequester.REDIS_KEY + proxy.getName(), HyggdrasilAPI.GSON.toJson(proxy))); // Save proxy in Redis cache

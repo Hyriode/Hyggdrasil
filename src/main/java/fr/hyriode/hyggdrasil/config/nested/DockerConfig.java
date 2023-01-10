@@ -9,16 +9,14 @@ public class DockerConfig {
 
     private final String stackName;
     private final String networkName;
-    private final String dataFolder;
 
-    public DockerConfig(String stackName, String networkName, String dataFolder) {
+    public DockerConfig(String stackName, String networkName) {
         this.stackName = stackName;
         this.networkName = networkName;
-        this.dataFolder = dataFolder;
     }
 
     public DockerConfig() {
-        this("hyggdrasil", "hyggdrasil", "/home/");
+        this("hyggdrasil", "hyggdrasil");
     }
 
     public String getStackName() {
@@ -27,10 +25,6 @@ public class DockerConfig {
 
     public String getNetworkName() {
         return this.networkName;
-    }
-
-    public String getDataFolder() {
-        return this.dataFolder;
     }
 
 }

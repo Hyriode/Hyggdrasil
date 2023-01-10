@@ -7,17 +7,23 @@ package fr.hyriode.hyggdrasil.config.nested;
 public class LimbosConfig {
 
     private final String image;
+    private final String template;
 
-    public LimbosConfig(String image) {
+    public LimbosConfig(String image, String template) {
         this.image = image;
+        this.template = template;
     }
 
     public LimbosConfig() {
-        this("limbo");
+        this("limbo", "limbo");
     }
 
     public String getImage() {
         return this.image;
+    }
+
+    public String getTemplate() {
+        return this.template;
     }
 
 }

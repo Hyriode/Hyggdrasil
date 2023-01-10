@@ -67,16 +67,8 @@ public class HyggServerManager {
         if (template != null) {
             final HyggServer server = new HyggServer(type, info.getGameType(), info.getMap(), info.getAccessibility(), info.getProcess(), info.getData(), info.getSlots());
             final String serverName = server.getName();
-            final Path pluginsFolder = Paths.get(References.SERVERS_FOLDER.toString(), serverName, "plugins");
 
-            if (!IOUtil.createDirectory(pluginsFolder)) {
-                return null;
-            }
-
-            for (Path plugin : this.hyggdrasil.getTemplateManager().getDownloader().getPluginsFiles(template)) {
-                IOUtil.copy(plugin, Paths.get(pluginsFolder.toString(), plugin.getFileName().toString()));
-            }
-
+            this.hyggdrasil.getTemplateManager().getDownloader().copyFiles(template, Paths.get(References.SERVERS_FOLDER.toString(), serverName));
             this.swarm.runService(new HyggServerService(server, this.proxyImage));
             this.servers.put(serverName, server);
             this.hyggdrasil.getAPI().redisProcess(jedis -> jedis.set(HyggServersRequester.REDIS_KEY + server.getName(), HyggdrasilAPI.GSON.toJson(server))); // Save server in Redis cache
