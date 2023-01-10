@@ -12,9 +12,7 @@ import fr.hyriode.hyggdrasil.util.References;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -89,11 +87,14 @@ public class HyggTemplateDownloader {
 
         for (Map.Entry<HyggTemplate.File, Path> entry : this.getCachedFiles(template).entrySet()) {
             final HyggTemplate.File file = entry.getKey();
-            final Path path = entry.getValue();
-            final Path destinationFolder = Paths.get(destination.toString(), file.getDestination());
+            final Path destinationFile = Paths.get(destination.toString(), file.getDestination());
+            final Path destinationParent = destinationFile.getParent();
 
-            IOUtil.createDirectory(destinationFolder);
-            IOUtil.copy(path, Paths.get(destinationFolder.toString(), path.getFileName().toString()));
+            if (destinationParent != null) {
+                IOUtil.createDirectory(destinationParent);
+            }
+
+            IOUtil.copy(entry.getValue(), Paths.get(destinationFile.toString()));
         }
     }
 

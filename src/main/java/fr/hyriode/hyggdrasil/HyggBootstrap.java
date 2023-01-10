@@ -2,6 +2,8 @@ package fr.hyriode.hyggdrasil;
 
 import fr.hyriode.hyggdrasil.util.References;
 
+import java.io.IOException;
+
 /**
  * Project: Hyggdrasil
  * Created by AstFaster
@@ -9,7 +11,7 @@ import fr.hyriode.hyggdrasil.util.References;
  */
 public class HyggBootstrap {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         if (Float.parseFloat(System.getProperty("java.class.version")) < 62.0F) {
             System.err.println("*** ERROR *** " + References.NAME + " requires Java >= 18 to work!");
             return;

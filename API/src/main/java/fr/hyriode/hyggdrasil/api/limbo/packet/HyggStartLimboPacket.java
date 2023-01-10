@@ -1,10 +1,9 @@
 package fr.hyriode.hyggdrasil.api.limbo.packet;
 
-import fr.hyriode.hyggdrasil.api.limbo.HyggLimbo;
 import fr.hyriode.hyggdrasil.api.protocol.data.HyggData;
 import fr.hyriode.hyggdrasil.api.protocol.packet.HyggPacket;
 
-import static fr.hyriode.hyggdrasil.api.limbo.HyggLimbo.*;
+import static fr.hyriode.hyggdrasil.api.limbo.HyggLimbo.Type;
 
 /**
  * Project: Hyggdrasil
