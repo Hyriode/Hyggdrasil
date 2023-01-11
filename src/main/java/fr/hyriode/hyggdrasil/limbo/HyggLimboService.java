@@ -8,6 +8,8 @@ import fr.hyriode.hyggdrasil.docker.image.DockerImage;
 import fr.hyriode.hyggdrasil.docker.swarm.DockerService;
 import fr.hyriode.hyggdrasil.util.References;
 
+import java.nio.file.Paths;
+
 /**
  * Created by AstFaster
  * on 31/12/2022 at 18:00
@@ -20,6 +22,7 @@ public class HyggLimboService extends DockerService {
 
         this.envs.addAll(new HyggEnv(new HyggApplication(HyggApplication.Type.LIMBO, limbo.getName(), System.currentTimeMillis())).createEnvironmentVariables());
 
+        this.addMount(Paths.get(Hyggdrasil.getConfig().getDocker().getRootDirectory(), "limbos", limbo.getName()).toAbsolutePath().toString(), "/server");
         this.addLabel(References.STACK_NAME_LABEL, Hyggdrasil.getConfig().getDocker().getStackName());
     }
 

@@ -26,10 +26,7 @@ public class HyggProxyService extends DockerService {
         this.envs.addAll(new HyggEnv(new HyggApplication(HyggApplication.Type.PROXY, proxy.getName(), System.currentTimeMillis())).createEnvironmentVariables());
 
         this.addLabel(References.STACK_NAME_LABEL, Hyggdrasil.getConfig().getDocker().getStackName());
-
-        final String proxyFolder = Paths.get("proxies", proxy.getName()).toAbsolutePath().toString();
-
-        this.addMount(proxyFolder, "/server");
+        this.addMount(Paths.get(Hyggdrasil.getConfig().getDocker().getRootDirectory(), "proxies", proxy.getName()).toAbsolutePath().toString(), "/server");
     }
 
 }

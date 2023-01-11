@@ -24,7 +24,7 @@ public class HyggServerService extends DockerService {
         this.envs.addAll(new HyggEnv(new HyggApplication(HyggApplication.Type.SERVER, this.hostname, System.currentTimeMillis())).createEnvironmentVariables());
 
         this.addLabel(References.STACK_NAME_LABEL, Hyggdrasil.getConfig().getDocker().getStackName());
-        this.addMount(Paths.get("servers", this.hostname).toAbsolutePath().toString(), "/server");
+        this.addMount(Paths.get(Hyggdrasil.getConfig().getDocker().getRootDirectory(), "servers", this.hostname).toAbsolutePath().toString(), "/server");
     }
 
 }

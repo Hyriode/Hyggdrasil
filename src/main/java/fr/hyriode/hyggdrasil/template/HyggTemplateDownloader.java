@@ -40,6 +40,8 @@ public class HyggTemplateDownloader {
     public void start() {
         IOUtil.createDirectory(References.TMP_FOLDER);
 
+        System.out.println("Downloading templates files...");
+
         // First, download files synchronously
         for (HyggTemplate template : this.templateManager.getTemplates().values()) {
             this.process(template);

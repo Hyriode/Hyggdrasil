@@ -12,7 +12,7 @@ import java.util.UUID;
  * Created by AstFaster
  * on 25/12/2022 at 15:20
  */
-public class HyggLimbo implements HyggSerializable {
+public class HyggLimbo {
 
     /** The maximum amount of players that can handle a limbo */
     public static final int MAX_PLAYERS = 2000;

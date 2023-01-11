@@ -35,7 +35,7 @@ public class References {
 
         @Override
         public DockerNetwork get() {
-            return this.network == null ? this.network = new DockerNetwork(Hyggdrasil.getConfig().getDocker().getStackName() + "_" + Hyggdrasil.getConfig().getDocker().getNetworkName(), DockerNetworkDriver.OVERLAY) : this.network;
+            return this.network == null ? this.network = new DockerNetwork(Hyggdrasil.getConfig().getDocker().getNetworkName(), DockerNetworkDriver.OVERLAY) : this.network;
         }
     };
 

@@ -16,7 +16,7 @@ import java.util.UUID;
  *
  * The main object of what a proxy is.
  */
-public class HyggProxy implements HyggSerializable {
+public class HyggProxy {
 
     /** The maximum amount of players that can handle a proxy */
     public static final int MAX_PLAYERS = 750;

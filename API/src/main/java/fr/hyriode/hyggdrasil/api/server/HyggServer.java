@@ -16,7 +16,7 @@ import java.util.UUID;
  *
  * The main object of what a server is.
  */
-public class HyggServer implements HyggSerializable {
+public class HyggServer {
 
     /** The name of the server */
     protected final String name;

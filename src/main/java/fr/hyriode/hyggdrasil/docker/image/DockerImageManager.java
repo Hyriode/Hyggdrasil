@@ -28,6 +28,9 @@ public class DockerImageManager {
         this.dockerClient = docker.getDockerClient();
 
         this.loadImages();
+
+        System.out.println("Pulling images...");
+
         this.pullImages(); // First, load them synchronously
 
         hyggdrasil.getAPI().getExecutorService().scheduleAtFixedRate(this::pullImages, 1, 1, TimeUnit.MINUTES);
