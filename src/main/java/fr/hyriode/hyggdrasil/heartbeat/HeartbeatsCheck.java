@@ -46,8 +46,6 @@ public class HeartbeatsCheck implements Runnable {
 
             this.serverManager.updateServer(server);
 
-            System.err.println("'" + serverName + "' didn't send a heartbeat!");
-
             if (this.isTimedOut(currentTime, lastHeartbeat)) {
                 System.err.println("'" + serverName + "' timed out! Killing it...");
 
@@ -68,8 +66,6 @@ public class HeartbeatsCheck implements Runnable {
             proxy.setState(HyggProxy.State.IDLE);
 
             this.proxyManager.updateProxy(proxy);
-
-            System.err.println("'" + proxyName + "' didn't send a heartbeat!");
 
             if (this.isTimedOut(currentTime, lastHeartbeat)) {
                 System.err.println("'" + proxyName + "' timed out! Killing it...");

@@ -81,6 +81,11 @@ public class Hyggdrasil {
 
         this.registerReceivers();
 
+        this.proxyManager.startProxy(new HyggData());
+        this.serverManager.startServer(new HyggServerCreationInfo("lobby")
+                .withProcess(HyggServer.Process.PERMANENT)
+                .withAccessibility(HyggServer.Accessibility.PUBLIC));
+
         Runtime.getRuntime().addShutdownHook(new Thread(this::shutdown));
     }
 

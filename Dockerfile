@@ -26,6 +26,8 @@ COPY --from=build /usr/app/docker-entrypoint.sh /usr/app/docker-entrypoint.sh
 
 # Add permission to file
 RUN chmod +x /usr/app/docker-entrypoint.sh
+RUN ls /usr/app
+
 
 # Start application
 CMD "/usr/app/docker-entrypoint.sh"

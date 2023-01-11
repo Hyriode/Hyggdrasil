@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 : "${MIN_MEMORY:=256M}}"
 : "${MAX_MEMORY:=4G}}"

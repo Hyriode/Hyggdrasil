@@ -115,7 +115,6 @@ public class HyggProxyManager {
         proxy.setData(info.getData());
         proxy.setState(info.getState());
         proxy.setPlayers(info.getPlayers());
-        proxy.setPort(info.getPort());
 
         this.updateProxy(proxy);
     }

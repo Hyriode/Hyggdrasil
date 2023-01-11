@@ -47,7 +47,6 @@ public class HyggPubSub extends JedisPubSub {
         HyggdrasilAPI.log("Starting PubSub...");
 
         this.running = true;
-
         this.subscriberThread = new Thread(() -> {
             while (this.running) {
                 this.hyggdrasilAPI.redisProcess(jedis -> {
@@ -95,7 +94,7 @@ public class HyggPubSub extends JedisPubSub {
      */
     public void subscribe(HyggChannel channel, IHyggReceiver receiver) {
         final String channelStr = channel.toString();
-        final Set<IHyggReceiver> receivers = this.receivers.get(channelStr) != null ? this.receivers.get(channelStr) : ConcurrentHashMap.newKeySet();
+        final Set<IHyggReceiver> receivers = this.receivers.getOrDefault(channelStr, ConcurrentHashMap.newKeySet());
 
         receivers.add(receiver);
 
@@ -112,7 +111,7 @@ public class HyggPubSub extends JedisPubSub {
         final String channelStr = channel.toString();
         final Set<IHyggReceiver> receivers = this.receivers.get(channelStr);
 
-        if (receivers != null && receivers.contains(receiver)) {
+        if (receivers != null) {
             receivers.remove(receiver);
 
             this.receivers.put(channelStr, receivers);
@@ -131,7 +130,7 @@ public class HyggPubSub extends JedisPubSub {
         final Set<IHyggReceiver> receivers = this.receivers.get(channel);
 
         if (receivers != null) {
-            this.hyggdrasilAPI.getExecutorService().execute(() -> receivers.forEach(receiver -> receiver.receive(channel, message)));
+            receivers.forEach(receiver -> receiver.receive(channel, message));
         }
     }
 
