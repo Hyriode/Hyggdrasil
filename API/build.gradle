@@ -4,7 +4,7 @@ plugins {
 
 apply plugin: 'maven-publish'
 
-version = '1.4.3'
+version = '1.4.4'
 archivesBaseName = 'Hyggdrasil-API'
 
 java {
@@ -32,8 +32,8 @@ shadowJar {
 
 publishing {
     publications {
-        maven(MavenPublication) { publication ->
-            project.shadow.component(publication)
+        maven(MavenPublication) {
+            from components.java
             artifact tasks.sourcesJar
             artifact tasks.javadocJar
 
@@ -61,7 +61,7 @@ publishing {
 }
 
 dependencies {
-    api 'org.jetbrains:annotations:23.0.0'
+    api 'org.jetbrains:annotations:24.0.0'
     api 'redis.clients:jedis:4.3.1'
-    api 'com.google.code.gson:gson:2.10'
+    api 'com.google.code.gson:gson:2.10.1'
 }

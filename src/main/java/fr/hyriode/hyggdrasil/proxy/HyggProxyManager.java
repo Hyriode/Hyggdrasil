@@ -130,6 +130,7 @@ public class HyggProxyManager {
         if (proxy != null) {
             final Runnable action = () -> {
                 this.eventBus.publish(new HyggProxyStoppedEvent(proxy));
+                this.proxies.remove(name);
                 this.swarm.removeService(name);
                 this.hyggdrasil.getAPI().redisProcess(jedis -> jedis.del(HyggProxiesRequester.REDIS_KEY + proxy.getName()));
 
@@ -137,25 +138,12 @@ public class HyggProxyManager {
 
                 System.out.println("Stopped '" + name + "'.");
             };
-            final HyggResponseCallback callback = response -> {
-                final HyggResponse.Type type = response.getType();
-
-                if (type != SUCCESS) {
-                    System.err.println("'" + name + "' doesn't want to stop or an error occurred! Response: " + type + ". Forcing it to stop...");
-                }
-
-                action.run();
-            };
 
             proxy.setState(HyggProxy.State.SHUTDOWN);
 
             this.packetProcessor.request(HyggChannel.PROXIES, new HyggStopProxyPacket(name))
-                    .withResponseCallback(callback)
-                    .withResponseTimeEndCallback(() -> {
-                        System.err.println("'" + name + "' didn't respond to the stop packet sent! Forcing it to stop...");
-
-                        action.run();
-                    })
+                    .withResponseCallback(response -> action.run())
+                    .withTimeoutCallback(action)
                     .exec();
 
             return true;

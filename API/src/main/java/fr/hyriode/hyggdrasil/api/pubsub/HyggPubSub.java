@@ -130,7 +130,7 @@ public class HyggPubSub extends JedisPubSub {
         final Set<IHyggReceiver> receivers = this.receivers.get(channel);
 
         if (receivers != null) {
-            receivers.forEach(receiver -> receiver.receive(channel, message));
+            this.hyggdrasilAPI.getExecutorService().execute(() -> receivers.forEach(receiver -> receiver.receive(channel, message)));
         }
     }
 

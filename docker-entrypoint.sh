@@ -7,4 +7,4 @@ echo "[init] Copying Hyggdrasil jar"
 cp /usr/app/Hyggdrasil.jar /hyggdrasil
 
 echo "[init] Starting process..."
-java -Xms${MIN_MEMORY} -Xmx${MAX_MEMORY} -jar Hyggdrasil.jar
+exec java -Xms${MIN_MEMORY} -Xmx${MAX_MEMORY} -jar Hyggdrasil.jar

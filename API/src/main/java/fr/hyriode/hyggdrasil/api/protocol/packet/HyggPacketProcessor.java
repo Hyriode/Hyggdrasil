@@ -67,7 +67,7 @@ public class HyggPacketProcessor {
                     final HyggPacket packet = result.getPacket();
                     final HyggResponse response = packetReceiver.receive(ch, result.getHeader(), packet);
 
-                    if (response != null) {
+                    if (response != null && !(packet instanceof HyggResponsePacket) && response.getType() != HyggResponse.Type.NONE) {
                         final HyggResponsePacket responsePacket = new HyggResponsePacket(packet.getUniqueId(), response);
 
                         this.request(channel, responsePacket).exec();

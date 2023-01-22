@@ -46,10 +46,9 @@ public class HyggHeartbeatTask implements Runnable {
 
                     this.timedOut = false;
                     this.responding = true;
-
                     this.lastHeartbeat = System.currentTimeMillis();
                 })
-                .withResponseTimeEndCallback(() -> {
+                .withTimeoutCallback(() -> {
                     if (System.currentTimeMillis() - this.lastHeartbeat >= HyggdrasilAPI.TIMED_OUT_TIME) {
                         HyggdrasilAPI.log(Level.SEVERE, "Hyggdrasil is no longer responding! Waiting for a response...");
                         this.timedOut = true;

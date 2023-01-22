@@ -7,6 +7,7 @@ import fr.hyriode.hyggdrasil.api.protocol.response.HyggResponse;
 import fr.hyriode.hyggdrasil.api.protocol.response.HyggResponseCallback;
 import fr.hyriode.hyggdrasil.api.protocol.response.HyggResponsePacket;
 
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -107,7 +108,7 @@ public class HyggRequest {
      * @param timeoutCallback The callback
      * @return {@link HyggRequest}
      */
-    public HyggRequest withResponseTimeEndCallback(Runnable timeoutCallback) {
+    public HyggRequest withTimeoutCallback(Runnable timeoutCallback) {
         this.timeoutCallback = timeoutCallback;
         return this;
     }
@@ -166,9 +167,9 @@ public class HyggRequest {
      * Execute the request. In this case it will send the packet and manage responses
      */
     public void exec() {
-        final HyggPacketProcessor packetProcessor = this.hyggdrasilAPI.getPacketProcessor();
-
         if (this.packet != null) {
+            final HyggPacketProcessor packetProcessor = this.hyggdrasilAPI.getPacketProcessor();
+
             if (this.responseCallback != null) {
                 packetProcessor.registerReceiver(this.channel, new ResponseReceiver());
             }
@@ -181,19 +182,23 @@ public class HyggRequest {
 
     private class ResponseReceiver implements IHyggPacketReceiver {
 
+        private final Future<?> timeoutFuture;
+
         public ResponseReceiver() {
-            hyggdrasilAPI.getExecutorService().schedule(() -> {
+            this.timeoutFuture = hyggdrasilAPI.getExecutorService().schedule(() -> {
                 hyggdrasilAPI.getPacketProcessor().unregisterReceiver(channel, this);
                 timeoutCallback.run();
             }, timeout, TimeUnit.MILLISECONDS);
         }
 
         @Override
-        public HyggResponse receive(String channel, HyggPacketHeader packetHeader, HyggPacket packet) {
-            if (packet instanceof HyggResponsePacket) {
-                final HyggResponsePacket responsePacket = (HyggResponsePacket) packet;
+        public HyggResponse receive(String channel, HyggPacketHeader packetHeader, HyggPacket in) {
+            if (in instanceof HyggResponsePacket) {
+                final HyggResponsePacket responsePacket = (HyggResponsePacket) in;
 
                 if (responsePacket.getRespondedPacketUniqueId().equals(packet.getUniqueId())) {
+                    this.timeoutFuture.cancel(true);
+
                     if (responseCallback != null) {
                         responseCallback.call(responsePacket.getResponse());
                     }

@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import fr.hyriode.hyggdrasil.api.event.HyggEventBus;
 import fr.hyriode.hyggdrasil.api.limbo.HyggLimbosRequester;
+import fr.hyriode.hyggdrasil.api.protocol.data.HyggData;
 import fr.hyriode.hyggdrasil.api.protocol.data.HyggEnv;
 import fr.hyriode.hyggdrasil.api.protocol.heartbeat.HyggHeartbeatTask;
 import fr.hyriode.hyggdrasil.api.protocol.packet.HyggPacketProcessor;
@@ -48,6 +49,7 @@ public class HyggdrasilAPI {
     /** {@link Gson} instance */
     public static final Gson GSON = new GsonBuilder()
             .registerTypeHierarchyAdapter(HyggSerializable.class, new HyggSerializer<>())
+            .registerTypeHierarchyAdapter(HyggData.class, new HyggData.Serializer())
             .create();
     /** Normal {@link Gson} instance */
     public static final Gson NORMAL_GSON = new Gson();

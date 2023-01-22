@@ -9,9 +9,12 @@ import fr.hyriode.hyggdrasil.Hyggdrasil;
 import fr.hyriode.hyggdrasil.util.IOUtil;
 import fr.hyriode.hyggdrasil.util.References;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -51,7 +54,7 @@ public class HyggTemplateDownloader {
             for (HyggTemplate template : this.templateManager.getTemplates().values()) {
                 this.process(template);
             }
-        }, 10, 10, TimeUnit.SECONDS);
+        }, 10, 10, TimeUnit.MINUTES);
     }
 
     public void process(HyggTemplate template) {
@@ -66,8 +69,17 @@ public class HyggTemplateDownloader {
                 final String blobName = blobItem.getName();
 
                 if (blobName.matches(file.getBlob())) {
-                    final String hash = IOUtil.toHexString(blobItem.getProperties().getContentMd5());
-                    final String oldHash = this.filesHashes.get(name);
+                    final Path hostPath = Paths.get(References.TMP_FOLDER.toString(), file.getName());
+                    final String hash = Base64.getEncoder().encodeToString(blobItem.getProperties().getContentMd5());
+
+                    String oldHash = this.filesHashes.get(name);
+                    if (oldHash == null && Files.exists(hostPath)) {
+                        try (final InputStream inputStream = Files.newInputStream(hostPath)) {
+                            oldHash = Base64.getEncoder().encodeToString(IOUtil.toMD5(inputStream));
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
 
                     if (hash.equals(oldHash)) {
                         break;
@@ -75,7 +87,9 @@ public class HyggTemplateDownloader {
 
                     final BlobClient blobClient = container.getBlobClient(blobName);
 
-                    blobClient.downloadToFile(Paths.get(References.TMP_FOLDER.toString(), file.getName()).toString(), true);
+                    System.out.println("Downloading " + file.getName() + "...");
+
+                    blobClient.downloadToFile(hostPath.toString(), true);
 
                     this.filesHashes.put(name, hash);
                     break;

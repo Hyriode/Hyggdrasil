@@ -2,9 +2,12 @@ package fr.hyriode.hyggdrasil.util;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Comparator;
 import java.util.stream.Stream;
 
@@ -110,6 +113,26 @@ public class IOUtil {
             result.append(hex);
         }
         return result.toString();
+    }
+
+    public static byte[] hashInput(InputStream inputStream, String method) {
+        try {
+            final MessageDigest digest = MessageDigest.getInstance(method);
+            final byte[] data = new byte[8195];
+
+            int read;
+            while ((read = inputStream.read(data)) != -1) {
+                digest.update(data, 0, read);
+            }
+
+            return digest.digest();
+        } catch (NoSuchAlgorithmException | IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static byte[] toMD5(InputStream inputStream) {
+        return hashInput(inputStream, "MD5");
     }
 
 }

@@ -93,30 +93,18 @@ public class HyggLimboManager {
         if (limbo != null) {
             final Runnable action = () -> {
                 this.eventBus.publish(new HyggLimboStoppedEvent(limbo));
+                this.limbos.remove(name);
                 this.swarm.removeService(name);
                 this.hyggdrasil.getAPI().redisProcess(jedis -> jedis.del(HyggLimbosRequester.REDIS_KEY + limbo.getName()));
 
                 System.out.println("Stopped '" + name + "'.");
             };
-            final HyggResponseCallback callback = response -> {
-                final HyggResponse.Type type = response.getType();
-
-                if (type != SUCCESS) {
-                    System.err.println("'" + name + "' doesn't want to stop or an error occurred! Response: " + type + ". Forcing it to stop...");
-                }
-
-                action.run();
-            };
 
             limbo.setState(HyggLimbo.State.SHUTDOWN);
 
             this.packetProcessor.request(HyggChannel.PROXIES, new HyggStopLimboPacket(name))
-                    .withResponseCallback(callback)
-                    .withResponseTimeEndCallback(() -> {
-                        System.err.println("'" + name + "' didn't respond to the stop packet sent! Forcing it to stop...");
-
-                        action.run();
-                    })
+                    .withResponseCallback(response -> action.run())
+                    .withTimeoutCallback(action)
                     .exec();
 
             return true;

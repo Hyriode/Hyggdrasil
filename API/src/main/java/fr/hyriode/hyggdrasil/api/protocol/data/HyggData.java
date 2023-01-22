@@ -1,7 +1,10 @@
 package fr.hyriode.hyggdrasil.api.protocol.data;
 
+import com.google.gson.*;
+import com.google.gson.reflect.TypeToken;
 import fr.hyriode.hyggdrasil.api.HyggdrasilAPI;
 
+import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -85,6 +88,25 @@ public class HyggData {
      */
     public Map<String, String> getData() {
         return this.data;
+    }
+
+    /**
+     * The JSON serializer of {@link HyggData}.
+     */
+    public static class Serializer implements JsonSerializer<HyggData>, JsonDeserializer<HyggData> {
+
+        private final Type type = new TypeToken<Map<String, String>>(){}.getType();
+
+        @Override
+        public JsonElement serialize(HyggData src, Type type, JsonSerializationContext ctx) {
+            return ctx.serialize(src.getData());
+        }
+
+        @Override
+        public HyggData deserialize(JsonElement json, Type type, JsonDeserializationContext ctx) throws JsonParseException {
+            return new HyggData(ctx.deserialize(json, this.type));
+        }
+
     }
 
 }

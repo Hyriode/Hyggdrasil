@@ -37,6 +37,7 @@ public class HyggRedis {
 
         config.setJmxEnabled(false);
         config.setMaxTotal(-1);
+        config.setMaxIdle(0);
 
         if (password != null && !password.isEmpty()) {
             this.jedisPool = new JedisPool(config, hostname, port, timeout, password);
