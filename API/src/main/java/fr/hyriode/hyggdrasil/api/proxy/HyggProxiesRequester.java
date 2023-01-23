@@ -46,7 +46,9 @@ public class HyggProxiesRequester {
     }
 
     /**
-     * Fetch all proxies from cache
+     * Fetch all proxies from cache.
+     *
+     * @return A list of {@link HyggProxy}
      */
     public Set<HyggProxy> fetchProxies() {
         return this.hyggdrasilAPI.redisGet(jedis -> {

@@ -25,8 +25,8 @@ public class DockerService {
     protected final Map<String, String> labels;
     protected List<Mount> mounts;
 
-    protected int publishedPort;
-    protected int targetPort;
+    protected int publishedPort = -1;
+    protected int targetPort = -1;
 
     public DockerService(String name, DockerImage image, DockerNetwork network) {
         this.name = name;
@@ -36,7 +36,6 @@ public class DockerService {
         this.labels = new HashMap<>();
         this.mounts = new ArrayList<>();
     }
-
 
     public String getName() {
         return name;
@@ -138,14 +137,16 @@ public class DockerService {
                 .withMounts(this.mounts)
                 .withEnv(this.envs);
 
-
-        final EndpointSpec endpointSpec = new EndpointSpec()
-                .withMode(EndpointResolutionMode.VIP)
-                .withPorts(Collections.singletonList(new PortConfig()
-                        .withProtocol(PortConfigProtocol.TCP)
-                        .withPublishedPort(this.publishedPort)
-                        .withTargetPort(this.targetPort)
-                ));
+        EndpointSpec endpointSpec = null;
+        if (this.publishedPort != -1 || this.targetPort != -1) {
+            endpointSpec = new EndpointSpec()
+                    .withMode(EndpointResolutionMode.VIP)
+                    .withPorts(Collections.singletonList(new PortConfig()
+                            .withProtocol(PortConfigProtocol.TCP)
+                            .withPublishedPort(this.publishedPort)
+                            .withTargetPort(this.targetPort)
+                    ));
+        }
 
         final TaskSpec taskSpec = new TaskSpec()
                 .withContainerSpec(containerSpec)

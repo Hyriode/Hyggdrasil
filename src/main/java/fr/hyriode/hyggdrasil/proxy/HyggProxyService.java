@@ -20,8 +20,6 @@ public class HyggProxyService extends DockerService {
     public HyggProxyService(HyggProxy proxy, DockerImage image) {
         super(proxy.getName(), image, References.NETWORK.get());
         this.hostname = proxy.getName();
-        this.publishedPort = proxy.getPort();
-        this.targetPort = 25577;
 
         this.envs.addAll(new HyggEnv(new HyggApplication(HyggApplication.Type.PROXY, proxy.getName(), System.currentTimeMillis())).createEnvironmentVariables());
 

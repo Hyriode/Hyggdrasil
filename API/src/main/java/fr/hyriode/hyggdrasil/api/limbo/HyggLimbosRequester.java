@@ -44,6 +44,8 @@ public class HyggLimbosRequester {
 
     /**
      * Fetch all limbos from cache
+     *
+     * @return A list of {@link HyggLimbo}
      */
     public Set<HyggLimbo> fetchLimbos() {
         return this.hyggdrasilAPI.redisGet(jedis -> {

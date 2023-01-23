@@ -45,7 +45,9 @@ public class HyggServersRequester {
     }
 
     /**
-     * Fetch all servers from cache
+     * Fetch all servers from cache.
+     *
+     * @return A list of {@link HyggServer}
      */
     public Set<HyggServer> fetchServers() {
         return this.hyggdrasilAPI.redisGet(jedis -> {

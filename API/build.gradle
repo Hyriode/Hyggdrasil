@@ -27,15 +27,12 @@ tasks.withType(Javadoc) {
 
 shadowJar {
     configurations = [project.configurations.runtimeClasspath]
-    classifier ''
 }
 
 publishing {
     publications {
         maven(MavenPublication) {
             from components.java
-            artifact tasks.sourcesJar
-            artifact tasks.javadocJar
 
             pom {
                 groupId = project.group

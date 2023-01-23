@@ -99,6 +99,7 @@ public class HyggTemplateDownloader {
     }
 
     public void copyFiles(HyggTemplate template, Path destination) {
+        IOUtil.deleteDirectory(destination); // Delete it to prevent
         IOUtil.createDirectory(destination);
 
         for (Map.Entry<HyggTemplate.File, Path> entry : this.getCachedFiles(template).entrySet()) {

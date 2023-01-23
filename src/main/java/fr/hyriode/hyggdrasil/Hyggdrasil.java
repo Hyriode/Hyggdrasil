@@ -81,6 +81,8 @@ public class Hyggdrasil {
 
         this.registerReceivers();
 
+        this.proxyManager.startProxy(new HyggData());
+
         Runtime.getRuntime().addShutdownHook(new Thread(this::shutdown));
     }
 

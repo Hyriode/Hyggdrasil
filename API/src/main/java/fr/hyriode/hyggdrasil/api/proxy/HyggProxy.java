@@ -31,9 +31,6 @@ public class HyggProxy {
     /** The current players handled by the proxy */
     protected Set<UUID> players;
 
-    /** The opened port of the proxy */
-    protected int port = -1;
-
     /** The timestamp when the proxy started (in milliseconds) */
     protected final long startedTime;
     /** The last heartbeat of the proxy */
@@ -42,10 +39,11 @@ public class HyggProxy {
     /**
      * Default constructor of a {@link HyggProxy}
      *
+     * @param name The name of the proxy
      * @param data The data of the proxy
      */
-    public HyggProxy(HyggData data) {
-        this.name = "proxy-" + UUID.randomUUID().toString().substring(0, 5);
+    public HyggProxy(String name, HyggData data) {
+        this.name = name;
         this.data = data;
         this.state = State.CREATING;
         this.players = new HashSet<>();
@@ -59,15 +57,13 @@ public class HyggProxy {
      * @param data The data of the proxy
      * @param state The state of the proxy
      * @param players The players connected through the proxy
-     * @param port The opened port of the proxy
      * @param startedTime The time when the proxy started (in milliseconds)
      */
-    public HyggProxy(String name, HyggData data, State state, Set<UUID> players, int port, long startedTime) {
+    public HyggProxy(String name, HyggData data, State state, Set<UUID> players, long startedTime) {
         this.name = name;
         this.data = data;
         this.state = state;
         this.players = players;
-        this.port = port;
         this.startedTime = startedTime;
     }
 
@@ -136,28 +132,6 @@ public class HyggProxy {
      */
     public void setPlayers(@NotNull Set<UUID> players) {
         this.players = players;
-    }
-
-    /**
-     * Get the opened port of the proxy
-     *
-     * @return A port
-     */
-    public int getPort() {
-        return this.port;
-    }
-
-    /**
-     * Set the opened port of the proxy
-     *
-     * @param port The new port
-     */
-    public void setPort(int port) {
-        if (this.port == -1) {
-            this.port = port;
-        } else {
-            throw new HyggPacketException("Port already set!");
-        }
     }
 
     /**

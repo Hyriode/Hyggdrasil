@@ -54,6 +54,7 @@ public class HyggLimbo {
      *
      * @param name The name of the limbo
      * @param data The data of the limbo
+     * @param type The type of the limbo
      * @param state The state of the limbo
      * @param players The players connected through the limbo
      * @param startedTime The time when the limbo started (in milliseconds)

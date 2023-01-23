@@ -36,7 +36,6 @@ import static fr.hyriode.hyggdrasil.api.protocol.response.HyggResponse.Type.SUCC
 public class HyggProxyManager {
 
     private final int maxProxies = Hyggdrasil.getConfig().getProxies().getMaxProxies();
-    private final int startingPort = Hyggdrasil.getConfig().getProxies().getStartingPort();
 
     private final Map<String, HyggProxy> proxies = new ConcurrentHashMap<>();
 
@@ -68,45 +67,31 @@ public class HyggProxyManager {
             return null;
         }
 
-        final int availablePort = this.getAvailablePort();
+        final HyggProxy proxy = new HyggProxy(this.generateName(), data);
+        final String proxyName = proxy.getName();
 
-        if (availablePort != -1) {
-            final HyggProxy proxy = new HyggProxy(data);
-            final String proxyName = proxy.getName();
+        this.hyggdrasil.getTemplateManager().getDownloader().copyFiles(this.proxyTemplate, Paths.get(References.PROXIES_FOLDER.toString(), proxyName));
+        this.swarm.runService(new HyggProxyService(proxy, this.proxyImage));
+        this.proxies.put(proxyName, proxy);
+        this.hyggdrasil.getAPI().redisProcess(jedis -> jedis.set(HyggProxiesRequester.REDIS_KEY + proxy.getName(), HyggdrasilAPI.GSON.toJson(proxy))); // Save proxy in Redis cache
+        this.eventBus.publish(new HyggProxyStartedEvent(proxy));
 
-            proxy.setPort(availablePort);
+        System.out.println("Started '" + proxyName + "' [" + this.proxies.size() + "/" + this.maxProxies + "].");
 
-            this.hyggdrasil.getTemplateManager().getDownloader().copyFiles(this.proxyTemplate, Paths.get(References.PROXIES_FOLDER.toString(), proxyName));
-            this.swarm.runService(new HyggProxyService(proxy, this.proxyImage));
-            this.proxies.put(proxyName, proxy);
-            this.hyggdrasil.getAPI().redisProcess(jedis -> jedis.set(HyggProxiesRequester.REDIS_KEY + proxy.getName(), HyggdrasilAPI.GSON.toJson(proxy))); // Save proxy in Redis cache
-            this.eventBus.publish(new HyggProxyStartedEvent(proxy));
-
-            System.out.println("Started '" + proxyName + "' (port: " + proxy.getPort() + ") [" + this.proxies.size() + "/" + this.maxProxies + "].");
-
-            return proxy;
-        }
-        return null;
+        return proxy;
     }
 
-    private int getAvailablePort() {
-        int availablePort = this.startingPort;
+    private String generateName() {
+        String name = null;
 
-        for (int i = this.startingPort; i < this.startingPort + this.maxProxies; i++) {
-            availablePort = i;
+        for (int i = 0; i < this.maxProxies; i++) {
+            name = String.format("proxy%02d", i + 1); // Generate a proxy name with a custom format. E.g. proxy02 / proxy18
 
-            for (HyggProxy proxy : this.proxies.values()) {
-                if (proxy.getPort() == i) {
-                    availablePort = -1;
-                    break;
-                }
-            }
-
-            if (availablePort != -1) {
-                break;
+            if (this.getProxy(name) == null) {
+                return name;
             }
         }
-        return availablePort;
+        return name;
     }
 
     public void updateProxyInfo(HyggProxy proxy, HyggProxyInfoPacket packet) {
