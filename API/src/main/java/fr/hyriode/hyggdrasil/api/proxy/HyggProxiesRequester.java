@@ -87,8 +87,10 @@ public class HyggProxiesRequester {
                     final HyggResponse.Type type = response.getType();
                     final HyggResponseContent content = response.getContent();
 
-                    if (type == SUCCESS && content != null && onCreated != null) {
-                        onCreated.accept(content.as(HyggProxyContent.class).getProxy());
+                    if (type == SUCCESS) {
+                        if (content != null && onCreated != null) {
+                            onCreated.accept(content.as(HyggProxyContent.class).getProxy());
+                        }
                     } else {
                         System.err.println("Couldn't create a proxy. Returned message: " + type + ".");
                     }

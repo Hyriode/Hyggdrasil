@@ -85,8 +85,10 @@ public class HyggServersRequester {
                 .withResponseCallback(response -> {
                     final HyggResponse.Type type = response.getType();
 
-                    if (type == SUCCESS && response.getContent() != null && onCreated != null) {
-                        onCreated.accept(response.getContent().as(HyggServerContent.class).getServer());
+                    if (type == SUCCESS) {
+                        if (response.getContent() != null && onCreated != null) {
+                            onCreated.accept(response.getContent().as(HyggServerContent.class).getServer());
+                        }
                     } else {
                         System.err.println("Couldn't create a server with type: " + serverInfo.getType() + ". Returned message: " + type + ".");
                     }

@@ -85,8 +85,10 @@ public class HyggLimbosRequester {
                     final HyggResponse.Type type = response.getType();
                     final HyggResponseContent content = response.getContent();
 
-                    if (type == SUCCESS && content != null && onCreated != null) {
-                        onCreated.accept(content.as(HyggLimboContent.class).getLimbo());
+                    if (type == SUCCESS) {
+                        if (content != null && onCreated != null) {
+                            onCreated.accept(content.as(HyggLimboContent.class).getLimbo());
+                        }
                     } else {
                         System.err.println("Couldn't create a limbo. Returned message: " + type + ".");
                     }
