@@ -87,8 +87,6 @@ public class HyggTemplateDownloader {
 
                     final BlobClient blobClient = container.getBlobClient(blobName);
 
-                    System.out.println("Old Hash: " + oldHash);
-                    System.out.println("New Hash: " + hash);
                     System.out.println("Downloading " + file.getName() + "...");
 
                     blobClient.downloadToFile(hostPath.toString(), true);
