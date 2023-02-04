@@ -6,6 +6,7 @@ import com.azure.storage.blob.BlobServiceClient;
 import com.azure.storage.blob.BlobServiceClientBuilder;
 import com.azure.storage.blob.models.BlobItem;
 import fr.hyriode.hyggdrasil.Hyggdrasil;
+import fr.hyriode.hyggdrasil.api.event.model.HyggTemplateUpdatedEvent;
 import fr.hyriode.hyggdrasil.util.IOUtil;
 import fr.hyriode.hyggdrasil.util.References;
 
@@ -58,6 +59,8 @@ public class HyggTemplateDownloader {
     }
 
     public void process(HyggTemplate template) {
+        boolean updated = false;
+
         for (Map.Entry<String, HyggTemplate.File> entry : template.getFiles().entrySet()) {
             final HyggTemplate.File file = entry.getValue();
             final String name = file.getName();
@@ -90,11 +93,16 @@ public class HyggTemplateDownloader {
                     System.out.println("Downloading " + file.getName() + "...");
 
                     blobClient.downloadToFile(hostPath.toString(), true);
+                    updated = true;
 
                     this.filesHashes.put(name, hash);
                     break;
                 }
             }
+        }
+
+        if (updated) {
+            this.hyggdrasil.getAPI().getEventBus().publish(new HyggTemplateUpdatedEvent(template.getName()));
         }
     }
 
