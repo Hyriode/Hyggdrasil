@@ -30,4 +30,4 @@ RUN chmod +x /usr/app/docker-entrypoint.sh
 STOPSIGNAL SIGTERM
 
 # Start application
-CMD ["/usr/app/docker-entrypoint.sh"]
+ENTRYPOINT ["sh", "/usr/app/docker-entrypoint.sh"]

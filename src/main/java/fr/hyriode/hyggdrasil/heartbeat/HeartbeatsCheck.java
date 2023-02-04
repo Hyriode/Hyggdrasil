@@ -95,7 +95,7 @@ public class HeartbeatsCheck implements Runnable {
             if (this.isTimedOut(currentTime, lastHeartbeat)) {
                 System.err.println("'" + limboName + "' timed out! Killing it...");
 
-                this.proxyManager.stopProxy(limboName);
+                this.limboManager.stopLimbo(limboName);
             }
         }
     }

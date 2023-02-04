@@ -1,7 +1,6 @@
 package fr.hyriode.hyggdrasil.api.server;
 
 import fr.hyriode.hyggdrasil.api.protocol.data.HyggData;
-import fr.hyriode.hyggdrasil.api.util.serializer.HyggSerializable;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

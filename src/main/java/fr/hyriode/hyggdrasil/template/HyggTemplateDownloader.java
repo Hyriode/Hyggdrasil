@@ -59,8 +59,8 @@ public class HyggTemplateDownloader {
 
     public void process(HyggTemplate template) {
         for (Map.Entry<String, HyggTemplate.File> entry : template.getFiles().entrySet()) {
-            final String name = entry.getKey();
             final HyggTemplate.File file = entry.getValue();
+            final String name = file.getName();
             final BlobContainerClient container = this.azureContainers.getOrDefault(file.getContainer(), this.azureService.getBlobContainerClient(file.getContainer()));
 
             this.azureContainers.put(file.getContainer(), container);
@@ -87,6 +87,8 @@ public class HyggTemplateDownloader {
 
                     final BlobClient blobClient = container.getBlobClient(blobName);
 
+                    System.out.println("Old Hash: " + oldHash);
+                    System.out.println("New Hash: " + hash);
                     System.out.println("Downloading " + file.getName() + "...");
 
                     blobClient.downloadToFile(hostPath.toString(), true);

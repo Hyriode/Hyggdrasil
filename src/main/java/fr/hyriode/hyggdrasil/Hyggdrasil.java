@@ -3,11 +3,8 @@ package fr.hyriode.hyggdrasil;
 import fr.hyriode.hyggdrasil.api.HyggdrasilAPI;
 import fr.hyriode.hyggdrasil.api.protocol.HyggChannel;
 import fr.hyriode.hyggdrasil.api.protocol.data.HyggApplication;
-import fr.hyriode.hyggdrasil.api.protocol.data.HyggData;
 import fr.hyriode.hyggdrasil.api.protocol.data.HyggEnv;
 import fr.hyriode.hyggdrasil.api.protocol.packet.HyggPacketProcessor;
-import fr.hyriode.hyggdrasil.api.server.HyggServer;
-import fr.hyriode.hyggdrasil.api.server.HyggServerCreationInfo;
 import fr.hyriode.hyggdrasil.config.HyggConfig;
 import fr.hyriode.hyggdrasil.docker.Docker;
 import fr.hyriode.hyggdrasil.heartbeat.HeartbeatsCheck;
@@ -80,8 +77,6 @@ public class Hyggdrasil {
         new HeartbeatsCheck(this);
 
         this.registerReceivers();
-
-        this.proxyManager.startProxy(new HyggData());
 
         Runtime.getRuntime().addShutdownHook(new Thread(this::shutdown));
     }
