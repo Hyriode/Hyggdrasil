@@ -55,7 +55,7 @@ public class HyggTemplateDownloader {
             for (HyggTemplate template : this.templateManager.getTemplates().values()) {
                 this.process(template);
             }
-        }, 10, 10, TimeUnit.MINUTES);
+        }, 1, 1, TimeUnit.MINUTES);
     }
 
     public void process(HyggTemplate template) {
