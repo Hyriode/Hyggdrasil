@@ -10,6 +10,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Stream;
 
 /**
@@ -39,7 +41,7 @@ public class HyggTemplateManager {
         }
     }
 
-    private HyggTemplate loadTemplate(Path path) {
+    private CompletableFuture<HyggTemplate> loadTemplate(Path path) {
         if (path.toString().endsWith(".yml") || path.toString().endsWith(".yaml")) {
             final HyggTemplate template = YamlLoader.load(path, HyggTemplate.class);
 
@@ -52,9 +54,9 @@ public class HyggTemplateManager {
 
                 System.out.println("Loaded '" + template.getName() + "' template.");
             }
-            return template;
+            return CompletableFuture.completedFuture(template);
         }
-        return null;
+        return CompletableFuture.completedFuture(null);
     }
 
     public HyggTemplate getTemplate(String name) {
@@ -66,7 +68,11 @@ public class HyggTemplateManager {
             if (!Files.exists(path)) {
                 path = Paths.get(References.TEMPLATES_FOLDER.toString(), name + ".yml");
             }
-            return this.loadTemplate(path);
+            try {
+                return this.loadTemplate(path).get();
+            } catch (InterruptedException | ExecutionException e) {
+                throw new RuntimeException(e);
+            }
         }
         return template;
     }
