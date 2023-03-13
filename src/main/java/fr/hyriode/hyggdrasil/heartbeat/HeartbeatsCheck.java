@@ -32,7 +32,7 @@ public class HeartbeatsCheck implements Runnable {
 
         System.out.println("Starting heartbeats check task...");
 
-        hyggdrasil.getAPI().getExecutorService().scheduleAtFixedRate(this, 0, HyggdrasilAPI.HEARTBEAT_TIME, TimeUnit.MILLISECONDS);
+        hyggdrasil.getAPI().getExecutorService().scheduleAtFixedRate(this, HyggdrasilAPI.HEARTBEAT_TIME, HyggdrasilAPI.HEARTBEAT_TIME, TimeUnit.MILLISECONDS);
     }
 
     @Override

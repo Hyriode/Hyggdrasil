@@ -26,5 +26,5 @@ jobs:
           cd API
           gradle publish
         env:
-          USERNAME: ${{ github.actor }}
-          TOKEN: ${{ secrets.TOKEN }}
+          GITHUB_USERNAME: ${{ github.actor }}
+          GITHUB_TOKEN: ${{ secrets.TOKEN }}

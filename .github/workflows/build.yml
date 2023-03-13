@@ -25,11 +25,11 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew build
         env:
-          USERNAME: ${{ github.actor }}
-          TOKEN: ${{ secrets.TOKEN }}
+          GITHUB_USERNAME: ${{ github.actor }}
+          GITHUB_TOKEN: ${{ secrets.TOKEN }}
 
       - name: Build shaded Jar
         run: ./gradlew shadowJar
         env:
-          USERNAME: ${{ github.actor }}
-          TOKEN: ${{ secrets.TOKEN }}
+          GITHUB_USERNAME: ${{ github.actor }}
+          GITHUB_TOKEN: ${{ secrets.TOKEN }}
