@@ -6,6 +6,7 @@ import fr.hyriode.hyggdrasil.api.protocol.data.HyggEnv;
 import fr.hyriode.hyggdrasil.api.server.HyggServer;
 import fr.hyriode.hyggdrasil.docker.image.DockerImage;
 import fr.hyriode.hyggdrasil.docker.swarm.DockerService;
+import fr.hyriode.hyggdrasil.template.HyggTemplate;
 import fr.hyriode.hyggdrasil.util.References;
 
 import java.nio.file.Paths;
@@ -17,14 +18,16 @@ import java.nio.file.Paths;
  */
 public class HyggServerService extends DockerService {
 
-    public HyggServerService(HyggServer server, DockerImage image) {
+    public HyggServerService(HyggServer server, HyggTemplate template, DockerImage image) {
         super(server.getName(), image, References.NETWORK.get());
         this.hostname = server.getName();
 
         this.envs.addAll(new HyggEnv(new HyggApplication(HyggApplication.Type.SERVER, this.hostname, System.currentTimeMillis())).createEnvironmentVariables());
 
+        this.addEnv("MAX_MEMORY", String.valueOf(template.getMaxMemory()));
+
         this.addLabel(References.STACK_NAME_LABEL, Hyggdrasil.getConfig().getDocker().getStackName());
-        this.addMount(Paths.get(Hyggdrasil.getConfig().getDocker().getRootDirectory(), "servers", this.hostname).toAbsolutePath().toString(), "/server");
+        this.addMount(Paths.get(Hyggdrasil.getConfig().getDocker().getRootDirectory(), "servers", this.hostname).toAbsolutePath().toString(), "/data");
     }
 
 }

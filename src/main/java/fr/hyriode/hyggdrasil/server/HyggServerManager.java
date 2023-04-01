@@ -68,7 +68,7 @@ public class HyggServerManager {
             final String serverName = server.getName();
 
             this.hyggdrasil.getTemplateManager().getDownloader().copyFiles(template, Paths.get(References.SERVERS_FOLDER.toString(), serverName));
-            this.swarm.runService(new HyggServerService(server, this.proxyImage));
+            this.swarm.runService(new HyggServerService(server, template, this.proxyImage));
             this.servers.put(serverName, server);
             this.hyggdrasil.getAPI().redisProcess(jedis -> jedis.set(HyggServersRequester.REDIS_KEY + server.getName(), HyggdrasilAPI.GSON.toJson(server))); // Save server in Redis cache
             this.eventBus.publish(new HyggServerStartedEvent(server));
