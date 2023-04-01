@@ -9,12 +9,12 @@ import java.util.Map;
 public class HyggTemplate {
 
     private String name;
-    private int maxMemory;
+    private String maxMemory;
     private Map<String, File> files;
 
     private HyggTemplate() {}
 
-    public HyggTemplate(String name, int maxMemory, Map<String, File> files) {
+    public HyggTemplate(String name, String maxMemory, Map<String, File> files) {
         this.name = name;
         this.maxMemory = maxMemory;
         this.files = files;
@@ -24,7 +24,7 @@ public class HyggTemplate {
         return this.name;
     }
 
-    public int getMaxMemory() {
+    public String getMaxMemory() {
         return this.maxMemory;
     }
 
