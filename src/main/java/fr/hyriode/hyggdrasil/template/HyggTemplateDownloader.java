@@ -7,6 +7,7 @@ import com.azure.storage.blob.BlobServiceClientBuilder;
 import com.azure.storage.blob.models.BlobItem;
 import fr.hyriode.hyggdrasil.Hyggdrasil;
 import fr.hyriode.hyggdrasil.api.event.model.HyggTemplateUpdatedEvent;
+import fr.hyriode.hyggdrasil.api.server.HyggServer;
 import fr.hyriode.hyggdrasil.util.IOUtil;
 import fr.hyriode.hyggdrasil.util.References;
 
@@ -15,9 +16,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -52,14 +51,29 @@ public class HyggTemplateDownloader {
         }
 
         this.hyggdrasil.getAPI().getExecutorService().scheduleAtFixedRate(() -> {
+            final Set<String> updatedFiles = new HashSet<>();
+
+            // Update templates files
             for (HyggTemplate template : this.templateManager.getTemplates().values()) {
-                this.process(template);
+                updatedFiles.addAll(this.process(template));
+            }
+
+            // Trigger event for each template updated
+            for (String fileName : updatedFiles) {
+                for (HyggTemplate template : this.templateManager.getTemplates().values()) {
+                    for (HyggTemplate.File file : template.getFiles().values()) {
+                        if (file.getName().equals(fileName)) {
+                            this.hyggdrasil.getAPI().getEventBus().publish(new HyggTemplateUpdatedEvent(template.getName()));
+                            break;
+                        }
+                    }
+                }
             }
         }, 1, 1, TimeUnit.MINUTES);
     }
 
-    public void process(HyggTemplate template) {
-        boolean updated = false;
+    public Set<String> process(HyggTemplate template) {
+        final Set<String> updatedFiles = new HashSet<>();
 
         for (Map.Entry<String, HyggTemplate.File> entry : template.getFiles().entrySet()) {
             final HyggTemplate.File file = entry.getValue();
@@ -93,17 +107,15 @@ public class HyggTemplateDownloader {
                     System.out.println("Downloading " + file.getName() + "...");
 
                     blobClient.downloadToFile(hostPath.toString(), true);
-                    updated = true;
+
+                    updatedFiles.add(file.getName());
 
                     this.filesHashes.put(name, hash);
                     break;
                 }
             }
         }
-
-        if (updated) {
-            this.hyggdrasil.getAPI().getEventBus().publish(new HyggTemplateUpdatedEvent(template.getName()));
-        }
+        return updatedFiles;
     }
 
     public void copyFiles(HyggTemplate template, Path destination) {
