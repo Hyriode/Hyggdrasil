@@ -115,10 +115,6 @@ public class HyggServerManager {
                 System.out.println("Stopped '" + name + "'.");
             };
 
-            server.setState(HyggServer.State.SHUTDOWN);
-
-            this.updateServer(server);
-
             this.packetProcessor.request(HyggChannel.SERVERS, new HyggStopServerPacket(name))
                     .withResponseCallback(response -> action.run())
                     .withTimeoutCallback(action)

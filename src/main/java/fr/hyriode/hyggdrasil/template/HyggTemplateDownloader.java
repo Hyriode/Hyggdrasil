@@ -63,6 +63,8 @@ public class HyggTemplateDownloader {
                 for (HyggTemplate template : this.templateManager.getTemplates().values()) {
                     for (HyggTemplate.File file : template.getFiles().values()) {
                         if (file.getName().equals(fileName)) {
+                            System.out.println("Updated '" + template.getName() + "' template.");
+
                             this.hyggdrasil.getAPI().getEventBus().publish(new HyggTemplateUpdatedEvent(template.getName()));
                             break;
                         }
