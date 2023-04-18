@@ -91,22 +91,12 @@ public class HyggLimboManager {
         final HyggLimbo limbo = this.getLimbo(name);
 
         if (limbo != null) {
-            final Runnable action = () -> {
-                this.eventBus.publish(new HyggLimboStoppedEvent(limbo));
-                this.limbos.remove(name);
-                this.swarm.removeService(name);
-                this.hyggdrasil.getAPI().redisProcess(jedis -> jedis.del(HyggLimbosRequester.REDIS_KEY + limbo.getName()));
+            this.eventBus.publish(new HyggLimboStoppedEvent(limbo));
+            this.limbos.remove(name);
+            this.swarm.removeService(name);
+            this.hyggdrasil.getAPI().redisProcess(jedis -> jedis.del(HyggLimbosRequester.REDIS_KEY + limbo.getName()));
 
-                System.out.println("Stopped '" + name + "'.");
-            };
-
-            limbo.setState(HyggLimbo.State.SHUTDOWN);
-
-            this.packetProcessor.request(HyggChannel.PROXIES, new HyggStopLimboPacket(name))
-                    .withResponseCallback(response -> action.run())
-                    .withTimeoutCallback(action)
-                    .exec();
-
+            System.out.println("Stopped '" + name + "'.");
             return true;
         } else {
             System.err.println("Couldn't stop a limbo with the following name: '" + name + "'!");

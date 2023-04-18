@@ -113,24 +113,14 @@ public class HyggProxyManager {
         final HyggProxy proxy = this.getProxy(name);
 
         if (proxy != null) {
-            final Runnable action = () -> {
-                this.eventBus.publish(new HyggProxyStoppedEvent(proxy));
-                this.proxies.remove(name);
-                this.swarm.removeService(name);
-                this.hyggdrasil.getAPI().redisProcess(jedis -> jedis.del(HyggProxiesRequester.REDIS_KEY + proxy.getName()));
+            this.eventBus.publish(new HyggProxyStoppedEvent(proxy));
+            this.proxies.remove(name);
+            this.swarm.removeService(name);
+            this.hyggdrasil.getAPI().redisProcess(jedis -> jedis.del(HyggProxiesRequester.REDIS_KEY + proxy.getName()));
 
-                IOUtil.deleteDirectory(Paths.get(References.PROXIES_FOLDER.toString(), proxy.getName()));
+            IOUtil.deleteDirectory(Paths.get(References.PROXIES_FOLDER.toString(), proxy.getName()));
 
-                System.out.println("Stopped '" + name + "'.");
-            };
-
-            proxy.setState(HyggProxy.State.SHUTDOWN);
-
-            this.packetProcessor.request(HyggChannel.PROXIES, new HyggStopProxyPacket(name))
-                    .withResponseCallback(response -> action.run())
-                    .withTimeoutCallback(action)
-                    .exec();
-
+            System.out.println("Stopped '" + name + "'.");
             return true;
         } else {
             System.err.println("Couldn't stop a proxy with the following name: '" + name + "'!");

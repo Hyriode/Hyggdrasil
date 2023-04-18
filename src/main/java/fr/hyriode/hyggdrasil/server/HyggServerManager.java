@@ -104,21 +104,14 @@ public class HyggServerManager {
         final HyggServer server = this.getServer(name);
 
         if (server != null) {
-            final Runnable action = () -> {
-                this.eventBus.publish(new HyggServerStoppedEvent(server));
-                this.servers.remove(name);
-                this.hyggdrasil.getAPI().redisProcess(jedis -> jedis.del(HyggServersRequester.REDIS_KEY + server.getName())); // Delete server from Redis cache
-                this.swarm.removeService(name);
+            this.eventBus.publish(new HyggServerStoppedEvent(server));
+            this.servers.remove(name);
+            this.hyggdrasil.getAPI().redisProcess(jedis -> jedis.del(HyggServersRequester.REDIS_KEY + server.getName())); // Delete server from Redis cache
+            this.swarm.removeService(name);
 
-                IOUtil.deleteDirectory(Paths.get(References.SERVERS_FOLDER.toString(), name));
+            IOUtil.deleteDirectory(Paths.get(References.SERVERS_FOLDER.toString(), name));
 
-                System.out.println("Stopped '" + name + "'.");
-            };
-
-            this.packetProcessor.request(HyggChannel.SERVERS, new HyggStopServerPacket(name))
-                    .withResponseCallback(response -> action.run())
-                    .withTimeoutCallback(action)
-                    .exec();
+            System.out.println("Stopped '" + name + "'.");
             return true;
         } else {
             System.err.println("Couldn't stop a server with the following name: '" + name + "'!");
