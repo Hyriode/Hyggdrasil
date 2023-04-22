@@ -17,11 +17,14 @@ import java.nio.file.Paths;
  */
 public class HyggProxyService extends DockerService {
 
-    public HyggProxyService(HyggProxy proxy, DockerImage image) {
+    public HyggProxyService(HyggProxy proxy, DockerImage image, int port) {
         super(proxy.getName(), image, References.NETWORK.get());
         this.hostname = proxy.getName();
 
         this.envs.addAll(new HyggEnv(new HyggApplication(HyggApplication.Type.PROXY, proxy.getName(), System.currentTimeMillis())).createEnvironmentVariables());
+
+        this.publishedPort = port;
+        this.targetPort = 25565;
 
         this.addLabel(References.STACK_NAME_LABEL, Hyggdrasil.getConfig().getDocker().getStackName());
         this.addMount(Paths.get(Hyggdrasil.getConfig().getDocker().getRootDirectory(), "proxies", proxy.getName()).toAbsolutePath().toString(), "/server");

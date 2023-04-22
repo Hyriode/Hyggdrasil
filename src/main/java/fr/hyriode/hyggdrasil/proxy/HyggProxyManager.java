@@ -35,6 +35,8 @@ import static fr.hyriode.hyggdrasil.api.protocol.response.HyggResponse.Type.SUCC
  */
 public class HyggProxyManager {
 
+    private static final int STARTING_PORT = 20000;
+
     private final int maxProxies = Hyggdrasil.getConfig().getProxies().getMaxProxies();
 
     private final Map<String, HyggProxy> proxies = new ConcurrentHashMap<>();
@@ -43,7 +45,6 @@ public class HyggProxyManager {
     private final DockerImage proxyImage;
 
     private final DockerSwarm swarm;
-    private final HyggPacketProcessor packetProcessor;
     private final HyggEventBus eventBus;
 
     private final Hyggdrasil hyggdrasil;
@@ -51,7 +52,6 @@ public class HyggProxyManager {
     public HyggProxyManager(Hyggdrasil hyggdrasil) {
         this.hyggdrasil = hyggdrasil;
         this.swarm = this.hyggdrasil.getDocker().getSwarm();
-        this.packetProcessor = this.hyggdrasil.getAPI().getPacketProcessor();
         this.eventBus = this.hyggdrasil.getAPI().getEventBus();
         this.proxyTemplate = this.hyggdrasil.getTemplateManager().getTemplate(Hyggdrasil.getConfig().getProxies().getTemplate());
         this.proxyImage = this.hyggdrasil.getDocker().getImageManager().getImage(Hyggdrasil.getConfig().getProxies().getImage());
@@ -69,9 +69,10 @@ public class HyggProxyManager {
 
         final HyggProxy proxy = new HyggProxy(this.generateName(), data);
         final String proxyName = proxy.getName();
+        final int port = STARTING_PORT + this.proxies.size();
 
         this.hyggdrasil.getTemplateManager().getDownloader().copyFiles(this.proxyTemplate, Paths.get(References.PROXIES_FOLDER.toString(), proxyName));
-        this.swarm.runService(new HyggProxyService(proxy, this.proxyImage));
+        this.swarm.runService(new HyggProxyService(proxy, this.proxyImage, port));
         this.proxies.put(proxyName, proxy);
         this.hyggdrasil.getAPI().redisProcess(jedis -> jedis.set(HyggProxiesRequester.REDIS_KEY + proxy.getName(), HyggdrasilAPI.GSON.toJson(proxy))); // Save proxy in Redis cache
         this.eventBus.publish(new HyggProxyStartedEvent(proxy));
