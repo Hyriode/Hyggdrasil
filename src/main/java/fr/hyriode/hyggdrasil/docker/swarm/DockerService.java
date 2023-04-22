@@ -135,7 +135,8 @@ public class DockerService {
                 .withImage(this.image.getName() + DockerImage.DOCKER_IMAGE_TAG_SEPARATOR + this.image.getTag())
                 .withHostname(this.hostname)
                 .withMounts(this.mounts)
-                .withEnv(this.envs);
+                .withEnv(this.envs)
+                .withConfigs();
 
         EndpointSpec endpointSpec = null;
         if (this.publishedPort != -1 || this.targetPort != -1) {
@@ -148,8 +149,13 @@ public class DockerService {
                     ));
         }
 
+        final ResourceRequirements resourceRequirements = new ResourceRequirements()
+                .withLimits(new ResourceSpecs()
+                        .withNanoCPUs(1500000000L));
+
         final TaskSpec taskSpec = new TaskSpec()
                 .withContainerSpec(containerSpec)
+                .withResources(resourceRequirements)
                 .withNetworks(Collections.singletonList(new NetworkAttachmentConfig().withTarget(this.network.getName())));
 
         return new ServiceSpec()
