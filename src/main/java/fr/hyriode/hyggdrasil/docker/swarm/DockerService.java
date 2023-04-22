@@ -135,8 +135,7 @@ public class DockerService {
                 .withImage(this.image.getName() + DockerImage.DOCKER_IMAGE_TAG_SEPARATOR + this.image.getTag())
                 .withHostname(this.hostname)
                 .withMounts(this.mounts)
-                .withEnv(this.envs)
-                .withConfigs();
+                .withEnv(this.envs);
 
         EndpointSpec endpointSpec = null;
         if (this.publishedPort != -1 || this.targetPort != -1) {
