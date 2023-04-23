@@ -25,6 +25,8 @@ public class DockerService {
     protected final Map<String, String> labels;
     protected List<Mount> mounts;
 
+    protected double cpus;
+
     protected int publishedPort = -1;
     protected int targetPort = -1;
 
@@ -150,7 +152,7 @@ public class DockerService {
 
         final ResourceRequirements resourceRequirements = new ResourceRequirements()
                 .withLimits(new ResourceSpecs()
-                        .withNanoCPUs(1500000000L));
+                        .withNanoCPUs((long) (this.cpus * 1_000_000_000L)));
 
         final TaskSpec taskSpec = new TaskSpec()
                 .withContainerSpec(containerSpec)

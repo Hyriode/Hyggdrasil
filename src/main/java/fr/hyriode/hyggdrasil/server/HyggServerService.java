@@ -21,10 +21,12 @@ public class HyggServerService extends DockerService {
     public HyggServerService(HyggServer server, HyggTemplate template, DockerImage image) {
         super(server.getName(), image, References.NETWORK.get());
         this.hostname = server.getName();
+        this.cpus = template.getCpus();
 
         this.envs.addAll(new HyggEnv(new HyggApplication(HyggApplication.Type.SERVER, this.hostname, System.currentTimeMillis())).createEnvironmentVariables());
 
         this.addEnv("MAX_MEMORY", template.getMaxMemory());
+        this.addEnv("INIT_MEMORY", template.getMinMemory());
 
         this.addLabel(References.STACK_NAME_LABEL, Hyggdrasil.getConfig().getDocker().getStackName());
         this.addMount(Paths.get(Hyggdrasil.getConfig().getDocker().getRootDirectory(), "servers", this.hostname).toAbsolutePath().toString(), "/data");

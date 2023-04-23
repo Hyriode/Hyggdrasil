@@ -10,13 +10,17 @@ public class HyggTemplate {
 
     private String name;
     private String maxMemory;
+    private String minMemory;
+    private double cpus;
     private Map<String, File> files;
 
     private HyggTemplate() {}
 
-    public HyggTemplate(String name, String maxMemory, Map<String, File> files) {
+    public HyggTemplate(String name, String maxMemory, String minMemory, double cpus, Map<String, File> files) {
         this.name = name;
         this.maxMemory = maxMemory;
+        this.minMemory = minMemory;
+        this.cpus = cpus;
         this.files = files;
     }
 
@@ -26,6 +30,14 @@ public class HyggTemplate {
 
     public String getMaxMemory() {
         return this.maxMemory;
+    }
+
+    public String getMinMemory() {
+        return this.minMemory;
+    }
+
+    public double getCpus() {
+        return this.cpus;
     }
 
     public Map<String, File> getFiles() {
