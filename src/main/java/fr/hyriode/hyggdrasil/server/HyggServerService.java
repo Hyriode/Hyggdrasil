@@ -28,7 +28,7 @@ public class HyggServerService extends DockerService {
         this.addEnv("MAX_MEMORY", template.getMaxMemory());
         this.addEnv("INIT_MEMORY", template.getMinMemory());
 
-        this.addLabel(References.STACK_NAME_LABEL, Hyggdrasil.getConfig().getDocker().getStackName());
+        this.addLabel(References.STACK_NAME_LABEL, Hyggdrasil.getConfig().getDocker().getServersStack());
         this.addMount(Paths.get(Hyggdrasil.getConfig().getDocker().getRootDirectory(), "servers", this.hostname).toAbsolutePath().toString(), "/data");
     }
 

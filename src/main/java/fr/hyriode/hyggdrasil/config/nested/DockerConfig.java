@@ -7,22 +7,28 @@ package fr.hyriode.hyggdrasil.config.nested;
  */
 public class DockerConfig {
 
-    private final String stackName;
+    private final String serversStack;
+    private final String proxiesStack;
     private final String networkName;
     private final String rootDirectory;
 
-    public DockerConfig(String stackName, String networkName, String rootDirectory) {
-        this.stackName = stackName;
+    public DockerConfig(String serversStack, String proxiesStack, String networkName, String rootDirectory) {
+        this.serversStack = serversStack;
+        this.proxiesStack = proxiesStack;
         this.networkName = networkName;
         this.rootDirectory = rootDirectory;
     }
 
     public DockerConfig() {
-        this("hyggdrasil", "hyggdrasil", "/home/");
+        this("hyggdrasil", "hyggdrasil", "hyggdrasil", "/home/");
     }
 
-    public String getStackName() {
-        return this.stackName;
+    public String getServersStack() {
+        return this.serversStack;
+    }
+
+    public String getProxiesStack() {
+        return this.proxiesStack;
     }
 
     public String getNetworkName() {
