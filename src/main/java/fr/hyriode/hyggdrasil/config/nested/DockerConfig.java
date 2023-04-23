@@ -9,18 +9,20 @@ public class DockerConfig {
 
     private final String serversStack;
     private final String proxiesStack;
+    private final String limbosStack;
     private final String networkName;
     private final String rootDirectory;
 
-    public DockerConfig(String serversStack, String proxiesStack, String networkName, String rootDirectory) {
+    public DockerConfig(String serversStack, String proxiesStack, String limbosStack, String networkName, String rootDirectory) {
         this.serversStack = serversStack;
         this.proxiesStack = proxiesStack;
+        this.limbosStack = limbosStack;
         this.networkName = networkName;
         this.rootDirectory = rootDirectory;
     }
 
     public DockerConfig() {
-        this("hyggdrasil", "hyggdrasil", "hyggdrasil", "/home/");
+        this("hyggdrasil", "hyggdrasil", "hyggdrasil", "hyggdrasil", "/home/");
     }
 
     public String getServersStack() {
@@ -29,6 +31,10 @@ public class DockerConfig {
 
     public String getProxiesStack() {
         return this.proxiesStack;
+    }
+
+    public String getLimbosStack() {
+        return this.limbosStack;
     }
 
     public String getNetworkName() {

@@ -23,7 +23,7 @@ public class HyggLimboService extends DockerService {
         this.envs.addAll(new HyggEnv(new HyggApplication(HyggApplication.Type.LIMBO, limbo.getName(), System.currentTimeMillis())).createEnvironmentVariables());
 
         this.addMount(Paths.get(Hyggdrasil.getConfig().getDocker().getRootDirectory(), "limbos", limbo.getName()).toAbsolutePath().toString(), "/server");
-        this.addLabel(References.STACK_NAME_LABEL, Hyggdrasil.getConfig().getDocker().getStackName());
+        this.addLabel(References.STACK_NAME_LABEL, Hyggdrasil.getConfig().getDocker().getLimbosStack());
     }
 
 }
