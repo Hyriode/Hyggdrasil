@@ -8,21 +8,27 @@ package fr.hyriode.hyggdrasil.config.nested;
 public class ProxiesConfig {
 
     private final int maxProxies;
+    private final int startingPort;
     private final String template;
     private final String image;
 
-    public ProxiesConfig(int maxProxies, String template, String image) {
+    public ProxiesConfig(int maxProxies, int startingPort, String template, String image) {
         this.maxProxies = maxProxies;
+        this.startingPort = startingPort;
         this.template = template;
         this.image = image;
     }
 
     public ProxiesConfig() {
-        this(1, "proxy", "proxy");
+        this(1, 20000, "proxy", "proxy");
     }
 
     public int getMaxProxies() {
         return this.maxProxies;
+    }
+
+    public int getStartingPort() {
+        return this.startingPort;
     }
 
     public String getTemplate() {

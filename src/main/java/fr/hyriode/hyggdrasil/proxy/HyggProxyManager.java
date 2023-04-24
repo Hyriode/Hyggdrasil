@@ -35,9 +35,8 @@ import static fr.hyriode.hyggdrasil.api.protocol.response.HyggResponse.Type.SUCC
  */
 public class HyggProxyManager {
 
-    private static final int STARTING_PORT = 20000;
-
     private final int maxProxies = Hyggdrasil.getConfig().getProxies().getMaxProxies();
+    private final int startingPort = Hyggdrasil.getConfig().getProxies().getStartingPort();
 
     private final Map<String, HyggProxy> proxies = new ConcurrentHashMap<>();
 
@@ -69,10 +68,11 @@ public class HyggProxyManager {
 
         final HyggProxy proxy = new HyggProxy(this.generateName(), data);
         final String proxyName = proxy.getName();
-        final int port = STARTING_PORT + this.proxies.size();
+
+        proxy.setPort(this.getPort());
 
         this.hyggdrasil.getTemplateManager().getDownloader().copyFiles(this.proxyTemplate, Paths.get(References.PROXIES_FOLDER.toString(), proxyName));
-        this.swarm.runService(new HyggProxyService(proxy, this.proxyImage, port));
+        this.swarm.runService(new HyggProxyService(proxy, this.proxyImage));
         this.proxies.put(proxyName, proxy);
         this.hyggdrasil.getAPI().redisProcess(jedis -> jedis.set(HyggProxiesRequester.REDIS_KEY + proxy.getName(), HyggdrasilAPI.GSON.toJson(proxy))); // Save proxy in Redis cache
         this.eventBus.publish(new HyggProxyStartedEvent(proxy));
@@ -80,6 +80,16 @@ public class HyggProxyManager {
         System.out.println("Started '" + proxyName + "' [" + this.proxies.size() + "/" + this.maxProxies + "].");
 
         return proxy;
+    }
+
+    private int getPort() {
+        int port = this.startingPort;
+        for (HyggProxy proxy : this.proxies.values()) {
+            if (proxy.getPort() == port) {
+                port++;
+            }
+        }
+        return port;
     }
 
     private String generateName() {

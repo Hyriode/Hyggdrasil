@@ -34,6 +34,9 @@ public class HyggProxy {
     /** The last heartbeat of the proxy */
     protected long lastHeartbeat = -1;
 
+    /** The port of the server */
+    protected int port = -1;
+
     /**
      * Default constructor of a {@link HyggProxy}
      *
@@ -156,6 +159,26 @@ public class HyggProxy {
         this.lastHeartbeat = System.currentTimeMillis();
 
         return oldHeartbeat == -1;
+    }
+
+    /**
+     * Get the port of the proxy
+     *
+     * @return A port
+     */
+    public int getPort() {
+        return this.port;
+    }
+
+    /**
+     * Set the port of the proxy
+     *
+     * @param port A port
+     */
+    public void setPort(int port) {
+        if (this.port == -1) {
+            this.port = port;
+        }
     }
 
     /**
