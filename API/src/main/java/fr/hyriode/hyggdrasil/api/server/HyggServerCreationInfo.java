@@ -24,6 +24,10 @@ public class HyggServerCreationInfo {
 
     private int slots = -1;
 
+    private String maxMemory = null;
+    private String minMemory = null;
+    private double cpus = -1.0D;
+
     public HyggServerCreationInfo(@NotNull String type) {
         this.type = type;
     }
@@ -96,4 +100,32 @@ public class HyggServerCreationInfo {
         this.slots = slots;
         return this;
     }
+
+    public String getMaxMemory() {
+        return this.maxMemory;
+    }
+
+    public HyggServerCreationInfo withMaxMemory(String maxMemory) {
+        this.maxMemory = maxMemory;
+        return this;
+    }
+
+    public String getMinMemory() {
+        return this.minMemory;
+    }
+
+    public HyggServerCreationInfo withMinMemory(String minMemory) {
+        this.minMemory = minMemory;
+        return this;
+    }
+
+    public double getCpus() {
+        return this.cpus;
+    }
+
+    public HyggServerCreationInfo withCpus(double cpus) {
+        this.cpus = cpus;
+        return this;
+    }
+
 }
