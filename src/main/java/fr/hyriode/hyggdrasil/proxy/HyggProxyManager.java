@@ -99,7 +99,7 @@ public class HyggProxyManager {
             name = String.format("proxy%02d", i + 1); // Generate a proxy name with a custom format. E.g. proxy02 / proxy18
 
             if (this.getProxy(name) == null) {
-                return name;
+                return Hyggdrasil.getConfig().getDocker().getServicesPrefix() + name;
             }
         }
         return name;

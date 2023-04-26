@@ -52,6 +52,7 @@ public class HyggServer {
     /**
      * Simple constructor of a {@link HyggServer}
      *
+     * @param prefix A prefix to a before the server's name
      * @param type The type of the server
      * @param gameType The type of the game running on the server
      * @param map The map used by the server
@@ -60,7 +61,7 @@ public class HyggServer {
      * @param data The data of the server
      * @param slots The slots of the server
      */
-    public HyggServer(String type, @Nullable String gameType, String map, Accessibility accessibility, Process process, HyggData data, int slots) {
+    public HyggServer(String prefix, String type, @Nullable String gameType, String map, Accessibility accessibility, Process process, HyggData data, int slots) {
         this.name = type + "-" + UUID.randomUUID().toString().substring(0, 5);
         this.type = type;
         this.gameType = gameType;

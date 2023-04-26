@@ -36,11 +36,12 @@ public class HyggLimbo {
     /**
      * Default constructor of a {@link HyggLimbo}
      *
+     * @param prefix A prefix to add before the server name
      * @param type The type of the limbo
      * @param data The data of the limbo
      */
-    public HyggLimbo(Type type, HyggData data) {
-        this.name = "limbo-" + UUID.randomUUID().toString().substring(0, 5);
+    public HyggLimbo(String prefix, Type type, HyggData data) {
+        this.name = prefix + "limbo-" + UUID.randomUUID().toString().substring(0, 5);
         this.data = data;
         this.type = type;
         this.state = State.CREATING;

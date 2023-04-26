@@ -58,7 +58,7 @@ public class HyggLimboManager {
     }
 
     public HyggLimbo startLimbo(HyggLimbo.Type type, HyggData data) {
-        final HyggLimbo limbo = new HyggLimbo(type, data);
+        final HyggLimbo limbo = new HyggLimbo(Hyggdrasil.getConfig().getDocker().getServicesPrefix(), type, data);
         final String limboName = limbo.getName();
 
         this.hyggdrasil.getTemplateManager().getDownloader().copyFiles(this.limboTemplate, Paths.get(References.LIMBOS_FOLDER.toString(), limboName));

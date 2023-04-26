@@ -42,7 +42,6 @@ public class HyggServerManager {
     private final DockerImage proxyImage;
 
     private final DockerSwarm swarm;
-    private final HyggPacketProcessor packetProcessor;
     private final HyggEventBus eventBus;
 
     private final Hyggdrasil hyggdrasil;
@@ -50,7 +49,6 @@ public class HyggServerManager {
     public HyggServerManager(Hyggdrasil hyggdrasil) {
         this.hyggdrasil = hyggdrasil;
         this.swarm = this.hyggdrasil.getDocker().getSwarm();
-        this.packetProcessor = this.hyggdrasil.getAPI().getPacketProcessor();
         this.eventBus = this.hyggdrasil.getAPI().getEventBus();
         this.proxyImage = this.hyggdrasil.getDocker().getImageManager().getImage(Hyggdrasil.getConfig().getServers().getImage());
 
@@ -64,7 +62,7 @@ public class HyggServerManager {
         final HyggTemplate template = this.hyggdrasil.getTemplateManager().getTemplate(type);
 
         if (template != null) {
-            final HyggServer server = new HyggServer(type, info.getGameType(), info.getMap(), info.getAccessibility(), info.getProcess(), info.getData(), info.getSlots());
+            final HyggServer server = new HyggServer(Hyggdrasil.getConfig().getDocker().getServicesPrefix(), type, info.getGameType(), info.getMap(), info.getAccessibility(), info.getProcess(), info.getData(), info.getSlots());
             final String serverName = server.getName();
 
             this.hyggdrasil.getTemplateManager().getDownloader().copyFiles(template, Paths.get(References.SERVERS_FOLDER.toString(), serverName));
