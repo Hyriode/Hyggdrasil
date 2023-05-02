@@ -62,7 +62,7 @@ public class HyggServer {
      * @param slots The slots of the server
      */
     public HyggServer(String prefix, String type, @Nullable String gameType, String map, Accessibility accessibility, Process process, HyggData data, int slots) {
-        this.name = type + "-" + UUID.randomUUID().toString().substring(0, 5);
+        this.name = prefix + type + "-" + UUID.randomUUID().toString().substring(0, 5);
         this.type = type;
         this.gameType = gameType;
         this.map = map;
@@ -358,8 +358,10 @@ public class HyggServer {
         PLAYING(3),
         /** Server is stopping (onDisable in plugin) */
         SHUTDOWN(4),
+        /** Server is pausing (it might be in a pool waiting for players) */
+        IDLE(6),
         /** Server is idling (an error occurred or just freezing) */
-        IDLE(5);
+        PAUSE(5);
 
         /** The identifier of the state */
         private final int id;

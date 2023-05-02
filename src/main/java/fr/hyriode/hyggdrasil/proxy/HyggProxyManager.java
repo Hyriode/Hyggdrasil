@@ -69,6 +69,10 @@ public class HyggProxyManager {
         final HyggProxy proxy = new HyggProxy(this.generateName(), data);
         final String proxyName = proxy.getName();
 
+        if (this.getProxy(proxyName) != null) {
+            return null;
+        }
+
         proxy.setPort(this.getPort());
 
         this.hyggdrasil.getTemplateManager().getDownloader().copyFiles(this.proxyTemplate, Paths.get(References.PROXIES_FOLDER.toString(), proxyName));
