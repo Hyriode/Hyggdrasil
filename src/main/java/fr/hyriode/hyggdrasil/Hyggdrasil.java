@@ -1,6 +1,7 @@
 package fr.hyriode.hyggdrasil;
 
 import fr.hyriode.hyggdrasil.api.HyggdrasilAPI;
+import fr.hyriode.hyggdrasil.api.HyggdrasilStartedEvent;
 import fr.hyriode.hyggdrasil.api.protocol.HyggChannel;
 import fr.hyriode.hyggdrasil.api.protocol.data.HyggApplication;
 import fr.hyriode.hyggdrasil.api.protocol.data.HyggEnv;
@@ -77,6 +78,8 @@ public class Hyggdrasil {
         new HeartbeatsCheck(this);
 
         this.registerReceivers();
+
+        this.api.getEventBus().publish(new HyggdrasilStartedEvent());
 
         Runtime.getRuntime().addShutdownHook(new Thread(this::shutdown));
     }
