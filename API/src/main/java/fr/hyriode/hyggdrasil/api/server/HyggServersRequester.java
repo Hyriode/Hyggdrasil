@@ -8,6 +8,8 @@ import fr.hyriode.hyggdrasil.api.protocol.packet.HyggPacket;
 import fr.hyriode.hyggdrasil.api.protocol.packet.HyggRequest;
 import fr.hyriode.hyggdrasil.api.protocol.response.HyggResponse;
 import fr.hyriode.hyggdrasil.api.protocol.response.content.HyggServerContent;
+import fr.hyriode.hyggdrasil.api.server.packet.HyggPauseServerPacket;
+import fr.hyriode.hyggdrasil.api.server.packet.HyggUnpauseServerPacket;
 import fr.hyriode.hyggdrasil.api.server.packet.HyggStartServerPacket;
 import fr.hyriode.hyggdrasil.api.server.packet.HyggStopServerPacket;
 import org.jetbrains.annotations.NotNull;
@@ -106,12 +108,54 @@ public class HyggServersRequester {
                 .withResponseCallback(response -> {
                     final HyggResponse.Type type = response.getType();
 
-                    if (type != SUCCESS) {
+                    if (type == SUCCESS) {
                         if (onRemoved != null) {
                             onRemoved.run();
                         }
-
+                    } else {
                         System.err.println("Couldn't remove a server with name: " + serverName + ". Returned message: " + type + ".");
+                    }
+                }).exec();
+    }
+
+    /**
+     * Pause a given server
+     *
+     * @param serverName The name of the server to pause
+     * @param onPause The task to run when the server is paused
+     */
+    public void pauseServer(@NotNull String serverName, @Nullable Runnable onPause) {
+        this.query(new HyggPauseServerPacket(serverName))
+                .withResponseCallback(response -> {
+                    final HyggResponse.Type type = response.getType();
+
+                    if (type == SUCCESS) {
+                        if (onPause != null) {
+                            onPause.run();
+                        }
+                    } else {
+                        System.err.println("Couldn't pause a server with name: " + serverName + ". Returned message: " + type + ".");
+                    }
+                }).exec();
+    }
+
+    /**
+     * Resume a given server
+     *
+     * @param serverName The name of the server to resume
+     * @param onResume The task to run when the server is resumed
+     */
+    public void resumeServer(@NotNull String serverName, @Nullable Runnable onResume) {
+        this.query(new HyggUnpauseServerPacket(serverName))
+                .withResponseCallback(response -> {
+                    final HyggResponse.Type type = response.getType();
+
+                    if (type == SUCCESS) {
+                        if (onResume != null) {
+                            onResume.run();
+                        }
+                    } else {
+                        System.err.println("Couldn't resume a server with name: " + serverName + ". Returned message: " + type + ".");
                     }
                 }).exec();
     }
@@ -123,7 +167,7 @@ public class HyggServersRequester {
      * @param waitingState The state to wait for
      * @param callback The {@link Consumer} to call when the server has the good state
      */
-    public void waitForServerState(@NotNull String serverName, @NotNull  HyggServer.State waitingState, @NotNull Consumer<HyggServer> callback) {
+    public void waitForServerState(@NotNull String serverName, @NotNull HyggServer.State waitingState, @NotNull Consumer<HyggServer> callback) {
         this.hyggdrasilAPI.getEventBus().subscribe(HyggServerUpdatedEvent.class, new WaitingStateListener(serverName, waitingState, callback));
     }
 

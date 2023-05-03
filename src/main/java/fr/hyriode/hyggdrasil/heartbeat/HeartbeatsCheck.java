@@ -42,7 +42,7 @@ public class HeartbeatsCheck implements Runnable {
         for (HyggServer server : this.serverManager.getServers()) {
             final long lastHeartbeat = server.getLastHeartbeat();
 
-            if ((lastHeartbeat == -1 && currentTime - server.getStartedTime() <= MAX_FIRST_HEARTBEAT) || this.isResponding(currentTime, lastHeartbeat)) {
+            if ((lastHeartbeat == -1 && currentTime - server.getStartedTime() <= MAX_FIRST_HEARTBEAT) || this.isResponding(currentTime, lastHeartbeat) || server.getState() == HyggServer.State.PAUSE) {
                 continue;
             }
 

@@ -9,9 +9,7 @@ import fr.hyriode.hyggdrasil.api.protocol.response.HyggResponsePacket;
 import fr.hyriode.hyggdrasil.api.proxy.packet.HyggProxyInfoPacket;
 import fr.hyriode.hyggdrasil.api.proxy.packet.HyggStartProxyPacket;
 import fr.hyriode.hyggdrasil.api.proxy.packet.HyggStopProxyPacket;
-import fr.hyriode.hyggdrasil.api.server.packet.HyggServerInfoPacket;
-import fr.hyriode.hyggdrasil.api.server.packet.HyggStartServerPacket;
-import fr.hyriode.hyggdrasil.api.server.packet.HyggStopServerPacket;
+import fr.hyriode.hyggdrasil.api.server.packet.*;
 
 /**
  * Project: Hyggdrasil
@@ -29,11 +27,12 @@ public enum HyggProtocol {
     PROXY_STOP(31, HyggStopProxyPacket.class),
     PROXY_INFO(32, HyggProxyInfoPacket.class),
 
-
     /** Server packets section */
     SERVER_START(50, HyggStartServerPacket.class),
     SERVER_STOP(51, HyggStopServerPacket.class),
     SERVER_INFO(52, HyggServerInfoPacket.class),
+    SERVER_PAUSE(53, HyggPauseServerPacket.class),
+    SERVER_RESUME(54, HyggUnpauseServerPacket.class),
 
     /** Limbos packets section */
     LIMBO_START(70, HyggStartLimboPacket.class),

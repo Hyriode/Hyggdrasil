@@ -6,15 +6,10 @@ import fr.hyriode.hyggdrasil.api.event.HyggEventBus;
 import fr.hyriode.hyggdrasil.api.event.model.server.HyggServerStartedEvent;
 import fr.hyriode.hyggdrasil.api.event.model.server.HyggServerStoppedEvent;
 import fr.hyriode.hyggdrasil.api.event.model.server.HyggServerUpdatedEvent;
-import fr.hyriode.hyggdrasil.api.protocol.HyggChannel;
-import fr.hyriode.hyggdrasil.api.protocol.packet.HyggPacketProcessor;
-import fr.hyriode.hyggdrasil.api.protocol.response.HyggResponse;
-import fr.hyriode.hyggdrasil.api.protocol.response.HyggResponseCallback;
 import fr.hyriode.hyggdrasil.api.server.HyggServer;
 import fr.hyriode.hyggdrasil.api.server.HyggServerCreationInfo;
 import fr.hyriode.hyggdrasil.api.server.HyggServersRequester;
 import fr.hyriode.hyggdrasil.api.server.packet.HyggServerInfoPacket;
-import fr.hyriode.hyggdrasil.api.server.packet.HyggStopServerPacket;
 import fr.hyriode.hyggdrasil.docker.image.DockerImage;
 import fr.hyriode.hyggdrasil.docker.swarm.DockerSwarm;
 import fr.hyriode.hyggdrasil.template.HyggTemplate;
@@ -27,8 +22,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-
-import static fr.hyriode.hyggdrasil.api.protocol.response.HyggResponse.Type.SUCCESS;
 
 /**
  * Project: Hyggdrasil
@@ -78,7 +71,39 @@ public class HyggServerManager {
         return null;
     }
 
-    public void updateServerInfo(HyggServer server, HyggServerInfoPacket packet) {
+    public boolean pauseServer(String serverName) {
+        final HyggServer server = this.getServer(serverName);
+
+        if (server != null) {
+            this.swarm.pauseReplica(server.getContainerId());
+
+            server.setState(HyggServer.State.PAUSE);
+
+            this.updateServer(server);
+            return true;
+        }
+        return false;
+    }
+
+    public boolean unpauseServer(String serverName) {
+        final HyggServer server = this.getServer(serverName);
+
+        if (server != null) {
+            this.swarm.unpauseReplica(server.getContainerId());
+            
+            this.updateServer(server);
+            return true;
+        }
+        return false;
+    }
+
+    public void firstHeartbeat(HyggServer server) {
+        server.setContainerId(this.swarm.replicaId(server.getName()));
+
+        this.updateServer(server);
+    }
+
+    public void syncServerInfo(HyggServer server, HyggServerInfoPacket packet) {
         final HyggServer info = packet.getServer();
 
         server.setMap(info.getMap());
@@ -119,17 +144,6 @@ public class HyggServerManager {
 
     public HyggServer getServer(String serverName) {
         return this.servers.get(serverName);
-    }
-
-    public Set<HyggServer> getServersByType(String serverType) {
-        final Set<HyggServer> result = new HashSet<>();
-
-        for (HyggServer server : this.servers.values()) {
-            if (server.getType().equals(serverType)) {
-                result.add(server);
-            }
-        }
-        return Collections.unmodifiableSet(result);
     }
 
     public Set<HyggServer> getServers() {
