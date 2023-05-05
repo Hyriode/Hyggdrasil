@@ -17,8 +17,6 @@ import fr.hyriode.hyggdrasil.util.IOUtil;
 import fr.hyriode.hyggdrasil.util.References;
 
 import java.nio.file.Paths;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -59,7 +57,7 @@ public class HyggServerManager {
             final String serverName = server.getName();
 
             this.hyggdrasil.getTemplateManager().getDownloader().copyFiles(template, Paths.get(References.SERVERS_FOLDER.toString(), serverName));
-            this.swarm.runService(new HyggServerService(server, template, info, this.proxyImage));
+            this.swarm.runService(new HyggServerService(server, info, this.proxyImage));
             this.servers.put(serverName, server);
             this.hyggdrasil.getAPI().redisProcess(jedis -> jedis.set(HyggServersRequester.REDIS_KEY + server.getName(), HyggdrasilAPI.GSON.toJson(server))); // Save server in Redis cache
             this.eventBus.publish(new HyggServerStartedEvent(server));

@@ -9,35 +9,17 @@ import java.util.Map;
 public class HyggTemplate {
 
     private String name;
-    private String maxMemory;
-    private String minMemory;
-    private double cpus;
     private Map<String, File> files;
 
     private HyggTemplate() {}
 
-    public HyggTemplate(String name, String maxMemory, String minMemory, double cpus, Map<String, File> files) {
+    public HyggTemplate(String name, Map<String, File> files) {
         this.name = name;
-        this.maxMemory = maxMemory;
-        this.minMemory = minMemory;
-        this.cpus = cpus;
         this.files = files;
     }
 
     public String getName() {
         return this.name;
-    }
-
-    public String getMaxMemory() {
-        return this.maxMemory;
-    }
-
-    public String getMinMemory() {
-        return this.minMemory;
-    }
-
-    public double getCpus() {
-        return this.cpus;
     }
 
     public Map<String, File> getFiles() {
@@ -50,14 +32,16 @@ public class HyggTemplate {
         private String container;
         private String blob;
         private String destination;
+        private boolean hot;
 
         private File() {}
 
-        public File(String name, String container, String blob, String destination) {
+        public File(String name, String container, String blob, String destination, boolean hot) {
             this.name = name;
             this.container = container;
             this.blob = blob;
             this.destination = destination;
+            this.hot = hot;
         }
 
         public String getName() {
@@ -74,6 +58,10 @@ public class HyggTemplate {
 
         public String getDestination() {
             return this.destination;
+        }
+
+        public boolean isHot() {
+            return this.hot;
         }
 
     }
