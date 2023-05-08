@@ -6,17 +6,13 @@ import fr.hyriode.hyggdrasil.api.event.HyggEventBus;
 import fr.hyriode.hyggdrasil.api.event.model.proxy.HyggProxyStartedEvent;
 import fr.hyriode.hyggdrasil.api.event.model.proxy.HyggProxyStoppedEvent;
 import fr.hyriode.hyggdrasil.api.event.model.proxy.HyggProxyUpdatedEvent;
-import fr.hyriode.hyggdrasil.api.protocol.HyggChannel;
 import fr.hyriode.hyggdrasil.api.protocol.data.HyggData;
-import fr.hyriode.hyggdrasil.api.protocol.packet.HyggPacketProcessor;
-import fr.hyriode.hyggdrasil.api.protocol.response.HyggResponse;
-import fr.hyriode.hyggdrasil.api.protocol.response.HyggResponseCallback;
 import fr.hyriode.hyggdrasil.api.proxy.HyggProxiesRequester;
 import fr.hyriode.hyggdrasil.api.proxy.HyggProxy;
 import fr.hyriode.hyggdrasil.api.proxy.packet.HyggProxyInfoPacket;
-import fr.hyriode.hyggdrasil.api.proxy.packet.HyggStopProxyPacket;
 import fr.hyriode.hyggdrasil.docker.image.DockerImage;
 import fr.hyriode.hyggdrasil.docker.swarm.DockerSwarm;
+import fr.hyriode.hyggdrasil.service.HyggServiceResources;
 import fr.hyriode.hyggdrasil.template.HyggTemplate;
 import fr.hyriode.hyggdrasil.util.IOUtil;
 import fr.hyriode.hyggdrasil.util.References;
@@ -25,8 +21,6 @@ import java.nio.file.Paths;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-
-import static fr.hyriode.hyggdrasil.api.protocol.response.HyggResponse.Type.SUCCESS;
 
 /**
  * Project: Hyggdrasil
@@ -83,6 +77,7 @@ public class HyggProxyManager {
 
         System.out.println("Started '" + proxyName + "' [" + this.proxies.size() + "/" + this.maxProxies + "].");
 
+        proxy.setContainerResources(new HyggServiceResources(this.hyggdrasil, proxy));
         return proxy;
     }
 
@@ -115,6 +110,12 @@ public class HyggProxyManager {
         proxy.setData(info.getData());
         proxy.setState(info.getState());
         proxy.setPlayers(info.getPlayers());
+
+        this.updateProxy(proxy);
+    }
+
+    public void firstHeartbeat(HyggProxy proxy) {
+        proxy.setContainerId(this.swarm.replicaId(proxy.getName()));
 
         this.updateProxy(proxy);
     }

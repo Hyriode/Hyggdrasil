@@ -41,7 +41,7 @@ public class HyggProxiesReceiver implements IHyggPacketReceiver {
             }
 
             if (packet instanceof HyggHeartbeatPacket && proxy.heartbeat()) {
-                proxyManager.updateProxy(proxy);
+                proxyManager.firstHeartbeat(proxy);
             }
             return HyggResponse.Type.SUCCESS.toResponse();
         }
