@@ -83,7 +83,7 @@ public class HyggTemplateDownloader {
                     this.count++;
                 }
             }
-        }, 2, 2, TimeUnit.MINUTES);
+        }, 10, 10, TimeUnit.MINUTES);
     }
 
     public Set<String> process(HyggTemplate template, boolean onlyHot) {
