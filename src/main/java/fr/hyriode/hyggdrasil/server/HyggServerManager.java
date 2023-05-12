@@ -69,32 +69,6 @@ public class HyggServerManager {
         return null;
     }
 
-    public boolean pauseServer(String serverName) {
-        final HyggServer server = this.getServer(serverName);
-
-        if (server != null) {
-            this.swarm.pauseReplica(server.getContainerId());
-
-            server.setState(HyggServer.State.PAUSE);
-
-            this.updateServer(server);
-            return true;
-        }
-        return false;
-    }
-
-    public boolean unpauseServer(String serverName) {
-        final HyggServer server = this.getServer(serverName);
-
-        if (server != null) {
-            this.swarm.unpauseReplica(server.getContainerId());
-            
-            this.updateServer(server);
-            return true;
-        }
-        return false;
-    }
-
     public void firstHeartbeat(HyggServer server) {
         server.setContainerId(this.swarm.replicaId(server.getName()));
 

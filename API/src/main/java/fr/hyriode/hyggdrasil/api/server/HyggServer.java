@@ -383,9 +383,7 @@ public class HyggServer {
         /** Server is stopping (onDisable in plugin) */
         SHUTDOWN(4),
         /** Server is pausing (it might be in a pool waiting for players) */
-        IDLE(6),
-        /** Server is idling (an error occurred or just freezing) */
-        PAUSE(5);
+        IDLE(5);
 
         /** The identifier of the state */
         private final int id;
