@@ -13,7 +13,6 @@ import fr.hyriode.hyggdrasil.api.protocol.data.HyggData;
 import fr.hyriode.hyggdrasil.api.protocol.packet.HyggPacketProcessor;
 import fr.hyriode.hyggdrasil.docker.image.DockerImage;
 import fr.hyriode.hyggdrasil.docker.swarm.DockerSwarm;
-import fr.hyriode.hyggdrasil.service.HyggServiceResources;
 import fr.hyriode.hyggdrasil.template.HyggTemplate;
 import fr.hyriode.hyggdrasil.util.References;
 
@@ -64,7 +63,6 @@ public class HyggLimboManager {
 
         System.out.println("Started '" + limboName + "'.");
 
-        limbo.setContainerResources(new HyggServiceResources(this.hyggdrasil, limbo));
         return limbo;
     }
 

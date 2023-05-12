@@ -1,8 +1,6 @@
 package fr.hyriode.hyggdrasil.api.limbo;
 
 import fr.hyriode.hyggdrasil.api.protocol.data.HyggData;
-import fr.hyriode.hyggdrasil.api.service.IHyggService;
-import fr.hyriode.hyggdrasil.api.service.IHyggServiceResources;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashSet;
@@ -13,7 +11,7 @@ import java.util.UUID;
  * Created by AstFaster
  * on 25/12/2022 at 15:20
  */
-public class HyggLimbo implements IHyggService {
+public class HyggLimbo {
 
     /** The maximum amount of players that can handle a limbo */
     public static final int MAX_PLAYERS = 2000;
@@ -35,9 +33,6 @@ public class HyggLimbo implements IHyggService {
     protected final long startedTime;
     /** The last heartbeat of the limbo */
     protected long lastHeartbeat = -1;
-
-    /** The resource usage of the limbo */
-    protected IHyggServiceResources containerResources;
 
     /**
      * Default constructor of a {@link HyggLimbo}
@@ -80,7 +75,6 @@ public class HyggLimbo implements IHyggService {
      * @return A name. E.g. limbo-ds567
      */
     @NotNull
-    @Override
     public String getName() {
         return this.name;
     }
@@ -148,7 +142,6 @@ public class HyggLimbo implements IHyggService {
      * @return A set of players
      */
     @NotNull
-    @Override
     public Set<UUID> getPlayers() {
         return this.players;
     }
@@ -167,7 +160,6 @@ public class HyggLimbo implements IHyggService {
      *
      * @return A timestamp (in milliseconds)
      */
-    @Override
     public long getStartedTime() {
         return this.startedTime;
     }
@@ -194,7 +186,6 @@ public class HyggLimbo implements IHyggService {
      *
      * @return A timestamp (in milliseconds)
      */
-    @Override
     public long getLastHeartbeat() {
         return this.lastHeartbeat;
     }
@@ -219,16 +210,6 @@ public class HyggLimbo implements IHyggService {
         }
 
         this.containerId = containerId;
-    }
-
-    @Override
-    public IHyggServiceResources getContainerResources() {
-        return this.containerResources;
-    }
-
-    @Override
-    public void setContainerResources(IHyggServiceResources containerResources) {
-        this.containerResources = containerResources;
     }
 
     /** The different types of limbo that could exist */

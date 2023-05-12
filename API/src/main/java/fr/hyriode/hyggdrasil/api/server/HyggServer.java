@@ -1,8 +1,6 @@
 package fr.hyriode.hyggdrasil.api.server;
 
 import fr.hyriode.hyggdrasil.api.protocol.data.HyggData;
-import fr.hyriode.hyggdrasil.api.service.IHyggService;
-import fr.hyriode.hyggdrasil.api.service.IHyggServiceResources;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -17,7 +15,7 @@ import java.util.UUID;
  *
  * The main object of what a server is.
  */
-public class HyggServer implements IHyggService {
+public class HyggServer {
 
     /** The name of the server */
     protected final String name;
@@ -52,9 +50,6 @@ public class HyggServer implements IHyggService {
     protected final long startedTime;
     /** The last time the server sent a heartbeat */
     protected long lastHeartbeat = -1;
-
-    /** The resource usage of the server */
-    protected IHyggServiceResources containerResources;
 
     /**
      * Simple constructor of a {@link HyggServer}
@@ -121,7 +116,6 @@ public class HyggServer implements IHyggService {
      *
      * @return A server name
      */
-    @Override
     public String getName() {
         return this.name;
     }
@@ -244,7 +238,6 @@ public class HyggServer implements IHyggService {
      *
      * @return The list of players
      */
-    @Override
     public Set<UUID> getPlayers() {
         return this.players;
     }
@@ -299,7 +292,6 @@ public class HyggServer implements IHyggService {
      *
      * @return Server's started time
      */
-    @Override
     public long getStartedTime() {
         return this.startedTime;
     }
@@ -326,7 +318,6 @@ public class HyggServer implements IHyggService {
      *
      * @return A timestamp
      */
-    @Override
     public long getLastHeartbeat() {
         return this.lastHeartbeat;
     }
@@ -351,16 +342,6 @@ public class HyggServer implements IHyggService {
         }
 
         this.containerId = containerId;
-    }
-
-    @Override
-    public IHyggServiceResources getContainerResources() {
-        return this.containerResources;
-    }
-
-    @Override
-    public void setContainerResources(IHyggServiceResources containerResources) {
-        this.containerResources = containerResources;
     }
 
     @Override

@@ -12,7 +12,6 @@ import fr.hyriode.hyggdrasil.api.server.HyggServersRequester;
 import fr.hyriode.hyggdrasil.api.server.packet.HyggServerInfoPacket;
 import fr.hyriode.hyggdrasil.docker.image.DockerImage;
 import fr.hyriode.hyggdrasil.docker.swarm.DockerSwarm;
-import fr.hyriode.hyggdrasil.service.HyggServiceResources;
 import fr.hyriode.hyggdrasil.template.HyggTemplate;
 import fr.hyriode.hyggdrasil.util.IOUtil;
 import fr.hyriode.hyggdrasil.util.References;
@@ -65,7 +64,6 @@ public class HyggServerManager {
 
             System.out.println("Started '" + serverName + "' (" + type + (server.getGameType() != null ? "#" + server.getGameType() : "") + (server.getMap() != null ? " with map: " + server.getMap() : "") + ").");
 
-            server.setContainerResources(new HyggServiceResources(this.hyggdrasil, server));
             return server;
         }
         return null;

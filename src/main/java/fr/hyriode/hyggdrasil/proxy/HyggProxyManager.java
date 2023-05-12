@@ -12,7 +12,6 @@ import fr.hyriode.hyggdrasil.api.proxy.HyggProxy;
 import fr.hyriode.hyggdrasil.api.proxy.packet.HyggProxyInfoPacket;
 import fr.hyriode.hyggdrasil.docker.image.DockerImage;
 import fr.hyriode.hyggdrasil.docker.swarm.DockerSwarm;
-import fr.hyriode.hyggdrasil.service.HyggServiceResources;
 import fr.hyriode.hyggdrasil.template.HyggTemplate;
 import fr.hyriode.hyggdrasil.util.IOUtil;
 import fr.hyriode.hyggdrasil.util.References;
@@ -77,7 +76,6 @@ public class HyggProxyManager {
 
         System.out.println("Started '" + proxyName + "' [" + this.proxies.size() + "/" + this.maxProxies + "].");
 
-        proxy.setContainerResources(new HyggServiceResources(this.hyggdrasil, proxy));
         return proxy;
     }
 

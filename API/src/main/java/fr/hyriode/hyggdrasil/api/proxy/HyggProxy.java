@@ -1,8 +1,6 @@
 package fr.hyriode.hyggdrasil.api.proxy;
 
 import fr.hyriode.hyggdrasil.api.protocol.data.HyggData;
-import fr.hyriode.hyggdrasil.api.service.IHyggService;
-import fr.hyriode.hyggdrasil.api.service.IHyggServiceResources;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashSet;
@@ -16,7 +14,7 @@ import java.util.UUID;
  *
  * The main object of what a proxy is.
  */
-public class HyggProxy implements IHyggService {
+public class HyggProxy {
 
     /** The maximum amount of players that can handle a proxy */
     public static final int MAX_PLAYERS = 750;
@@ -39,9 +37,6 @@ public class HyggProxy implements IHyggService {
 
     /** The port of the server */
     protected int port = -1;
-
-    /** The resource usage of the proxy */
-    protected IHyggServiceResources containerResources;
 
     /**
      * Default constructor of a {@link HyggProxy}
@@ -80,7 +75,6 @@ public class HyggProxy implements IHyggService {
      * @return A name. E.g. proxy-ds567
      */
     @NotNull
-    @Override
     public String getName() {
         return this.name;
     }
@@ -129,7 +123,6 @@ public class HyggProxy implements IHyggService {
      * @return A set of players
      */
     @NotNull
-    @Override
     public Set<UUID> getPlayers() {
         return this.players;
     }
@@ -148,7 +141,6 @@ public class HyggProxy implements IHyggService {
      *
      * @return A timestamp (in milliseconds)
      */
-    @Override
     public long getStartedTime() {
         return this.startedTime;
     }
@@ -195,7 +187,6 @@ public class HyggProxy implements IHyggService {
      *
      * @return A timestamp (in milliseconds)
      */
-    @Override
     public long getLastHeartbeat() {
         return this.lastHeartbeat;
     }
@@ -220,16 +211,6 @@ public class HyggProxy implements IHyggService {
         }
 
         this.containerId = containerId;
-    }
-
-    @Override
-    public IHyggServiceResources getContainerResources() {
-        return this.containerResources;
-    }
-
-    @Override
-    public void setContainerResources(IHyggServiceResources containerResources) {
-        this.containerResources = containerResources;
     }
 
     public enum State {
