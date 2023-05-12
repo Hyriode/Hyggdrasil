@@ -31,8 +31,6 @@ public enum HyggProtocol {
     SERVER_START(50, HyggStartServerPacket.class),
     SERVER_STOP(51, HyggStopServerPacket.class),
     SERVER_INFO(52, HyggServerInfoPacket.class),
-    SERVER_PAUSE(53, HyggPauseServerPacket.class),
-    SERVER_RESUME(54, HyggUnpauseServerPacket.class),
 
     /** Limbos packets section */
     LIMBO_START(70, HyggStartLimboPacket.class),

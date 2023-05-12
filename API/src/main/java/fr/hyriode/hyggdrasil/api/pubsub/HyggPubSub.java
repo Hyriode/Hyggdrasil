@@ -3,12 +3,15 @@ package fr.hyriode.hyggdrasil.api.pubsub;
 import fr.hyriode.hyggdrasil.api.HyggdrasilAPI;
 import fr.hyriode.hyggdrasil.api.protocol.HyggChannel;
 import fr.hyriode.hyggdrasil.api.protocol.receiver.IHyggReceiver;
+import fr.hyriode.hylios.api.MetricsRedisKey;
 import redis.clients.jedis.JedisPubSub;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
 /**
@@ -29,6 +32,8 @@ public class HyggPubSub extends JedisPubSub {
 
     /** {@link HyggdrasilAPI} instance */
     private final HyggdrasilAPI hyggdrasilAPI;
+
+    private long sent;
 
     /**
      * Constructor of {@link HyggPubSub}
@@ -59,6 +64,13 @@ public class HyggPubSub extends JedisPubSub {
             }
         }, "PubSub Subscriber");
         this.subscriberThread.start();
+
+        Executors.newScheduledThreadPool(1).scheduleAtFixedRate(() -> {
+            final String key = MetricsRedisKey.HYGGDRASIL_PACKETS.getKey();
+            this.hyggdrasilAPI.redisProcess(jedis -> jedis.incrBy(key, this.sent));
+
+            this.sent = 0;
+        }, 10, 10, TimeUnit.SECONDS);
     }
 
     /**
@@ -83,6 +95,7 @@ public class HyggPubSub extends JedisPubSub {
      * @param message The message to send
      */
     public void send(HyggChannel channel, String message) {
+        this.sent++;
         this.hyggdrasilAPI.redisProcess(jedis -> jedis.publish(channel.getName(), message));
     }
 

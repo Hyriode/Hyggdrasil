@@ -15,8 +15,6 @@ import fr.hyriode.hyggdrasil.api.proxy.HyggProxy;
 import fr.hyriode.hyggdrasil.api.proxy.packet.HyggStartProxyPacket;
 import fr.hyriode.hyggdrasil.api.proxy.packet.HyggStopProxyPacket;
 import fr.hyriode.hyggdrasil.api.server.HyggServer;
-import fr.hyriode.hyggdrasil.api.server.packet.HyggPauseServerPacket;
-import fr.hyriode.hyggdrasil.api.server.packet.HyggUnpauseServerPacket;
 import fr.hyriode.hyggdrasil.api.server.packet.HyggStartServerPacket;
 import fr.hyriode.hyggdrasil.api.server.packet.HyggStopServerPacket;
 import fr.hyriode.hyggdrasil.limbo.HyggLimboManager;
@@ -60,10 +58,6 @@ public class HyggQueryReceiver implements IHyggPacketReceiver {
             return server != null ? new HyggResponse(SUCCESS, new HyggServerContent(server)) : ERROR.toResponse();
         } else if (packet instanceof final HyggStopServerPacket query) {
             return (this.serverManager.stopServer(query.getServerName()) ? SUCCESS : ERROR).toResponse();
-        } else if (packet instanceof final HyggPauseServerPacket query) {
-            return (this.serverManager.pauseServer(query.getServerName()) ? SUCCESS : ERROR).toResponse();
-        } else if (packet instanceof final HyggUnpauseServerPacket query) {
-            return (this.serverManager.unpauseServer(query.getServerName()) ? SUCCESS : ERROR).toResponse();
         }
 
         // Limbos

@@ -9,12 +9,8 @@ import fr.hyriode.hyggdrasil.api.event.model.limbo.HyggLimboUpdatedEvent;
 import fr.hyriode.hyggdrasil.api.limbo.HyggLimbo;
 import fr.hyriode.hyggdrasil.api.limbo.HyggLimbosRequester;
 import fr.hyriode.hyggdrasil.api.limbo.packet.HyggLimboInfoPacket;
-import fr.hyriode.hyggdrasil.api.limbo.packet.HyggStopLimboPacket;
-import fr.hyriode.hyggdrasil.api.protocol.HyggChannel;
 import fr.hyriode.hyggdrasil.api.protocol.data.HyggData;
 import fr.hyriode.hyggdrasil.api.protocol.packet.HyggPacketProcessor;
-import fr.hyriode.hyggdrasil.api.protocol.response.HyggResponse;
-import fr.hyriode.hyggdrasil.api.protocol.response.HyggResponseCallback;
 import fr.hyriode.hyggdrasil.docker.image.DockerImage;
 import fr.hyriode.hyggdrasil.docker.swarm.DockerSwarm;
 import fr.hyriode.hyggdrasil.template.HyggTemplate;
@@ -24,8 +20,6 @@ import java.nio.file.Paths;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-
-import static fr.hyriode.hyggdrasil.api.protocol.response.HyggResponse.Type.SUCCESS;
 
 /**
  * Created by AstFaster
@@ -78,6 +72,12 @@ public class HyggLimboManager {
         limbo.setData(info.getData());
         limbo.setState(info.getState());
         limbo.setPlayers(info.getPlayers());
+
+        this.updateLimbo(limbo);
+    }
+
+    public void firstHeartbeat(HyggLimbo limbo) {
+        limbo.setContainerId(this.swarm.replicaId(limbo.getName()));
 
         this.updateLimbo(limbo);
     }
