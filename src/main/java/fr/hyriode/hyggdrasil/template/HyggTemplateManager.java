@@ -49,7 +49,7 @@ public class HyggTemplateManager {
                 this.templates.put(template.getName(), template);
 
                 if (this.downloader != null) {
-                    this.downloader.process(template, false);
+                    this.downloader.process(template);
                 }
 
                 System.out.println("Loaded '" + template.getName() + "' template.");

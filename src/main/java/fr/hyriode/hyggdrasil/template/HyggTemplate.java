@@ -32,16 +32,14 @@ public class HyggTemplate {
         private String container;
         private String blob;
         private String destination;
-        private boolean hot;
 
         private File() {}
 
-        public File(String name, String container, String blob, String destination, boolean hot) {
+        public File(String name, String container, String blob, String destination) {
             this.name = name;
             this.container = container;
             this.blob = blob;
             this.destination = destination;
-            this.hot = hot;
         }
 
         public String getName() {
@@ -58,10 +56,6 @@ public class HyggTemplate {
 
         public String getDestination() {
             return this.destination;
-        }
-
-        public boolean isHot() {
-            return this.hot;
         }
 
     }
