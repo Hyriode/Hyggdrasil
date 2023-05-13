@@ -47,55 +47,39 @@ public class HyggTemplateDownloader {
 
         // First, download files synchronously
         for (HyggTemplate template : this.templateManager.getTemplates().values()) {
-            this.process(template, false);
+            this.process(template);
         }
 
-        this.hyggdrasil.getAPI().getExecutorService().scheduleAtFixedRate(new Runnable() {
+        this.hyggdrasil.getAPI().getExecutorService().scheduleAtFixedRate(() -> {
+            final Set<String> updatedFiles = new HashSet<>();
 
-            private int count = 0;
+            // Update templates files
+            for (HyggTemplate template : templateManager.getTemplates().values()) {
+                updatedFiles.addAll(process(template));
+            }
 
-            @Override
-            public void run() {
-                final Set<String> updatedFiles = new HashSet<>();
-
-                // Update templates files
+            // Trigger event for each template updated
+            for (String fileName : updatedFiles) {
                 for (HyggTemplate template : templateManager.getTemplates().values()) {
-                    updatedFiles.addAll(process(template, this.count != 5));
-                }
+                    for (HyggTemplate.File file : template.getFiles().values()) {
+                        if (file.getName().equals(fileName)) {
+                            System.out.println("Updated '" + template.getName() + "' template.");
 
-                // Trigger event for each template updated
-                for (String fileName : updatedFiles) {
-                    for (HyggTemplate template : templateManager.getTemplates().values()) {
-                        for (HyggTemplate.File file : template.getFiles().values()) {
-                            if (file.getName().equals(fileName)) {
-                                System.out.println("Updated '" + template.getName() + "' template.");
-
-                                hyggdrasil.getAPI().getEventBus().publish(new HyggTemplateUpdatedEvent(template.getName()));
-                                break;
-                            }
+                            hyggdrasil.getAPI().getEventBus().publish(new HyggTemplateUpdatedEvent(template.getName()));
+                            break;
                         }
                     }
                 }
-
-                if (this.count == 5) {
-                    this.count = 0;
-                } else {
-                    this.count++;
-                }
             }
-        }, 10, 10, TimeUnit.MINUTES);
+        }, 1, 1, TimeUnit.MINUTES);
     }
 
-    public Set<String> process(HyggTemplate template, boolean onlyHot) {
+    public Set<String> process(HyggTemplate template) {
         final Set<String> updatedFiles = new HashSet<>();
 
         for (Map.Entry<String, HyggTemplate.File> entry : template.getFiles().entrySet()) {
             final HyggTemplate.File file = entry.getValue();
             final String name = file.getName();
-
-            if (!onlyHot && file.isHot()) {
-                break;
-            }
 
             final BlobContainerClient container = this.azureContainers.getOrDefault(file.getContainer(), this.azureService.getBlobContainerClient(file.getContainer()));
 
