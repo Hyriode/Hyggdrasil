@@ -1,6 +1,7 @@
 package fr.hyriode.hyggdrasil.api.limbo;
 
 import fr.hyriode.hyggdrasil.api.protocol.data.HyggData;
+import fr.hyriode.hyggdrasil.api.service.IHyggService;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashSet;
@@ -11,7 +12,7 @@ import java.util.UUID;
  * Created by AstFaster
  * on 25/12/2022 at 15:20
  */
-public class HyggLimbo {
+public class HyggLimbo implements IHyggService {
 
     /** The maximum amount of players that can handle a limbo */
     public static final int MAX_PLAYERS = 2000;

@@ -1,6 +1,7 @@
 package fr.hyriode.hyggdrasil.api.server;
 
 import fr.hyriode.hyggdrasil.api.protocol.data.HyggData;
+import fr.hyriode.hyggdrasil.api.service.IHyggService;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -15,7 +16,7 @@ import java.util.UUID;
  *
  * The main object of what a server is.
  */
-public class HyggServer {
+public class HyggServer implements IHyggService {
 
     /** The name of the server */
     protected final String name;
