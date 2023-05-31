@@ -67,8 +67,8 @@ public class HyggPubSub extends JedisPubSub {
 
         Executors.newScheduledThreadPool(1).scheduleAtFixedRate(() -> {
             final String key = HyreosRedisKey.HYGGDRASIL_PACKETS.getKey();
-            this.hyggdrasilAPI.redisProcess(jedis -> jedis.incrBy(key, this.sent));
 
+            this.hyggdrasilAPI.redisProcess(jedis -> jedis.incrBy(key, this.sent));
             this.sent = 0;
         }, 10, 10, TimeUnit.SECONDS);
     }
