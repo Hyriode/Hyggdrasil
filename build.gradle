@@ -16,8 +16,8 @@ allprojects {
                 username System.getenv('GITHUB_USERNAME')
                 password System.getenv('GITHUB_TOKEN')
             }
-            name = "Hylios_maven"
-            url = "https://maven.pkg.github.com/Hyriode/Hylios"
+            name = "Hyreos_maven"
+            url = "https://maven.pkg.github.com/Hyriode/Hyreos"
         }
     }
 }

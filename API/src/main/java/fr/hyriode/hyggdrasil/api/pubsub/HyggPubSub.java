@@ -3,7 +3,7 @@ package fr.hyriode.hyggdrasil.api.pubsub;
 import fr.hyriode.hyggdrasil.api.HyggdrasilAPI;
 import fr.hyriode.hyggdrasil.api.protocol.HyggChannel;
 import fr.hyriode.hyggdrasil.api.protocol.receiver.IHyggReceiver;
-import fr.hyriode.hylios.api.MetricsRedisKey;
+import fr.hyriode.hyreos.api.HyreosRedisKey;
 import redis.clients.jedis.JedisPubSub;
 
 import java.util.HashMap;
@@ -66,7 +66,7 @@ public class HyggPubSub extends JedisPubSub {
         this.subscriberThread.start();
 
         Executors.newScheduledThreadPool(1).scheduleAtFixedRate(() -> {
-            final String key = MetricsRedisKey.HYGGDRASIL_PACKETS.getKey();
+            final String key = HyreosRedisKey.HYGGDRASIL_PACKETS.getKey();
             this.hyggdrasilAPI.redisProcess(jedis -> jedis.incrBy(key, this.sent));
 
             this.sent = 0;
