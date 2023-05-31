@@ -41,7 +41,7 @@ public class HyggServersReceiver implements IHyggPacketReceiver {
             }
 
             if (packet instanceof HyggHeartbeatPacket && server.heartbeat()) {
-                serverManager.firstHeartbeat(server);
+                serverManager.updateServer(server);
             }
             return HyggResponse.Type.SUCCESS.toResponse();
         }

@@ -1,5 +1,7 @@
 package fr.hyriode.hyggdrasil.config.nested;
 
+import fr.hyriode.hyggdrasil.config.nested.object.Image;
+
 /**
  * Project: Hyggdrasil
  * Created by AstFaster
@@ -10,9 +12,9 @@ public class ProxiesConfig {
     private final int maxProxies;
     private final int startingPort;
     private final String template;
-    private final String image;
+    private final Image image;
 
-    public ProxiesConfig(int maxProxies, int startingPort, String template, String image) {
+    public ProxiesConfig(int maxProxies, int startingPort, String template, Image image) {
         this.maxProxies = maxProxies;
         this.startingPort = startingPort;
         this.template = template;
@@ -20,7 +22,7 @@ public class ProxiesConfig {
     }
 
     public ProxiesConfig() {
-        this(1, 20000, "proxy", "proxy");
+        this(1, 20000, "proxy", new Image());
     }
 
     public int getMaxProxies() {
@@ -35,7 +37,7 @@ public class ProxiesConfig {
         return this.template;
     }
 
-    public String getImage() {
+    public Image getImage() {
         return this.image;
     }
 

@@ -18,7 +18,6 @@ public class HyggLimbo {
 
     /** The name of the limbo */
     protected final String name;
-    private String containerId;
 
     /** The data of the limbo */
     protected HyggData data;
@@ -188,28 +187,6 @@ public class HyggLimbo {
      */
     public long getLastHeartbeat() {
         return this.lastHeartbeat;
-    }
-
-    /**
-     * Get the id of the Docker container
-     *
-     * @return An identifier
-     */
-    public String getContainerId() {
-        return this.containerId;
-    }
-
-    /**
-     * Set the id of the Docker container
-     *
-     * @param containerId An identifier
-     */
-    public void setContainerId(String containerId) {
-        if (this.containerId != null) {
-            throw new IllegalStateException("The container id of this server is already set!");
-        }
-
-        this.containerId = containerId;
     }
 
     /** The different types of limbo that could exist */

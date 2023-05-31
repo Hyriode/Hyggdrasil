@@ -17,15 +17,15 @@ public class HyggConfig {
     public static final Path CONFIG_FILE = Paths.get("config.yml");
 
     private RedisConfig redis;
-    private DockerConfig docker;
+    private KubernetesConfig kubernetes;
     private ProxiesConfig proxies;
     private ServersConfig servers;
     private LimbosConfig limbos;
     private AzureConfig azure;
 
-    public HyggConfig(RedisConfig redis, DockerConfig docker, ProxiesConfig proxies, ServersConfig servers, LimbosConfig limbos, AzureConfig azure) {
+    public HyggConfig(RedisConfig redis, KubernetesConfig kubernetes, ProxiesConfig proxies, ServersConfig servers, LimbosConfig limbos, AzureConfig azure) {
         this.redis = redis;
-        this.docker = docker;
+        this.kubernetes = kubernetes;
         this.proxies = proxies;
         this.servers = servers;
         this.limbos = limbos;
@@ -38,8 +38,8 @@ public class HyggConfig {
         return this.redis;
     }
 
-    public DockerConfig getDocker() {
-        return this.docker;
+    public KubernetesConfig getKubernetes() {
+        return this.kubernetes;
     }
 
     public ServersConfig getServers() {
@@ -64,7 +64,7 @@ public class HyggConfig {
         if (Files.exists(CONFIG_FILE)) {
             return YamlLoader.load(CONFIG_FILE, HyggConfig.class);
         } else {
-            final HyggConfig config = new HyggConfig(new RedisConfig(), new DockerConfig(), new ProxiesConfig(), new ServersConfig(), new LimbosConfig(), new AzureConfig());
+            final HyggConfig config = new HyggConfig(new RedisConfig(), new KubernetesConfig(), new ProxiesConfig(), new ServersConfig(), new LimbosConfig(), new AzureConfig());
 
             YamlLoader.save(CONFIG_FILE, config);
 

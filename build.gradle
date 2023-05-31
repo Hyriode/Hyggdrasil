@@ -56,4 +56,5 @@ dependencies {
     implementation 'com.azure:azure-storage-blob:12.20.2'
     implementation 'org.slf4j:slf4j-nop:2.0.5'
     implementation 'jline:jline:2.14.6'
+    implementation 'io.fabric8:kubernetes-client:6.6.2'
 }

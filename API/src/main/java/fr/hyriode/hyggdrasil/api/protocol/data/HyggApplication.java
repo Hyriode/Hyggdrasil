@@ -3,7 +3,9 @@ package fr.hyriode.hyggdrasil.api.protocol.data;
 import fr.hyriode.hyggdrasil.api.HyggdrasilAPI;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 
 /**
@@ -93,12 +95,12 @@ public class HyggApplication {
      *
      * @return A list of string
      */
-    List<String> createEnvironmentVariables() {
-        final List<String> variables = new ArrayList<>();
+    Map<String, String> createEnvironmentVariables() {
+        final Map<String, String> variables = new HashMap<>();
 
-        variables.add(TYPE_ENV + "=" + this.type);
-        variables.add(NAME_ENV + "=" + this.name);
-        variables.add(STARTED_TIME_ENV + "=" + this.startedTime);
+        variables.put(TYPE_ENV, this.type.name());
+        variables.put(NAME_ENV, this.name);
+        variables.put(STARTED_TIME_ENV, String.valueOf(this.startedTime));
 
         return variables;
     }

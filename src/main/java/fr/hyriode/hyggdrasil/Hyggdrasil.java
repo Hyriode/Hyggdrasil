@@ -7,8 +7,8 @@ import fr.hyriode.hyggdrasil.api.protocol.data.HyggApplication;
 import fr.hyriode.hyggdrasil.api.protocol.data.HyggEnv;
 import fr.hyriode.hyggdrasil.api.protocol.packet.HyggPacketProcessor;
 import fr.hyriode.hyggdrasil.config.HyggConfig;
-import fr.hyriode.hyggdrasil.docker.Docker;
 import fr.hyriode.hyggdrasil.heartbeat.HeartbeatsCheck;
+import fr.hyriode.hyggdrasil.kubernetes.Kubernetes;
 import fr.hyriode.hyggdrasil.limbo.HyggLimboManager;
 import fr.hyriode.hyggdrasil.proxy.HyggProxyManager;
 import fr.hyriode.hyggdrasil.receiver.HyggLimbosReceiver;
@@ -37,7 +37,7 @@ public class Hyggdrasil {
     private HyggEnv environment;
     private HyggdrasilAPI api;
 
-    private Docker docker;
+    private Kubernetes kubernetes;
 
     private HyggTemplateManager templateManager;
     private HyggProxyManager proxyManager;
@@ -68,8 +68,7 @@ public class Hyggdrasil {
                 .withLogger(logger)
                 .build();
         this.api.start();
-        this.docker = new Docker(this);
-        this.docker.getNetworkManager().registerNetwork(References.NETWORK.get());
+        this.kubernetes = new Kubernetes();
         this.templateManager = new HyggTemplateManager(this);
         this.proxyManager = new HyggProxyManager(this);
         this.serverManager = new HyggServerManager(this);
@@ -107,6 +106,7 @@ public class Hyggdrasil {
 
             this.api.stop(References.NAME + " shutdown called");
             this.redis.disconnect();
+            this.kubernetes.shutdown();
             this.running = false;
 
             System.out.println(References.NAME + " is now down. See you soon!");
@@ -141,8 +141,8 @@ public class Hyggdrasil {
         return this.api;
     }
 
-    public Docker getDocker() {
-        return this.docker;
+    public Kubernetes getKubernetes() {
+        return this.kubernetes;
     }
 
     public HyggTemplateManager getTemplateManager() {

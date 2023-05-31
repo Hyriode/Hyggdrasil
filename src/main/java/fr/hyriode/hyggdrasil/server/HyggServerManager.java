@@ -10,8 +10,6 @@ import fr.hyriode.hyggdrasil.api.server.HyggServer;
 import fr.hyriode.hyggdrasil.api.server.HyggServerCreationInfo;
 import fr.hyriode.hyggdrasil.api.server.HyggServersRequester;
 import fr.hyriode.hyggdrasil.api.server.packet.HyggServerInfoPacket;
-import fr.hyriode.hyggdrasil.docker.image.DockerImage;
-import fr.hyriode.hyggdrasil.docker.swarm.DockerSwarm;
 import fr.hyriode.hyggdrasil.template.HyggTemplate;
 import fr.hyriode.hyggdrasil.util.IOUtil;
 import fr.hyriode.hyggdrasil.util.References;
@@ -30,18 +28,15 @@ public class HyggServerManager {
 
     private final Map<String, HyggServer> servers = new ConcurrentHashMap<>();
 
-    private final DockerImage proxyImage;
-
-    private final DockerSwarm swarm;
     private final HyggEventBus eventBus;
+    private final HyggServersProcessor processor;
 
     private final Hyggdrasil hyggdrasil;
 
     public HyggServerManager(Hyggdrasil hyggdrasil) {
         this.hyggdrasil = hyggdrasil;
-        this.swarm = this.hyggdrasil.getDocker().getSwarm();
         this.eventBus = this.hyggdrasil.getAPI().getEventBus();
-        this.proxyImage = this.hyggdrasil.getDocker().getImageManager().getImage(Hyggdrasil.getConfig().getServers().getImage());
+        this.processor = new HyggServersProcessor(this.hyggdrasil.getKubernetes().getClient());
 
         for (HyggServer server : this.hyggdrasil.getAPI().getServersRequester().fetchServers()) {
             this.servers.put(server.getName(), server);
@@ -53,11 +48,11 @@ public class HyggServerManager {
         final HyggTemplate template = this.hyggdrasil.getTemplateManager().getTemplate(type);
 
         if (template != null) {
-            final HyggServer server = new HyggServer(Hyggdrasil.getConfig().getDocker().getServicesPrefix(), type, info.getGameType(), info.getMap(), info.getAccessibility(), info.getProcess(), info.getData(), info.getSlots());
+            final HyggServer server = new HyggServer(Hyggdrasil.getConfig().getKubernetes().getResourcesPrefix(), type, info.getGameType(), info.getMap(), info.getAccessibility(), info.getProcess(), info.getData(), info.getSlots());
             final String serverName = server.getName();
 
             this.hyggdrasil.getTemplateManager().getDownloader().copyFiles(template, Paths.get(References.SERVERS_FOLDER.toString(), serverName));
-            this.swarm.runService(new HyggServerService(server, info, this.proxyImage));
+            this.processor.startServer(server, info);
             this.servers.put(serverName, server);
             this.hyggdrasil.getAPI().redisProcess(jedis -> jedis.set(HyggServersRequester.REDIS_KEY + server.getName(), HyggdrasilAPI.GSON.toJson(server))); // Save server in Redis cache
             this.eventBus.publish(new HyggServerStartedEvent(server));
@@ -67,12 +62,6 @@ public class HyggServerManager {
             return server;
         }
         return null;
-    }
-
-    public void firstHeartbeat(HyggServer server) {
-        server.setContainerId(this.swarm.replicaId(server.getName()));
-
-        this.updateServer(server);
     }
 
     public void syncServerInfo(HyggServer server, HyggServerInfoPacket packet) {
@@ -102,7 +91,7 @@ public class HyggServerManager {
             this.eventBus.publish(new HyggServerStoppedEvent(server));
             this.servers.remove(name);
             this.hyggdrasil.getAPI().redisProcess(jedis -> jedis.del(HyggServersRequester.REDIS_KEY + server.getName())); // Delete server from Redis cache
-            this.swarm.removeService(name);
+            this.processor.stopServer(name);
 
             IOUtil.deleteDirectory(Paths.get(References.SERVERS_FOLDER.toString(), name));
 

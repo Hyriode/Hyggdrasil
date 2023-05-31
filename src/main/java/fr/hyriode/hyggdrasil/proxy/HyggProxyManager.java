@@ -10,8 +10,6 @@ import fr.hyriode.hyggdrasil.api.protocol.data.HyggData;
 import fr.hyriode.hyggdrasil.api.proxy.HyggProxiesRequester;
 import fr.hyriode.hyggdrasil.api.proxy.HyggProxy;
 import fr.hyriode.hyggdrasil.api.proxy.packet.HyggProxyInfoPacket;
-import fr.hyriode.hyggdrasil.docker.image.DockerImage;
-import fr.hyriode.hyggdrasil.docker.swarm.DockerSwarm;
 import fr.hyriode.hyggdrasil.template.HyggTemplate;
 import fr.hyriode.hyggdrasil.util.IOUtil;
 import fr.hyriode.hyggdrasil.util.References;
@@ -34,19 +32,17 @@ public class HyggProxyManager {
     private final Map<String, HyggProxy> proxies = new ConcurrentHashMap<>();
 
     private final HyggTemplate proxyTemplate;
-    private final DockerImage proxyImage;
 
-    private final DockerSwarm swarm;
     private final HyggEventBus eventBus;
+    private final HyggProxiesProcessor processor;
 
     private final Hyggdrasil hyggdrasil;
 
     public HyggProxyManager(Hyggdrasil hyggdrasil) {
         this.hyggdrasil = hyggdrasil;
-        this.swarm = this.hyggdrasil.getDocker().getSwarm();
         this.eventBus = this.hyggdrasil.getAPI().getEventBus();
         this.proxyTemplate = this.hyggdrasil.getTemplateManager().getTemplate(Hyggdrasil.getConfig().getProxies().getTemplate());
-        this.proxyImage = this.hyggdrasil.getDocker().getImageManager().getImage(Hyggdrasil.getConfig().getProxies().getImage());
+        this.processor = new HyggProxiesProcessor(this.hyggdrasil.getKubernetes().getClient());
 
         for (HyggProxy proxy : this.hyggdrasil.getAPI().getProxiesRequester().fetchProxies()) {
             this.proxies.put(proxy.getName(), proxy);
@@ -69,7 +65,7 @@ public class HyggProxyManager {
         proxy.setPort(this.getPort());
 
         this.hyggdrasil.getTemplateManager().getDownloader().copyFiles(this.proxyTemplate, Paths.get(References.PROXIES_FOLDER.toString(), proxyName));
-        this.swarm.runService(new HyggProxyService(proxy, this.proxyImage));
+        this.processor.startProxy(proxy);
         this.proxies.put(proxyName, proxy);
         this.hyggdrasil.getAPI().redisProcess(jedis -> jedis.set(HyggProxiesRequester.REDIS_KEY + proxy.getName(), HyggdrasilAPI.GSON.toJson(proxy))); // Save proxy in Redis cache
         this.eventBus.publish(new HyggProxyStartedEvent(proxy));
@@ -96,7 +92,7 @@ public class HyggProxyManager {
             name = String.format("proxy%02d", i + 1); // Generate a proxy name with a custom format. E.g. proxy02 / proxy18
 
             if (this.getProxy(name) == null) {
-                return Hyggdrasil.getConfig().getDocker().getServicesPrefix() + name;
+                return Hyggdrasil.getConfig().getKubernetes().getResourcesPrefix() + name;
             }
         }
         return name;
@@ -112,12 +108,6 @@ public class HyggProxyManager {
         this.updateProxy(proxy);
     }
 
-    public void firstHeartbeat(HyggProxy proxy) {
-        proxy.setContainerId(this.swarm.replicaId(proxy.getName()));
-
-        this.updateProxy(proxy);
-    }
-
     public void updateProxy(HyggProxy proxy) {
         this.hyggdrasil.getAPI().redisProcess(jedis -> jedis.set(HyggProxiesRequester.REDIS_KEY + proxy.getName(), HyggdrasilAPI.GSON.toJson(proxy))); // Save proxy in Redis cache
         this.eventBus.publish(new HyggProxyUpdatedEvent(proxy)); // Keep applications aware of the update
@@ -129,7 +119,7 @@ public class HyggProxyManager {
         if (proxy != null) {
             this.eventBus.publish(new HyggProxyStoppedEvent(proxy));
             this.proxies.remove(name);
-            this.swarm.removeService(name);
+            this.processor.stopProxy(name);
             this.hyggdrasil.getAPI().redisProcess(jedis -> jedis.del(HyggProxiesRequester.REDIS_KEY + proxy.getName()));
 
             IOUtil.deleteDirectory(Paths.get(References.PROXIES_FOLDER.toString(), proxy.getName()));

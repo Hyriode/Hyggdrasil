@@ -1,12 +1,7 @@
 package fr.hyriode.hyggdrasil.util;
 
-import fr.hyriode.hyggdrasil.Hyggdrasil;
-import fr.hyriode.hyggdrasil.docker.network.DockerNetwork;
-import fr.hyriode.hyggdrasil.docker.network.DockerNetworkDriver;
-
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.function.Supplier;
 
 public class References {
 
@@ -25,18 +20,5 @@ public class References {
     public static final Path PROXIES_FOLDER = Paths.get("proxies");
     public static final Path LIMBOS_FOLDER = Paths.get("limbos");
 
-    /** Files - Images */
-    public static final Path IMAGES_FOLDER = Paths.get("images");
-
-    /** Docker */
-    public static final String STACK_NAME_LABEL = "com.docker.stack.namespace";
-    public static final Supplier<DockerNetwork> NETWORK = new Supplier<>() {
-        private DockerNetwork network;
-
-        @Override
-        public DockerNetwork get() {
-            return this.network == null ? this.network = new DockerNetwork(Hyggdrasil.getConfig().getDocker().getNetworkName(), DockerNetworkDriver.OVERLAY) : this.network;
-        }
-    };
 
 }

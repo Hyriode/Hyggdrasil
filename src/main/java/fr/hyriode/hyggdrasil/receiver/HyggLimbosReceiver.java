@@ -41,7 +41,7 @@ public class HyggLimbosReceiver implements IHyggPacketReceiver {
             }
 
             if (packet instanceof HyggHeartbeatPacket && limbo.heartbeat()) {
-                limboManager.firstHeartbeat(limbo);
+                limboManager.updateLimbo(limbo);
             }
             return HyggResponse.Type.SUCCESS.toResponse();
         }

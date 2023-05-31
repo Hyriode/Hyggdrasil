@@ -22,8 +22,6 @@ public class HyggServer {
     /** The type of the server */
     protected final String type;
 
-    private String containerId;
-
     /** The type of the game running on the server. Might be <code>null</code> if the server is not running a game. */
     protected @Nullable String gameType;
     /** The map used by the server. */
@@ -320,28 +318,6 @@ public class HyggServer {
      */
     public long getLastHeartbeat() {
         return this.lastHeartbeat;
-    }
-
-    /**
-     * Get the id of the Docker container
-     *
-     * @return An identifier
-     */
-    public String getContainerId() {
-        return this.containerId;
-    }
-
-    /**
-     * Set the id of the Docker container
-     *
-     * @param containerId An identifier
-     */
-    public void setContainerId(String containerId) {
-        if (this.containerId != null) {
-            throw new IllegalStateException("The container id of this server is already set!");
-        }
-
-        this.containerId = containerId;
     }
 
     @Override

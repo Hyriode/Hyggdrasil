@@ -4,6 +4,7 @@ import fr.hyriode.hyggdrasil.api.HyggdrasilAPI;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Project: Hyggdrasil
@@ -52,8 +53,8 @@ public class HyggEnv {
      *
      * @return A list of string
      */
-    public List<String> createEnvironmentVariables() {
-        return new ArrayList<>(this.application.createEnvironmentVariables());
+    public Map<String, String> createEnvironmentVariables() {
+        return this.application.createEnvironmentVariables();
     }
 
 }

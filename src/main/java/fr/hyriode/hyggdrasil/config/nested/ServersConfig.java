@@ -1,5 +1,7 @@
 package fr.hyriode.hyggdrasil.config.nested;
 
+import fr.hyriode.hyggdrasil.config.nested.object.Image;
+
 /**
  * Project: Hyggdrasil
  * Created by AstFaster
@@ -7,17 +9,17 @@ package fr.hyriode.hyggdrasil.config.nested;
  */
 public class ServersConfig {
 
-    private final String image;
+    private final Image image;
 
-    public ServersConfig(String image) {
+    public ServersConfig(Image image) {
         this.image = image;
     }
 
     public ServersConfig() {
-        this("server");
+        this(new Image());
     }
 
-    public String getImage() {
+    public Image getImage() {
         return this.image;
     }
 
