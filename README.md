@@ -8,7 +8,7 @@ The license text is available [here](LICENCE.md) if you want more details.
 ## Description
 
 Hyggdrasil is a standalone application which manage servers, proxies and limbos. It has its own communication protocol allowing other applications to send queries (e.g. create a new server)..<br>
-The version on *main* uses Docker Swarm as an orchestrator, and the version on *develop* uses Kubernetes.
+It uses Kubernetes as an orchestrator, but previously it was using Docker Swarm.
 
 - Type: Infrastructure
 - Developer(s) : AstFaster
