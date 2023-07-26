@@ -1,8 +1,14 @@
-# ‍⛓️Hyggdrasil
-The project that manage all servers of the network.
+# Hyriode - Hyggdrasil
 
-📁 **Type :** Utilitaire
+This project is made available to the community following the closure of [**Hyriode**](https://hyriode.fr) (a Minecraft mini-games network).<br>
 
-🔨 **Version :** 1.0.0
+This project is released under the GNU GPLv3 license. This means you can download, modify, or redistribute this project freely, as long as you *specify the modifications made*, *redistribute your modifications under the same license*, and remember to *identify that your work is based on this project from Hyriode*.<br>
+The license text is available [here](LICENCE.md) if you want more details.
 
-📕 **Cahier des charges :** [Hyggdrasil](https://docs.google.com/document/d/1tciJceSA7ZC8QorL1swT4x8AI0f0crUneo-VdbGSepg/edit)
+## Description
+
+Hyggdrasil is a standalone application which manage servers, proxies and limbos. It has its own communication protocol allowing other applications to send queries (e.g. create a new server)..<br>
+The version on *main* uses Docker Swarm as an orchestrator, and the version on *develop* uses Kubernetes.
+
+- Type: Infrastructure
+- Developer(s) : AstFaster
